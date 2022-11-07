@@ -14,7 +14,7 @@ up:
 down:
 	docker-compose stop
 exec:
-	docker-compose exec app bash
+	docker-compose exec app sh
 migrate:
 	docker-compose exec app migrate create -ext sql -dir db/migrations ${name}
 migrate.up:
