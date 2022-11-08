@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
 	"log"
@@ -13,9 +14,12 @@ func main() {
 	app := new(base.App)
 	app.Init()
 
-	testController := new(controllers.TestController)
+	githubController := new(controllers.GithubAuthController)
+	githubController.Init(app.DB)
+	app.Router.Use(gin.Logger())
 
-	app.Router.GET("/", testController.Test)
+	app.Router.GET("/auth", githubController.RedirectForAuth)
+	app.Router.GET("/auth/github/login", githubController.Login)
 	go app.Run("80", fatalChan)
 
 	err := <-fatalChan

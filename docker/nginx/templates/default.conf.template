@@ -9,7 +9,7 @@ server {
         #gzip_static on;
         #expires max;
         #add_header Cache-Control public;
-        proxy_pass http://app:80/web/;
+        proxy_pass http://app:80/auth;
     }
 
     location /ws/ {
