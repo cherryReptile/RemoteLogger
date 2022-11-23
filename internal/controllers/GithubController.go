@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/GoStarter/internal/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"net/http"
@@ -32,13 +33,13 @@ func (c *GithubAuthController) Init(db *sqlx.DB) {
 }
 
 func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
-	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectLogin
 	u := c.Config.AuthCodeURL(c.setCookie(ctx))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
 func (c *GithubAuthController) Login(ctx *gin.Context) {
+	token := new(models.AccessToken)
 	oauthState, err := ctx.Cookie("oauthstate")
 
 	if err != nil {
@@ -60,14 +61,28 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	reqUser, err := c.getGitHubUser(tok.AccessToken)
+	user, err := c.getGitHubUser(tok.AccessToken)
 
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, reqUser)
+	db, err := user.Create(user.Login)
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	token.Token = tok.AccessToken
+	token.UserID = user.ID
+	if err = token.Create(db); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, token.Token)
+	ctx.JSON(http.StatusOK, user)
 }
 
 func (c *GithubAuthController) setCookie(ctx *gin.Context) string {
@@ -79,7 +94,8 @@ func (c *GithubAuthController) setCookie(ctx *gin.Context) string {
 	return state
 }
 
-func (c *GithubAuthController) getGitHubUser(token string) (any, error) {
+func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {
+	user := new(models.GithubUser)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
 
@@ -96,16 +112,11 @@ func (c *GithubAuthController) getGitHubUser(token string) (any, error) {
 
 	defer res.Body.Close()
 
-	var reqUser struct {
-		Id    int    `json:"id"`
-		Login string `json:"login"`
-	}
-
-	err = json.NewDecoder(res.Body).Decode(&reqUser)
+	err = json.NewDecoder(res.Body).Decode(&user)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return reqUser, nil
+	return user, nil
 }
