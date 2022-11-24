@@ -2,15 +2,10 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"net/http"
 )
 
 type BaseController struct {
-}
-
-type DatabaseController struct {
-	DB *sqlx.DB
 }
 
 func (c *BaseController) ERROR(ctx *gin.Context, code int, err error) {

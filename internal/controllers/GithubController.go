@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/internal/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -17,19 +16,16 @@ import (
 
 type GithubAuthController struct {
 	BaseController
-	DatabaseController
 	Config *oauth2.Config
 }
 
 var GitRedirectLogin = "/api/v1/auth/github/login"
 
-func (c *GithubAuthController) Init(db *sqlx.DB) {
-	c.DB = db
+func (c *GithubAuthController) Init() {
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
 	c.Config.Endpoint = github.Endpoint
-
 }
 
 func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
@@ -68,7 +64,11 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	db, err := user.Create(user.Login)
+	db, _ := user.CheckDb(user.Login)
+	if db == nil {
+		db, err = user.Create(user.Login)
+	}
+
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return

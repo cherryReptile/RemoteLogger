@@ -39,6 +39,32 @@ func (u *GithubUser) Create(login string) (*sqlx.DB, error) {
 	return db, nil
 }
 
+func (u *GithubUser) CheckDb(login string) (*sqlx.DB, error) {
+	path := "./storage/users/github/" + login
+	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
+		return nil, err
+	}
+
+	db, err := sqlite.GetDb("github", login)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = u.FindByLogin(db, login); err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func (u *GithubUser) FindByLogin(db *sqlx.DB, login string) error {
+	if err := db.Get(u, "SELECT * FROM users WHERE login=$1", login); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *GithubUser) createSubDir(login string) (*sqlx.DB, error) {
 	path := "./storage/users/github/" + login
 	err := os.MkdirAll(path, os.ModePerm)

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
+	"github.com/pavel-one/GoStarter/internal/middlewars"
 	"log"
 	"os"
 )
@@ -15,11 +16,20 @@ func main() {
 	app.Init()
 
 	githubController := new(controllers.GithubAuthController)
-	githubController.Init(app.DB)
+	githubController.Init()
 	app.Router.Use(gin.Logger())
 
-	app.Router.GET("/auth", githubController.RedirectForAuth)
-	app.Router.GET("/auth/github/login", githubController.Login)
+	auth := app.Router.Group("/auth")
+	authGit := auth.Group("/github")
+	authGit.GET("/", githubController.RedirectForAuth)
+	authGit.GET("/login", githubController.Login)
+
+	testController := new(controllers.TestController)
+	testController.Init()
+	authorized := app.Router.Group("/home")
+	authorized.Use(middlewars.CheckAuth())
+	authorized.GET("/test", testController.Test)
+
 	go app.Run("80", fatalChan)
 
 	err := <-fatalChan
