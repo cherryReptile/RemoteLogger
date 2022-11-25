@@ -27,7 +27,7 @@ func main() {
 	testController := new(controllers.TestController)
 	testController.Init()
 	authorized := app.Router.Group("/home")
-	authorized.Use(middlewars.CheckAuth())
+	authorized.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
 	authorized.GET("/test", testController.Test)
 
 	go app.Run("80", fatalChan)

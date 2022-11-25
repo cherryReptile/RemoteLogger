@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/pavel-one/GoStarter/internal/helpers"
 	"github.com/pavel-one/GoStarter/internal/models"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -81,6 +82,8 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+	c.setUIDCookie(ctx, user.Login)
+
 	ctx.JSON(http.StatusOK, token.Token)
 	ctx.JSON(http.StatusOK, user)
 }
@@ -94,18 +97,29 @@ func (c *GithubAuthController) setCookie(ctx *gin.Context) string {
 	return state
 }
 
+func (c *GithubAuthController) setUIDCookie(ctx *gin.Context, login string) {
+	path := "/api/v1/home"
+	ctx.SetCookie("service", "github", 3600, path, os.Getenv("DOMAIN"), false, true)
+	ctx.SetCookie("user", login, 3600, path, os.Getenv("DOMAIN"), false, true)
+}
+
 func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {
 	user := new(models.GithubUser)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
+	//client := &http.Client{}
+	//req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
+	//
+	//if err != nil {
+	//	return nil, err
+	//}
+	//req.Header.Set("Authorization", "Bearer "+token)
+	//
+	//res, err := client.Do(req)
+	//
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	res, err := client.Do(req)
-
+	res, err := helpers.RequestToGithub(token)
 	if err != nil {
 		return nil, err
 	}

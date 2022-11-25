@@ -65,6 +65,16 @@ func (u *GithubUser) FindByLogin(db *sqlx.DB, login string) error {
 	return nil
 }
 
+func (u *GithubUser) GetAccessToken(db *sqlx.DB) (AccessToken, error) {
+	t := AccessToken{}
+	err := db.Get(&t, "SELECT * FROM tokens WHERE user_id=$1 ORDER BY id DESC", u.ID)
+	if err != nil {
+		return t, err
+	}
+
+	return t, err
+}
+
 func (u *GithubUser) createSubDir(login string) (*sqlx.DB, error) {
 	path := "./storage/users/github/" + login
 	err := os.MkdirAll(path, os.ModePerm)
