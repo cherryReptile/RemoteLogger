@@ -65,14 +65,13 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	db, _ := user.CheckDb(user.Login)
-	if db == nil {
+	db, ok := user.CheckDb(user.Login)
+	if db == nil || !ok {
 		db, err = user.Create(user.Login)
-	}
-
-	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
+		if err != nil {
+			c.ERROR(ctx, http.StatusBadRequest, err)
+			return
+		}
 	}
 
 	if user.ID == 0 {

@@ -64,9 +64,9 @@ func CheckUserAndToken() gin.HandlerFunc {
 			return
 		}
 
-		db, err := user.CheckDb(login)
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+		db, ok := user.CheckDb(login)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusBadRequest, "user not found")
 			return
 		}
 
