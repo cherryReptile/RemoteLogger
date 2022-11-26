@@ -77,7 +77,7 @@ func CheckUserAndToken() gin.HandlerFunc {
 		}
 
 		if token.Token != t {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "this token doesnt exist")
+			c.AbortWithStatusJSON(http.StatusBadRequest, "please use your last token")
 			return
 		}
 

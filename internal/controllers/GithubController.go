@@ -75,6 +75,11 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+	if user.ID == 0 {
+		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
+		return
+	}
+
 	token.Token = tok.AccessToken
 	token.UserID = user.ID
 	if err = token.Create(db); err != nil {
