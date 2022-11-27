@@ -2,12 +2,19 @@ package sqlite
 
 import (
 	_ "embed"
+	"errors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//go:embed default.sql
-var schema string
+//go:embed github.sql
+var githubSchema string
+
+//go:embed app.sql
+var appSchema string
+
+//go:embed token.sql
+var tokenSchema string
 
 func GetDb(authService, userIdentifier string) (db *sqlx.DB, err error) {
 	db, err = sqlx.Open("sqlite3", "./storage/users/"+authService+"/"+userIdentifier+"/"+userIdentifier+".sqlite3")
@@ -23,8 +30,15 @@ func GetDb(authService, userIdentifier string) (db *sqlx.DB, err error) {
 	return db, err
 }
 
-func SetDefaultSchema(db *sqlx.DB) (err error) {
-	_, err = db.Exec(schema)
+func SetDefaultSchema(db *sqlx.DB, schema string) (err error) {
+	switch schema {
+	case "github":
+		_, err = db.Exec(githubSchema + tokenSchema)
+	case "app":
+		_, err = db.Exec(appSchema + tokenSchema)
+	default:
+		err = errors.New("unknown service")
+	}
 	if err != nil {
 		return err
 	}

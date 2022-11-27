@@ -87,7 +87,7 @@ func (u *GithubUser) createSubDir(login string) (*sqlx.DB, error) {
 		return nil, err
 	}
 
-	err = sqlite.SetDefaultSchema(db)
+	err = sqlite.SetDefaultSchema(db, "github")
 	if err != nil {
 		return nil, err
 	}
