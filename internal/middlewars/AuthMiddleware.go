@@ -45,7 +45,7 @@ func CheckAuthHeader() gin.HandlerFunc {
 func CheckUserAndToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t, ok := c.Get("token")
-		if !ok {
+		if !ok || t == nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "auth token is missing"})
 			return
 		}

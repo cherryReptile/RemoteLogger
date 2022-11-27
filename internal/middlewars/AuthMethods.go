@@ -17,14 +17,16 @@ func CheckApp(c *gin.Context, t string) {
 		return
 	}
 
-	tokenModel, err := user.GetAccessToken(db)
+	tokenModel, err := user.GetTokenByStr(db, t)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
 	}
 	if tokenModel.ID == 0 {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token not found"})
 		return
 	}
+	c.Set("user", user.Email)
 }
 
 func CheckGithub(c *gin.Context, t string) {
@@ -41,14 +43,14 @@ func CheckGithub(c *gin.Context, t string) {
 		return
 	}
 
-	token, err := user.GetAccessToken(db)
+	token, err := user.GetTokenByStr(db, t)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if token.Token != t {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "please use your last token")
+	if token.ID == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "token not found"})
 		return
 	}
 }
