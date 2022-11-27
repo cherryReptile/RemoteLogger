@@ -109,20 +109,6 @@ func (c *GithubAuthController) setUIDCookie(ctx *gin.Context, login string) {
 
 func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {
 	user := new(models.GithubUser)
-	//client := &http.Client{}
-	//req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-	//req.Header.Set("Authorization", "Bearer "+token)
-	//
-	//res, err := client.Do(req)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	res, err := helpers.RequestToGithub(token)
 	if err != nil {
 		return nil, err
