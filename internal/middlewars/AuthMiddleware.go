@@ -3,7 +3,6 @@ package middlewars
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/internal/helpers"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"net/http"
 )
 
@@ -45,40 +44,27 @@ func CheckAuthHeader() gin.HandlerFunc {
 
 func CheckUserAndToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := new(models.GithubUser)
 		t, ok := c.Get("token")
 		if !ok {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "auth token is missing")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "auth token is missing"})
 			return
 		}
 
 		service, err := c.Cookie("service")
-		if err != nil || service == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "unknown service")
-			return
-		}
-
-		login, err := c.Cookie("user")
-		if err != nil || login == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "unknown user")
-			return
-		}
-
-		db, ok := user.CheckDb(login)
-		if !ok {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "user not found")
-			return
-		}
-
-		token, err := user.GetAccessToken(db)
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		if err = helpers.ServiceChecker(service); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if token.Token != t {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "please use your last token")
-			return
+		switch service {
+		case "github":
+			CheckGithub(c, t.(string))
+		case "app":
+			CheckApp(c, t.(string))
 		}
 
 		//c.Next()

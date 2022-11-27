@@ -13,7 +13,7 @@ const dbAppPath = "./storage/users/app/"
 type AppUser struct {
 	ID        uint      `json:"ID" db:"id"`
 	Email     string    `json:"email" db:"email"`
-	Password  string    `json:"password" db:"password"`
+	Password  string    `json:"-" db:"password"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
