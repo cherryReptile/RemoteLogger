@@ -38,3 +38,8 @@ func (t *AccessToken) GetByToken(db *sqlx.DB, token string) error {
 
 	return nil
 }
+
+func (t *AccessToken) Delete(db *sqlx.DB) error {
+	_, err := db.NamedExec("DELETE FROM tokens WHERE id=:id", t)
+	return err
+}

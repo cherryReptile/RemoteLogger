@@ -66,7 +66,7 @@ func (u *AppUser) FindByEmail(db *sqlx.DB, email string) error {
 	return nil
 }
 
-func (u *AppUser) GetAccessToken(db *sqlx.DB) (AccessToken, error) {
+func (u *AppUser) GetLastToken(db *sqlx.DB) (AccessToken, error) {
 	t := AccessToken{}
 	err := db.Get(&t, "SELECT * FROM tokens WHERE user_id=$1 ORDER BY id DESC", u.ID)
 	if err != nil {
@@ -74,6 +74,16 @@ func (u *AppUser) GetAccessToken(db *sqlx.DB) (AccessToken, error) {
 	}
 
 	return t, err
+}
+
+func (u *AppUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error) {
+	t := AccessToken{}
+	err := db.Get(&t, "SELECT * FROM tokens WHERE user_id=$1 AND token=$2 ORDER BY id DESC", u.ID, token)
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
 }
 
 func (u *AppUser) createSubDir(email string) (*sqlx.DB, error) {
