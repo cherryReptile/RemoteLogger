@@ -33,6 +33,7 @@ func main() {
 	appAuthController := new(controllers.AppAuthController)
 	authApp := auth.Group("/app")
 	authApp.POST("/register", appAuthController.Register)
+	authApp.POST("/login", appAuthController.Login)
 
 	go app.Run("80", fatalChan)
 

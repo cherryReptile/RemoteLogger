@@ -3,9 +3,10 @@ package appauth
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/pavel-one/GoStarter/internal/models"
 	"os"
+	"time"
 )
 
 type CustomClaims struct {
@@ -14,6 +15,25 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+func GenerateToken(user *models.AppUser) (string, error) {
+	claims := CustomClaims{
+		UserID: user.ID,
+		Login:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenStr, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
+}
 func ParseToken(authToken string) (*jwt.Token, error) {
 	token, err := jwt.ParseWithClaims(authToken, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -29,14 +49,8 @@ func ParseToken(authToken string) (*jwt.Token, error) {
 	return token, err
 }
 
-func GetClaims(ctx *gin.Context) (*CustomClaims, error) {
-	authToken, ok := ctx.Get("token")
-
-	if !ok {
-		return nil, errors.New("auth token is missing")
-	}
-
-	token, err := ParseToken(authToken.(string))
+func GetClaims(authToken string) (*CustomClaims, error) {
+	token, err := ParseToken(authToken)
 
 	if err != nil {
 		return nil, errors.New("error parsing token")
@@ -44,7 +58,7 @@ func GetClaims(ctx *gin.Context) (*CustomClaims, error) {
 
 	claims, ok := token.Claims.(*CustomClaims)
 
-	if !ok {
+	if !ok || !token.Valid {
 		return nil, errors.New("failed to get claims")
 	}
 
