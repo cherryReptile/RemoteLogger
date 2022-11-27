@@ -30,6 +30,10 @@ func main() {
 	authorized.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
 	authorized.GET("/test", testController.Test)
 
+	appAuthController := new(controllers.AppAuthController)
+	authApp := auth.Group("/app")
+	authApp.POST("/register", appAuthController.Register)
+
 	go app.Run("80", fatalChan)
 
 	err := <-fatalChan
