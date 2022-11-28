@@ -55,16 +55,15 @@ func CheckUserAndToken() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		if err = helpers.ServiceChecker(service); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
 
 		switch service {
 		case "github":
 			CheckGithub(c, t.(string))
 		case "app":
 			CheckApp(c, t.(string))
+		default:
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "unknown service"})
+			return
 		}
 
 		//c.Next()
