@@ -2,6 +2,7 @@ package middlewars
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/pavel-one/GoStarter/internal/appauth"
 	"github.com/pavel-one/GoStarter/internal/models"
 	"net/http"
@@ -10,10 +11,29 @@ import (
 func CheckApp(c *gin.Context, t string) {
 	user := new(models.AppUser)
 	claims, err := appauth.GetClaims(t)
+	if err != nil {
+		if err.(*jwt.ValidationError).Errors == 16 {
+			db, ok := user.CheckDb(claims.Login)
+			if !ok {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+
+			token, _ := user.GetTokenByStr(db, t)
+			if token.ID == 0 {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+
+			token.Delete(db)
+		}
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
 
 	db, ok := user.CheckDb(claims.Login)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "user not found")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
 	}
 
@@ -33,13 +53,13 @@ func CheckGithub(c *gin.Context, t string) {
 	user := new(models.GithubUser)
 	login, err := c.Cookie("user")
 	if err != nil || login == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, "unknown user")
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})
 		return
 	}
 
 	db, ok := user.CheckDb(login)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, "user not found")
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
 	}
 
