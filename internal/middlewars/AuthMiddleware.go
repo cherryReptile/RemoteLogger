@@ -10,7 +10,7 @@ func CheckAuthHeader() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, ok := helpers.CheckAuthHeader(c)
 		if !ok || token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, "auth header is missing or value is required")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "auth header is missing or value is required"})
 			return
 		}
 		c.Set("token", token)
