@@ -8,24 +8,25 @@ import (
 	"time"
 )
 
-type GithubUser struct {
-	ID        uint      `json:"id" db:"id"`
-	Login     string    `json:"login" db:"login"`
+const dbAppPath = "./storage/users/app/"
+
+type AppUser struct {
+	ID        uint      `json:"ID" db:"id"`
 	Email     string    `json:"email" db:"email"`
-	AvatarURL string    `json:"avatar_url" db:"avatar_url"`
+	Password  string    `json:"-" db:"password"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
-func (u *GithubUser) Create(login string) (*sqlx.DB, error) {
+func (u *AppUser) Create(email string) (*sqlx.DB, error) {
 	u.CreatedAt = time.Now()
-	db, err := u.createSubDir(login)
+	db, err := u.createSubDir(email)
 
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = db.NamedExec(`INSERT INTO users (login, email, avatar_url, created_at) 
-								VALUES (:login, :email, :avatar_url, :created_at)`, u)
+	_, err = db.NamedExec(`INSERT INTO users (email, password, created_at) 
+								VALUES (:email, :password, :created_at)`, u)
 
 	if err != nil {
 		return nil, errors.New("failed to create user " + err.Error())
@@ -39,33 +40,33 @@ func (u *GithubUser) Create(login string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func (u *GithubUser) CheckDb(login string) (*sqlx.DB, bool) {
-	path := "./storage/users/github/" + login
+func (u *AppUser) CheckDb(email string) (*sqlx.DB, bool) {
+	path := dbAppPath + email
 	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
 		return nil, false
 	}
 
-	db, err := sqlite.GetDb("github", login)
+	db, err := sqlite.GetDb("app", email)
 	if err != nil {
 		return nil, false
 	}
 
-	if err = u.FindByLogin(db, login); err != nil {
+	if err = u.FindByEmail(db, email); err != nil {
 		return nil, false
 	}
 
 	return db, true
 }
 
-func (u *GithubUser) FindByLogin(db *sqlx.DB, login string) error {
-	if err := db.Get(u, "SELECT * FROM users WHERE login=$1", login); err != nil {
+func (u *AppUser) FindByEmail(db *sqlx.DB, email string) error {
+	if err := db.Get(u, "SELECT * FROM users WHERE email=$1", email); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (u *GithubUser) GetLastToken(db *sqlx.DB) (AccessToken, error) {
+func (u *AppUser) GetLastToken(db *sqlx.DB) (AccessToken, error) {
 	t := AccessToken{}
 	err := db.Get(&t, "SELECT * FROM tokens WHERE user_id=$1 ORDER BY id DESC", u.ID)
 	if err != nil {
@@ -75,7 +76,7 @@ func (u *GithubUser) GetLastToken(db *sqlx.DB) (AccessToken, error) {
 	return t, err
 }
 
-func (u *GithubUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error) {
+func (u *AppUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error) {
 	t := AccessToken{}
 	err := db.Get(&t, "SELECT * FROM tokens WHERE user_id=$1 AND token=$2 ORDER BY id DESC", u.ID, token)
 	if err != nil {
@@ -85,19 +86,19 @@ func (u *GithubUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, erro
 	return t, nil
 }
 
-func (u *GithubUser) createSubDir(login string) (*sqlx.DB, error) {
-	path := "./storage/users/github/" + login
+func (u *AppUser) createSubDir(email string) (*sqlx.DB, error) {
+	path := dbAppPath + email
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sqlite.GetDb("github", login)
+	db, err := sqlite.GetDb("app", email)
 	if err != nil {
 		return nil, err
 	}
 
-	err = sqlite.SetDefaultSchema(db, "github")
+	err = sqlite.SetDefaultSchema(db, "app")
 	if err != nil {
 		return nil, err
 	}

@@ -15,20 +15,27 @@ func main() {
 	app := new(base.App)
 	app.Init()
 
-	githubController := new(controllers.GithubAuthController)
-	githubController.Init()
+	githubC := new(controllers.GithubAuthController)
+	githubC.Init()
 	app.Router.Use(gin.Logger())
 
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
-	authGit.GET("/", githubController.RedirectForAuth)
-	authGit.GET("/login", githubController.Login)
+	authGit.GET("/", githubC.RedirectForAuth)
+	authGit.GET("/login", githubC.Login)
 
-	testController := new(controllers.TestController)
-	testController.Init()
-	authorized := app.Router.Group("/home")
-	authorized.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
-	authorized.GET("/test", testController.Test)
+	appAuthC := new(controllers.AppAuthController)
+	authApp := auth.Group("/app")
+	authApp.POST("/register", appAuthC.Register)
+	authApp.POST("/login", appAuthC.Login)
+
+	testC := new(controllers.TestController)
+	testC.Init()
+	home := app.Router.Group("/home")
+	home.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
+	home.GET("/test", testC.Test)
+	home.GET("/app/logout", appAuthC.Logout)
+	home.GET("/github/logout", githubC.Logout)
 
 	go app.Run("80", fatalChan)
 

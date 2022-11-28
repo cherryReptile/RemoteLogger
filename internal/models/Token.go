@@ -30,3 +30,16 @@ func (t *AccessToken) Create(db *sqlx.DB) error {
 
 	return nil
 }
+
+func (t *AccessToken) GetByToken(db *sqlx.DB, token string) error {
+	if err := db.Get(t, "SELECT * FROM tokens WHERE token=$1 ORDER BY id DESC LIMIT 1", token); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *AccessToken) Delete(db *sqlx.DB) error {
+	_, err := db.NamedExec("DELETE FROM tokens WHERE id=:id", t)
+	return err
+}

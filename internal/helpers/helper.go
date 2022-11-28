@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -32,4 +33,18 @@ func RequestToGithub(token string) (*http.Response, error) {
 	}
 
 	return res, nil
+}
+
+func ServiceChecker(service string) error {
+	var err error
+	switch service {
+	case "github":
+		err = nil
+	case "app":
+		err = nil
+	default:
+		err = errors.New("unknown service")
+	}
+
+	return err
 }

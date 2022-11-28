@@ -31,7 +31,7 @@ func (c *GithubAuthController) Init() {
 
 func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectLogin
-	u := c.Config.AuthCodeURL(c.setCookie(ctx))
+	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
@@ -92,7 +92,46 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-func (c *GithubAuthController) setCookie(ctx *gin.Context) string {
+func (c *GithubAuthController) Logout(ctx *gin.Context) {
+	user := new(models.GithubUser)
+	login, err := ctx.Cookie("user")
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	t, ok := ctx.Get("token")
+	if !ok {
+		c.ERROR(ctx, http.StatusBadRequest, errors.New("cannot get token"))
+		return
+	}
+
+	db, ok := user.CheckDb(login)
+	if !ok {
+		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
+		return
+	}
+
+	token, err := user.GetTokenByStr(db, t.(string))
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	if token.ID == 0 {
+		c.ERROR(ctx, http.StatusBadRequest, errors.New("token not found"))
+		return
+	}
+
+	if err = token.Delete(db); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, gin.H{"message": "logout successfully"})
+}
+
+func (c *GithubAuthController) setOAuthStateCookie(ctx *gin.Context) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
@@ -109,20 +148,6 @@ func (c *GithubAuthController) setUIDCookie(ctx *gin.Context, login string) {
 
 func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {
 	user := new(models.GithubUser)
-	//client := &http.Client{}
-	//req, err := http.NewRequest("GET", "https://api.github.com/user", nil)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-	//req.Header.Set("Authorization", "Bearer "+token)
-	//
-	//res, err := client.Do(req)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	res, err := helpers.RequestToGithub(token)
 	if err != nil {
 		return nil, err
