@@ -18,30 +18,6 @@ func CheckAuthHeader() gin.HandlerFunc {
 	}
 }
 
-//func CheckFromGithub() gin.HandlerFunc {
-//	return func(c *gin.Context) {
-//		t, ok := c.Get("token")
-//		if !ok {
-//			c.AbortWithStatusJSON(http.StatusUnauthorized, "invalid token")
-//			return
-//		}
-//
-//		res, err := helpers.RequestToGithub(t.(string))
-//		defer res.Body.Close()
-//		if err != nil {
-//			c.AbortWithStatusJSON(http.StatusBadRequest, err)
-//			return
-//		}
-//
-//		if res.StatusCode != 200 {
-//			c.AbortWithStatusJSON(http.StatusBadRequest, "authorization failed")
-//			return
-//		}
-//
-//		c.Next()
-//	}
-//}
-
 func CheckUserAndToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t, ok := c.Get("token")
@@ -58,9 +34,9 @@ func CheckUserAndToken() gin.HandlerFunc {
 
 		switch service {
 		case "github":
-			CheckGithub(c, t.(string))
+			CheckGoogleOrGitHub(c, t.(string), service)
 		case "google":
-			CheckGoogle(c, t.(string))
+			CheckGoogleOrGitHub(c, t.(string), service)
 		case "app":
 			CheckApp(c, t.(string))
 		default:

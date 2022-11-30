@@ -13,7 +13,7 @@ func CheckApp(c *gin.Context, t string) {
 	claims, err := appauth.GetClaims(t)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {
-			db, ok := user.CheckDb(claims.Login)
+			db, ok := user.CheckAndUpdateDb(claims.Login)
 			if !ok {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
@@ -31,7 +31,7 @@ func CheckApp(c *gin.Context, t string) {
 		return
 	}
 
-	db, ok := user.CheckDb(claims.Login)
+	db, ok := user.CheckAndUpdateDb(claims.Login)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
@@ -49,41 +49,22 @@ func CheckApp(c *gin.Context, t string) {
 	c.Set("user", user.Email)
 }
 
-func CheckGithub(c *gin.Context, t string) {
-	user := new(models.GithubUser)
-	login, err := c.Cookie("user")
-	if err != nil || login == "" {
+func CheckGoogleOrGitHub(c *gin.Context, t, service string) {
+	var user models.OAuthModel
+	switch service {
+	case "github":
+		user = new(models.GithubUser)
+	case "google":
+		user = new(models.GoogleUser)
+	}
+
+	unique, err := c.Cookie("user")
+	if err != nil || unique == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})
 		return
 	}
 
-	db, ok := user.CheckDb(login)
-	if !ok {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
-		return
-	}
-
-	token, err := user.GetTokenByStr(db, t)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if token.ID == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "token not found"})
-		return
-	}
-}
-
-func CheckGoogle(c *gin.Context, t string) {
-	user := new(models.GoogleUser)
-	email, err := c.Cookie("user")
-	if err != nil || email == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})
-		return
-	}
-
-	db, ok := user.CheckDb(email)
+	db, ok := user.CheckAndUpdateDb(unique)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
