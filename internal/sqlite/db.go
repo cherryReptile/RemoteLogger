@@ -13,6 +13,9 @@ var githubSchema string
 //go:embed app.sql
 var appSchema string
 
+//go:embed google.sql
+var googleSchema string
+
 //go:embed token.sql
 var tokenSchema string
 
@@ -36,6 +39,8 @@ func SetDefaultSchema(db *sqlx.DB, schema string) (err error) {
 		_, err = db.Exec(githubSchema + tokenSchema)
 	case "app":
 		_, err = db.Exec(appSchema + tokenSchema)
+	case "google":
+		_, err = db.Exec(googleSchema + tokenSchema)
 	default:
 		err = errors.New("unknown service")
 	}

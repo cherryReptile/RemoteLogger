@@ -33,3 +33,21 @@ func RequestToGithub(token string) (*http.Response, error) {
 
 	return res, nil
 }
+
+func RequestToGoogle(token string) (*http.Response, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://www.googleapis.com/oauth2/v2/userinfo", nil)
+
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	res, err := client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

@@ -29,6 +29,12 @@ func main() {
 	authApp.POST("/register", appAuthC.Register)
 	authApp.POST("/login", appAuthC.Login)
 
+	googleAuthC := new(controllers.GoogleAuthController)
+	googleAuthC.Init()
+	authGo := auth.Group("/google")
+	authGo.GET("/", googleAuthC.RedirectForAuth)
+	authGo.GET("/login", googleAuthC.Login)
+
 	testC := new(controllers.TestController)
 	testC.Init()
 	home := app.Router.Group("/home")
