@@ -3,12 +3,11 @@ package models
 import (
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/sqlite"
-	"os"
 	"time"
 )
 
 type GithubUser struct {
+	BaseModel
 	ID        uint      `json:"id" db:"id"`
 	Login     string    `json:"login" db:"login"`
 	Email     string    `json:"email" db:"email"`
@@ -18,7 +17,7 @@ type GithubUser struct {
 
 func (u *GithubUser) Create(login string) (*sqlx.DB, error) {
 	u.CreatedAt = time.Now()
-	db, err := u.createSubDir(login)
+	db, err := u.createSubDir("github", login)
 
 	if err != nil {
 		return nil, err
@@ -39,13 +38,8 @@ func (u *GithubUser) Create(login string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func (u *GithubUser) CheckDb(login string) (*sqlx.DB, bool) {
-	path := "./storage/users/github/" + login
-	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
-		return nil, false
-	}
-
-	db, err := sqlite.GetDb("github", login)
+func (u *GithubUser) CheckAndUpdateDb(login string) (*sqlx.DB, bool) {
+	db, err := u.CheckDb("github", login)
 	if err != nil {
 		return nil, false
 	}
@@ -83,24 +77,4 @@ func (u *GithubUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, erro
 	}
 
 	return t, nil
-}
-
-func (u *GithubUser) createSubDir(login string) (*sqlx.DB, error) {
-	path := "./storage/users/github/" + login
-	err := os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := sqlite.GetDb("github", login)
-	if err != nil {
-		return nil, err
-	}
-
-	err = sqlite.SetDefaultSchema(db, "github")
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

@@ -3,12 +3,11 @@ package models
 import (
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/sqlite"
-	"os"
 	"time"
 )
 
 type GoogleUser struct {
+	BaseModel
 	ID        uint      `json:"user_id" db:"id"`
 	Email     string    `json:"email" db:"email"`
 	Picture   string    `json:"picture" db:"picture"`
@@ -17,7 +16,7 @@ type GoogleUser struct {
 
 func (u *GoogleUser) Create(email string) (*sqlx.DB, error) {
 	u.CreatedAt = time.Now()
-	db, err := u.createSubDir(email)
+	db, err := u.createSubDir("google", email)
 
 	if err != nil {
 		return nil, err
@@ -38,13 +37,8 @@ func (u *GoogleUser) Create(email string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func (u *GoogleUser) CheckDb(login string) (*sqlx.DB, bool) {
-	path := "./storage/users/google/" + login
-	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
-		return nil, false
-	}
-
-	db, err := sqlite.GetDb("google", login)
+func (u *GoogleUser) CheckAndUpdateDb(login string) (*sqlx.DB, bool) {
+	db, err := u.CheckDb("google", login)
 	if err != nil {
 		return nil, false
 	}
@@ -72,24 +66,4 @@ func (u *GoogleUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, erro
 	}
 
 	return t, nil
-}
-
-func (u *GoogleUser) createSubDir(email string) (*sqlx.DB, error) {
-	path := "./storage/users/google/" + email
-	err := os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := sqlite.GetDb("google", email)
-	if err != nil {
-		return nil, err
-	}
-
-	err = sqlite.SetDefaultSchema(db, "google")
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

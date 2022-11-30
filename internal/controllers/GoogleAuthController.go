@@ -65,7 +65,7 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	db, ok := user.CheckDb(user.Email)
+	db, ok := user.CheckAndUpdateDb(user.Email)
 	if db == nil || !ok {
 		db, err = user.Create(user.Email)
 		if err != nil {
