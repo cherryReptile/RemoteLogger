@@ -53,7 +53,14 @@ func GetClaims(authToken string) (*CustomClaims, error) {
 	token, err := ParseToken(authToken)
 
 	if err != nil {
-		return token.Claims.(*CustomClaims), err
+		if token != nil {
+			claims, ok := token.Claims.(*CustomClaims)
+			if !ok {
+				return nil, err
+			}
+			return claims, err
+		}
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(*CustomClaims)
