@@ -28,7 +28,7 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 	}
 
 	user.Email = reqU.Email
-	db, _ := user.CheckDb(user.Email)
+	db, _ := user.CheckAndUpdateDb(user.Email)
 	if db != nil {
 		c.ERROR(ctx, http.StatusBadRequest, errors.New("this user already exists"))
 		return
@@ -81,7 +81,7 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 	}
 
 	user.Email = reqU.Email
-	db, ok := user.CheckDb(user.Email)
+	db, ok := user.CheckAndUpdateDb(user.Email)
 	if db == nil || !ok {
 		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
 		return
@@ -128,7 +128,7 @@ func (c *AppAuthController) Logout(ctx *gin.Context) {
 		return
 	}
 
-	db, ok := user.CheckDb(email.(string))
+	db, ok := user.CheckAndUpdateDb(email.(string))
 	if !ok {
 		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
 		return
@@ -150,7 +150,7 @@ func (c *AppAuthController) Logout(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, gin.H{"message": "logout successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
 
 func (c *AppAuthController) setServiceCookie(ctx *gin.Context) {

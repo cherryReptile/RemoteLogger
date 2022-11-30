@@ -65,7 +65,7 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	db, ok := user.CheckDb(user.Login)
+	db, ok := user.CheckAndUpdateDb(user.Login)
 	if db == nil || !ok {
 		db, err = user.Create(user.Login)
 		if err != nil {
@@ -106,7 +106,7 @@ func (c *GithubAuthController) Logout(ctx *gin.Context) {
 		return
 	}
 
-	db, ok := user.CheckDb(login)
+	db, ok := user.CheckAndUpdateDb(login)
 	if !ok {
 		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
 		return
@@ -128,7 +128,7 @@ func (c *GithubAuthController) Logout(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, gin.H{"message": "logout successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
 
 func (c *GithubAuthController) setOAuthStateCookie(ctx *gin.Context) string {

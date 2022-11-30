@@ -3,14 +3,11 @@ package models
 import (
 	"errors"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/sqlite"
-	"os"
 	"time"
 )
 
-const dbAppPath = "./storage/users/app/"
-
 type AppUser struct {
+	BaseModel
 	ID        uint      `json:"ID" db:"id"`
 	Email     string    `json:"email" db:"email"`
 	Password  string    `json:"-" db:"password"`
@@ -19,7 +16,7 @@ type AppUser struct {
 
 func (u *AppUser) Create(email string) (*sqlx.DB, error) {
 	u.CreatedAt = time.Now()
-	db, err := u.createSubDir(email)
+	db, err := u.createSubDir("app", email)
 
 	if err != nil {
 		return nil, err
@@ -40,15 +37,10 @@ func (u *AppUser) Create(email string) (*sqlx.DB, error) {
 	return db, nil
 }
 
-func (u *AppUser) CheckDb(email string) (*sqlx.DB, bool) {
-	path := dbAppPath + email
-	if _, err := os.Stat(path); err != nil && os.IsNotExist(err) {
-		return nil, false
-	}
-
-	db, err := sqlite.GetDb("app", email)
+func (u *AppUser) CheckAndUpdateDb(email string) (*sqlx.DB, bool) {
+	db, err := u.CheckDb("app", email)
 	if err != nil {
-		return nil, false
+		return db, false
 	}
 
 	if err = u.FindByEmail(db, email); err != nil {
@@ -84,24 +76,4 @@ func (u *AppUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error) 
 	}
 
 	return t, nil
-}
-
-func (u *AppUser) createSubDir(email string) (*sqlx.DB, error) {
-	path := dbAppPath + email
-	err := os.MkdirAll(path, os.ModePerm)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := sqlite.GetDb("app", email)
-	if err != nil {
-		return nil, err
-	}
-
-	err = sqlite.SetDefaultSchema(db, "app")
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
