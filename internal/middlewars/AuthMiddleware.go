@@ -59,6 +59,8 @@ func CheckUserAndToken() gin.HandlerFunc {
 		switch service {
 		case "github":
 			CheckGithub(c, t.(string))
+		case "google":
+			CheckGoogle(c, t.(string))
 		case "app":
 			CheckApp(c, t.(string))
 		default:

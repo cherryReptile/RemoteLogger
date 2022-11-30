@@ -74,3 +74,29 @@ func CheckGithub(c *gin.Context, t string) {
 		return
 	}
 }
+
+func CheckGoogle(c *gin.Context, t string) {
+	user := new(models.GoogleUser)
+	email, err := c.Cookie("user")
+	if err != nil || email == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})
+		return
+	}
+
+	db, ok := user.CheckDb(email)
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
+		return
+	}
+
+	token, err := user.GetTokenByStr(db, t)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if token.ID == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "token not found"})
+		return
+	}
+}

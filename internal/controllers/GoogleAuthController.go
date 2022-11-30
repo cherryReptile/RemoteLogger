@@ -100,10 +100,10 @@ func (c *GoogleAuthController) setOAuthStateCookie(ctx *gin.Context) string {
 	return state
 }
 
-func (c *GoogleAuthController) setUIDCookie(ctx *gin.Context, login string) {
+func (c *GoogleAuthController) setUIDCookie(ctx *gin.Context, email string) {
 	path := "/api/v1/home"
-	ctx.SetCookie("service", "github", 3600, path, os.Getenv("DOMAIN"), false, true)
-	ctx.SetCookie("user", login, 3600, path, os.Getenv("DOMAIN"), false, true)
+	ctx.SetCookie("service", "google", 3600, path, os.Getenv("DOMAIN"), false, true)
+	ctx.SetCookie("user", email, 3600, path, os.Getenv("DOMAIN"), false, true)
 }
 
 func (c *GoogleAuthController) getGoogleUser(token string) (*models.GoogleUser, error) {
