@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -16,7 +14,7 @@ import (
 )
 
 type GithubAuthController struct {
-	BaseController
+	BaseOAuthController
 	Config *oauth2.Config
 }
 
@@ -31,7 +29,7 @@ func (c *GithubAuthController) Init() {
 
 func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectLogin
-	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx))
+	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GitRedirectLogin, os.Getenv("DOMAIN")))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
@@ -86,64 +84,18 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	c.setUIDCookie(ctx, user.Login)
+	c.setUIDCookie(ctx, "github", user.Login, os.Getenv("DOMAIN"))
 
-	ctx.JSON(http.StatusOK, token.Token)
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token.Token})
 }
 
 func (c *GithubAuthController) Logout(ctx *gin.Context) {
-	user := new(models.GithubUser)
-	login, err := ctx.Cookie("user")
-	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	t, ok := ctx.Get("token")
-	if !ok {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("cannot get token"))
-		return
-	}
-
-	db, ok := user.CheckAndUpdateDb(login)
-	if !ok {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-		return
-	}
-
-	token, err := user.GetTokenByStr(db, t.(string))
-	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	if token.ID == 0 {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("token not found"))
-		return
-	}
-
-	if err = token.Delete(db); err != nil {
+	if err := c.LogoutFromApp(ctx, new(models.GithubUser)); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
-}
-
-func (c *GithubAuthController) setOAuthStateCookie(ctx *gin.Context) string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
-	ctx.SetCookie("oauthstate", state, 3600, GitRedirectLogin, os.Getenv("DOMAIN"), false, true)
-
-	return state
-}
-
-func (c *GithubAuthController) setUIDCookie(ctx *gin.Context, login string) {
-	path := "/api/v1/home"
-	ctx.SetCookie("service", "github", 3600, path, os.Getenv("DOMAIN"), false, true)
-	ctx.SetCookie("user", login, 3600, path, os.Getenv("DOMAIN"), false, true)
 }
 
 func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {

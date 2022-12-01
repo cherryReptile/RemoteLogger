@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -18,7 +16,7 @@ import (
 var GoogleRedirectLogin = "/api/v1/auth/google/login"
 
 type GoogleAuthController struct {
-	BaseController
+	BaseOAuthController
 	Config *oauth2.Config
 }
 
@@ -32,7 +30,7 @@ func (c *GoogleAuthController) Init() {
 
 func (c *GoogleAuthController) RedirectForAuth(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + "localhost" + GoogleRedirectLogin
-	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx))
+	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GoogleRedirectLogin, "localhost"))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
@@ -86,24 +84,17 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	c.setUIDCookie(ctx, user.Email)
+	c.setUIDCookie(ctx, "google", user.Email, "localhost")
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token})
 }
 
-func (c *GoogleAuthController) setOAuthStateCookie(ctx *gin.Context) string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
-	ctx.SetCookie("oauthstate", state, 3600, "/api/v1/auth/google", "localhost", false, true)
-
-	return state
-}
-
-func (c *GoogleAuthController) setUIDCookie(ctx *gin.Context, email string) {
-	path := "/api/v1/home"
-	ctx.SetCookie("service", "google", 3600, path, os.Getenv("DOMAIN"), false, true)
-	ctx.SetCookie("user", email, 3600, path, os.Getenv("DOMAIN"), false, true)
+func (c *GoogleAuthController) Logout(ctx *gin.Context) {
+	if err := c.LogoutFromApp(ctx, new(models.GoogleUser)); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
 
 func (c *GoogleAuthController) getGoogleUser(token string) (*models.GoogleUser, error) {

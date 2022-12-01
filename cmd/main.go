@@ -42,6 +42,7 @@ func main() {
 	home.GET("/test", testC.Test)
 	home.GET("/app/logout", appAuthC.Logout)
 	home.GET("/github/logout", githubC.Logout)
+	home.GET("/google/logout", googleAuthC.Logout)
 
 	go app.Run("80", fatalChan)
 
