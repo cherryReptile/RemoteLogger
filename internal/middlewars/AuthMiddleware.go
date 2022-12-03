@@ -39,6 +39,8 @@ func CheckUserAndToken() gin.HandlerFunc {
 			CheckGoogleOrGitHub(c, t.(string), service)
 		case "app":
 			CheckApp(c, t.(string))
+		case "telegram":
+			CheckTelegram(c)
 		default:
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "unknown service"})
 			return

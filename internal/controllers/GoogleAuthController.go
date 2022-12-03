@@ -84,7 +84,8 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	c.setUIDCookie(ctx, "google", user.Email, "localhost")
+	c.setServiceCookie(ctx, "google", "localhost")
+	c.setUIDCookie(ctx, user.Email, "localhost")
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token})
 }

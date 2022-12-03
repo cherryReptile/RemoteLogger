@@ -13,7 +13,7 @@ func CheckApp(c *gin.Context, t string) {
 	claims, err := appauth.GetClaims(t)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {
-			db, ok := user.CheckAndUpdateDb(claims.Login)
+			db, ok := user.CheckAndUpdateDb(claims.Unique)
 			if !ok {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
@@ -31,7 +31,7 @@ func CheckApp(c *gin.Context, t string) {
 		return
 	}
 
-	db, ok := user.CheckAndUpdateDb(claims.Login)
+	db, ok := user.CheckAndUpdateDb(claims.Unique)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
@@ -80,4 +80,8 @@ func CheckGoogleOrGitHub(c *gin.Context, t, service string) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "token not found"})
 		return
 	}
+}
+
+func CheckTelegram(c *gin.Context) {
+	//
 }

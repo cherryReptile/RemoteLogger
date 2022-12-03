@@ -4,21 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"os"
 	"time"
 )
 
 type CustomClaims struct {
 	UserID uint   `json:"id"`
-	Login  string `json:"login"`
+	Unique string `json:"unique"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(user *models.AppUser) (string, error) {
+func GenerateToken(id uint, unique string) (string, error) {
 	claims := CustomClaims{
-		UserID: user.ID,
-		Login:  user.Email,
+		UserID: id,
+		Unique: unique,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
