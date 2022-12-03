@@ -29,14 +29,6 @@ func (c *BaseController) ERROR(ctx *gin.Context, code int, err error) {
 	})
 }
 
-func (c *BaseController) setServiceCookie(ctx *gin.Context, service, domain string) {
-	ctx.SetCookie("service", service, 3600, homePath, domain, false, true)
-}
-
-func (c *BaseController) setUIDCookie(ctx *gin.Context, unique, domain string) {
-	ctx.SetCookie("user", unique, 3600, homePath, domain, false, true)
-}
-
 func (c *BaseOAuthController) LogoutFromApp(ctx *gin.Context, user models.OAuthModel) error {
 	login, err := ctx.Cookie("user")
 	if err != nil {
@@ -69,16 +61,7 @@ func (c *BaseOAuthController) LogoutFromApp(ctx *gin.Context, user models.OAuthM
 	return nil
 }
 
-func (c *BaseOAuthController) setOAuthStateCookie(ctx *gin.Context, path, domain string) string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
-	ctx.SetCookie("oauthstate", state, 3600, path, domain, false, true)
-
-	return state
-}
-
-func (c *BaseJwtAuthController) LogoutFromApp(ctx *gin.Context, user models.OAuthModel) error {
+func (c *BaseJwtAuthController) LogoutFromApp(ctx *gin.Context, user models.JwtAuthModel) error {
 	t, ok := ctx.Get("token")
 	if !ok {
 		return errors.New("cannot get token")
@@ -108,4 +91,21 @@ func (c *BaseJwtAuthController) LogoutFromApp(ctx *gin.Context, user models.OAut
 	}
 
 	return nil
+}
+
+func (c *BaseController) setServiceCookie(ctx *gin.Context, service, domain string) {
+	ctx.SetCookie("service", service, 3600, homePath, domain, false, true)
+}
+
+func (c *BaseController) setUIDCookie(ctx *gin.Context, unique, domain string) {
+	ctx.SetCookie("user", unique, 3600, homePath, domain, false, true)
+}
+
+func (c *BaseOAuthController) setOAuthStateCookie(ctx *gin.Context, path, domain string) string {
+	b := make([]byte, 16)
+	rand.Read(b)
+	state := base64.URLEncoding.EncodeToString(b)
+	ctx.SetCookie("oauthstate", state, 3600, path, domain, false, true)
+
+	return state
 }

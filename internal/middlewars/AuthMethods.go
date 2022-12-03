@@ -8,8 +8,7 @@ import (
 	"net/http"
 )
 
-func CheckApp(c *gin.Context, t string) {
-	user := new(models.AppUser)
+func CheckApp(c *gin.Context, user models.JwtAuthModel, t string) {
 	claims, err := appauth.GetClaims(t)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {
@@ -46,18 +45,10 @@ func CheckApp(c *gin.Context, t string) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token not found"})
 		return
 	}
-	c.Set("user", user.Email)
+	c.Set("user", user.GetUniqueRaw())
 }
 
-func CheckGoogleOrGitHub(c *gin.Context, t, service string) {
-	var user models.OAuthModel
-	switch service {
-	case "github":
-		user = new(models.GithubUser)
-	case "google":
-		user = new(models.GoogleUser)
-	}
-
+func CheckGoogleOrGitHub(c *gin.Context, user models.OAuthModel, t string) {
 	unique, err := c.Cookie("user")
 	if err != nil || unique == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})
@@ -80,8 +71,4 @@ func CheckGoogleOrGitHub(c *gin.Context, t, service string) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "token not found"})
 		return
 	}
-}
-
-func CheckTelegram(c *gin.Context) {
-	//
 }

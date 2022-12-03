@@ -118,47 +118,10 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 }
 
 func (c *AppAuthController) Logout(ctx *gin.Context) {
-	//user := new(models.AppUser)
-	//t, ok := ctx.Get("token")
-	//if !ok {
-	//	c.ERROR(ctx, http.StatusBadRequest, errors.New("cannot get token"))
-	//	return
-	//}
-	//
-	//email, ok := ctx.Get("user")
-	//if !ok {
-	//	c.ERROR(ctx, http.StatusBadRequest, errors.New("cannot get user"))
-	//	return
-	//}
-	//
-	//db, ok := user.CheckAndUpdateDb(email.(string))
-	//if !ok {
-	//	c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-	//	return
-	//}
-	//
-	//token, err := user.GetTokenByStr(db, t.(string))
-	//if err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-	//
-	//if token.ID == 0 {
-	//	c.ERROR(ctx, http.StatusBadRequest, errors.New("token not found"))
-	//	return
-	//}
-	//
-	//if err = token.Delete(db); err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-
-	c.LogoutFromApp(ctx, new(models.AppUser))
+	if err := c.LogoutFromApp(ctx, new(models.AppUser)); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
-
-//func (c *AppAuthController) setServiceCookie(ctx *gin.Context) {
-//	path := "/api/v1/home"
-//	ctx.SetCookie("service", "app", 3600, path, os.Getenv("DOMAIN"), false, true)
-//}
