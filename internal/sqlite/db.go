@@ -16,6 +16,9 @@ var appSchema string
 //go:embed google.sql
 var googleSchema string
 
+//go:embed telegram.sql
+var telegramSchema string
+
 //go:embed token.sql
 var tokenSchema string
 
@@ -41,6 +44,8 @@ func SetDefaultSchema(db *sqlx.DB, schema string) (err error) {
 		_, err = db.Exec(appSchema + tokenSchema)
 	case "google":
 		_, err = db.Exec(googleSchema + tokenSchema)
+	case "telegram":
+		_, err = db.Exec(telegramSchema)
 	default:
 		err = errors.New("unknown service")
 	}
