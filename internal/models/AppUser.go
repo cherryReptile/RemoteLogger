@@ -77,3 +77,7 @@ func (u *AppUser) GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error) 
 
 	return t, nil
 }
+
+func (u *AppUser) GetUniqueRaw() string {
+	return u.Email
+}

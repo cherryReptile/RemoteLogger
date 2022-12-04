@@ -8,12 +8,11 @@ import (
 	"net/http"
 )
 
-func CheckApp(c *gin.Context, t string) {
-	user := new(models.AppUser)
+func CheckApp(c *gin.Context, user models.JwtAuthModel, t string) {
 	claims, err := appauth.GetClaims(t)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {
-			db, ok := user.CheckAndUpdateDb(claims.Login)
+			db, ok := user.CheckAndUpdateDb(claims.Unique)
 			if !ok {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
@@ -31,7 +30,7 @@ func CheckApp(c *gin.Context, t string) {
 		return
 	}
 
-	db, ok := user.CheckAndUpdateDb(claims.Login)
+	db, ok := user.CheckAndUpdateDb(claims.Unique)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "user not found"})
 		return
@@ -46,18 +45,10 @@ func CheckApp(c *gin.Context, t string) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "token not found"})
 		return
 	}
-	c.Set("user", user.Email)
+	c.Set("user", user.GetUniqueRaw())
 }
 
-func CheckGoogleOrGitHub(c *gin.Context, t, service string) {
-	var user models.OAuthModel
-	switch service {
-	case "github":
-		user = new(models.GithubUser)
-	case "google":
-		user = new(models.GoogleUser)
-	}
-
+func CheckGoogleOrGitHub(c *gin.Context, user models.OAuthModel, t string) {
 	unique, err := c.Cookie("user")
 	if err != nil || unique == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unknown user"})

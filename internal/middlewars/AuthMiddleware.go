@@ -3,6 +3,7 @@ package middlewars
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/internal/helpers"
+	"github.com/pavel-one/GoStarter/internal/models"
 	"net/http"
 )
 
@@ -34,11 +35,13 @@ func CheckUserAndToken() gin.HandlerFunc {
 
 		switch service {
 		case "github":
-			CheckGoogleOrGitHub(c, t.(string), service)
+			CheckGoogleOrGitHub(c, new(models.GithubUser), t.(string))
 		case "google":
-			CheckGoogleOrGitHub(c, t.(string), service)
+			CheckGoogleOrGitHub(c, new(models.GoogleUser), t.(string))
 		case "app":
-			CheckApp(c, t.(string))
+			CheckApp(c, new(models.AppUser), t.(string))
+		case "telegram":
+			CheckApp(c, new(models.TelegramUser), t.(string))
 		default:
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "unknown service"})
 			return

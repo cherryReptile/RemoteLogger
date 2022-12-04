@@ -84,7 +84,8 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	c.setUIDCookie(ctx, "github", user.Login, os.Getenv("DOMAIN"))
+	c.setServiceCookie(ctx, "github", os.Getenv("DOMAIN"))
+	c.setUIDCookie(ctx, user.Login, os.Getenv("DOMAIN"))
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token.Token})
 }

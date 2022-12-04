@@ -12,3 +12,8 @@ type OAuthModel interface {
 	RootModel
 	GetTokenByStr(db *sqlx.DB, token string) (AccessToken, error)
 }
+
+type JwtAuthModel interface {
+	OAuthModel
+	GetUniqueRaw() string
+}
