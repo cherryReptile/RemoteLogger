@@ -15,14 +15,14 @@ func main() {
 	app := new(base.App)
 	app.Init()
 
-	//githubC := new(controllers.GithubAuthController)
-	//githubC.Init(app.DB)
+	githubC := new(controllers.GithubAuthController)
+	githubC.Init(app.DB)
 	app.Router.Use(gin.Logger())
 
 	auth := app.Router.Group("/auth")
-	//authGit := auth.Group("/github")
-	//authGit.GET("/", githubC.RedirectForAuth)
-	//authGit.GET("/login", githubC.Login)
+	authGit := auth.Group("/github")
+	authGit.GET("/", githubC.RedirectForAuth)
+	authGit.GET("/login", githubC.Login)
 
 	appAuthC := new(controllers.AppAuthController)
 	appAuthC.Init(app.DB)
@@ -47,7 +47,7 @@ func main() {
 	home.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken(app.DB))
 	home.GET("/test", testC.Test)
 	home.GET("/app/logout", appAuthC.Logout)
-	//home.GET("/github/logout", githubC.Logout)
+	home.GET("/github/logout", githubC.Logout)
 	//home.GET("/google/logout", googleAuthC.Logout)
 	//home.GET("/telegram/logout", tgAuthC.Logout)
 
