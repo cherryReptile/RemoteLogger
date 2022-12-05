@@ -15,10 +15,10 @@ func main() {
 	app := new(base.App)
 	app.Init()
 
-	githubC := new(controllers.GithubAuthController)
-	githubC.Init(app.DB)
 	app.Router.Use(gin.Logger())
 
+	githubC := new(controllers.GithubAuthController)
+	githubC.Init(app.DB)
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
 	authGit.GET("/", githubC.RedirectForAuth)
@@ -36,8 +36,8 @@ func main() {
 	authGo.GET("/", googleAuthC.RedirectForAuth)
 	authGo.GET("/login", googleAuthC.Login)
 
-	//tgAuthC := new(controllers.TelegramAuthController)
-	//tgAuthC.Init(app.DB)
+	tgAuthC := new(controllers.TelegramAuthController)
+	tgAuthC.Init(app.DB)
 	authTg := auth.Group("/telegram")
 	authTg.GET("/login")
 
@@ -49,7 +49,7 @@ func main() {
 	home.GET("/app/logout", appAuthC.Logout)
 	home.GET("/github/logout", githubC.Logout)
 	home.GET("/google/logout", googleAuthC.Logout)
-	//home.GET("/telegram/logout", tgAuthC.Logout)
+	home.GET("/telegram/logout", tgAuthC.Logout)
 
 	go app.Run("80", fatalChan)
 
