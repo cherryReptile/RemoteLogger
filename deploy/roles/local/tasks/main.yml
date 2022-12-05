@@ -31,25 +31,25 @@
     chdir: '{{ BASE_PATH }}'
   tags: configuration
 
-#- name: Pause for 2 minutes to build database
-#  ansible.builtin.pause:
-#    minutes: 2
-#  when: not dir_to_check.stat.exists
-#  tags: configuration
-#
-#- name: Pause for 1 minutes to build database
-#  ansible.builtin.pause:
-#    minutes: 1
-#  when: dir_to_check.stat.exists
-#  tags: configuration
+- name: Pause for 2 minutes to build database
+  ansible.builtin.pause:
+    minutes: 2
+  when: not dir_to_check.stat.exists
+  tags: configuration
 
-#- name: Migrate
-#  shell: |
-#    make migrate.up
-#  args:
-#    chdir: '{{ BASE_PATH }}'
-#  tags: configuration
-#
+- name: Pause for 1 minutes to build database
+  ansible.builtin.pause:
+    minutes: 1
+  when: dir_to_check.stat.exists
+  tags: configuration
+
+- name: Migrate
+  shell: |
+    make migrate.up
+  args:
+    chdir: '{{ BASE_PATH }}'
+  tags: configuration
+
 #- name: Build frontend
 #  shell: |
 #    npm install
