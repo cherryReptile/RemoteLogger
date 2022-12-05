@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/GoStarter/internal/appauth"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"github.com/pavel-one/GoStarter/internal/models"
+	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"net/http"
@@ -16,11 +19,12 @@ import (
 var GoogleRedirectLogin = "/api/v1/auth/google/login"
 
 type GoogleAuthController struct {
-	BaseOAuthController
+	BaseJwtAuthController
 	Config *oauth2.Config
 }
 
-func (c *GoogleAuthController) Init() {
+func (c *GoogleAuthController) Init(db *sqlx.DB) {
+	c.DB = db
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
@@ -35,6 +39,7 @@ func (c *GoogleAuthController) RedirectForAuth(ctx *gin.Context) {
 }
 
 func (c *GoogleAuthController) Login(ctx *gin.Context) {
+	user := new(models.User)
 	token := new(models.AccessToken)
 	oauthState, err := ctx.Cookie("oauthstate")
 
@@ -57,16 +62,17 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.getGoogleUser(tok.AccessToken)
+	reqUser, err := c.getGoogleUser(tok.AccessToken)
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	db, ok := user.CheckAndUpdateDb(user.Email)
-	if db == nil || !ok {
-		db, err = user.Create(user.Email)
-		if err != nil {
+	user.FindByUniqueAndService(c.DB, reqUser.Email, "google")
+	if user.ID == 0 {
+		user.UniqueRaw = reqUser.Email
+		user.AuthorizedBy = "google"
+		if err = user.Create(c.DB); err != nil {
 			c.ERROR(ctx, http.StatusBadRequest, err)
 			return
 		}
@@ -77,29 +83,32 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	token.Token = tok.AccessToken
-	token.UserID = user.ID
-	if err = token.Create(db); err != nil {
+	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	c.setServiceCookie(ctx, "google", "localhost")
-	c.setUIDCookie(ctx, user.Email, "localhost")
+	token.Token = tokenStr
+	token.UserID = user.ID
+	if err = token.Create(c.DB); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token})
 }
 
 func (c *GoogleAuthController) Logout(ctx *gin.Context) {
-	if err := c.LogoutFromApp(ctx, new(models.GoogleUser)); err != nil {
+	if err := c.LogoutFromApp(ctx, c.DB); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
 
-func (c *GoogleAuthController) getGoogleUser(token string) (*models.GoogleUser, error) {
-	user := new(models.GoogleUser)
+func (c *GoogleAuthController) getGoogleUser(token string) (*requests.GoogleUser, error) {
+	user := new(requests.GoogleUser)
 	res, err := helpers.RequestToGoogle(token)
 	if err != nil {
 		return nil, err

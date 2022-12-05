@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/internal/appauth"
 	"github.com/pavel-one/GoStarter/internal/models"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
@@ -16,15 +17,15 @@ type TelegramAuthController struct {
 	BaseJwtAuthController
 }
 
-func (c *TelegramAuthController) Init() {
-	//
+func (c *TelegramAuthController) Init(db *sqlx.DB) {
+	c.DB = db
 }
 
 func (c *TelegramAuthController) Login(ctx *gin.Context) {
 	tokenModel := new(models.AccessToken)
-	user := new(models.TelegramUser)
+	user := new(models.User)
 	reqUser := new(requests.TelegramUser)
-	if err := ctx.ShouldBindJSON(user); err != nil {
+	if err := ctx.ShouldBindJSON(reqUser); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
@@ -35,27 +36,17 @@ func (c *TelegramAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user.TgID = reqUser.ID
-	user.FirstName = reqUser.FirstName
-	user.LastName = reqUser.LastName
-	user.Username = reqUser.Username
-	user.PhotoURL = reqUser.PhotoURL
-
-	db, ok := user.CheckAndUpdateDb(user.Username)
-	if db == nil || !ok {
-		_, err := user.Create(user.Username)
-		if err != nil {
+	user.FindByUniqueAndService(c.DB, reqUser.Username, "telegram")
+	if user.ID == 0 {
+		user.UniqueRaw = reqUser.Username
+		user.AuthorizedBy = "telegram"
+		if err := user.Create(c.DB); err != nil {
 			c.ERROR(ctx, http.StatusBadRequest, err)
 			return
 		}
 	}
 
-	if user.ID == 0 {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-		return
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.Username)
+	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -63,18 +54,16 @@ func (c *TelegramAuthController) Login(ctx *gin.Context) {
 
 	tokenModel.Token = tokenStr
 	tokenModel.UserID = user.ID
-	if err = tokenModel.Create(db); err != nil {
+	if err = tokenModel.Create(c.DB); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	c.setServiceCookie(ctx)
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": tokenModel.Token})
 }
 
 func (c *TelegramAuthController) Logout(ctx *gin.Context) {
-	if err := c.LogoutFromApp(ctx, new(models.TelegramUser)); err != nil {
+	if err := c.LogoutFromApp(ctx, c.DB); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
@@ -88,9 +77,4 @@ func (c *TelegramAuthController) CheckHash(dataCheckString string) bool {
 	}
 
 	return false
-}
-
-func (c *TelegramAuthController) setServiceCookie(ctx *gin.Context) {
-	path := "/api/v1/home"
-	ctx.SetCookie("service", "telegram", 3600, path, os.Getenv("DOMAIN"), false, true)
 }

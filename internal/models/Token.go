@@ -16,7 +16,7 @@ type AccessToken struct {
 func (t *AccessToken) Create(db *sqlx.DB) error {
 	t.CreatedAt = time.Now()
 
-	_, err := db.NamedExec(`INSERT INTO tokens (token, user_id, created_at) 
+	_, err := db.NamedExec(`INSERT INTO access_tokens (token, user_id, created_at) 
 								VALUES (:token, :user_id, :created_at)`, t)
 
 	if err != nil {
@@ -24,7 +24,7 @@ func (t *AccessToken) Create(db *sqlx.DB) error {
 	}
 
 	// update model
-	if err = db.Get(t, "SELECT * FROM tokens ORDER BY id DESC LIMIT 1"); err != nil {
+	if err = db.Get(t, "SELECT * FROM access_tokens ORDER BY id DESC LIMIT 1"); err != nil {
 		return err
 	}
 
@@ -32,7 +32,7 @@ func (t *AccessToken) Create(db *sqlx.DB) error {
 }
 
 func (t *AccessToken) GetByToken(db *sqlx.DB, token string) error {
-	if err := db.Get(t, "SELECT * FROM tokens WHERE token=$1 ORDER BY id DESC LIMIT 1", token); err != nil {
+	if err := db.Get(t, "SELECT * FROM access_tokens WHERE token=$1 ORDER BY id DESC LIMIT 1", token); err != nil {
 		return err
 	}
 
@@ -40,6 +40,6 @@ func (t *AccessToken) GetByToken(db *sqlx.DB, token string) error {
 }
 
 func (t *AccessToken) Delete(db *sqlx.DB) error {
-	_, err := db.NamedExec("DELETE FROM tokens WHERE id=:id", t)
+	_, err := db.NamedExec("DELETE FROM access_tokens WHERE id=:id", t)
 	return err
 }

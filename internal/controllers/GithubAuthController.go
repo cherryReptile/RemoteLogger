@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/GoStarter/internal/appauth"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"github.com/pavel-one/GoStarter/internal/models"
+	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"net/http"
@@ -14,13 +17,14 @@ import (
 )
 
 type GithubAuthController struct {
-	BaseOAuthController
+	BaseJwtAuthController
 	Config *oauth2.Config
 }
 
 var GitRedirectLogin = "/api/v1/auth/github/login"
 
-func (c *GithubAuthController) Init() {
+func (c *GithubAuthController) Init(db *sqlx.DB) {
+	c.DB = db
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
@@ -34,6 +38,7 @@ func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) Login(ctx *gin.Context) {
+	user := new(models.User)
 	token := new(models.AccessToken)
 	oauthState, err := ctx.Cookie("oauthstate")
 
@@ -56,17 +61,18 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.getGitHubUser(tok.AccessToken)
+	reqUser, err := c.getGitHubUser(tok.AccessToken)
 
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	db, ok := user.CheckAndUpdateDb(user.Login)
-	if db == nil || !ok {
-		db, err = user.Create(user.Login)
-		if err != nil {
+	user.FindByUniqueAndService(c.DB, reqUser.Login, "github")
+	if user.ID == 0 {
+		user.UniqueRaw = reqUser.Login
+		user.AuthorizedBy = "github"
+		if err = user.Create(c.DB); err != nil {
 			c.ERROR(ctx, http.StatusBadRequest, err)
 			return
 		}
@@ -77,21 +83,24 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	token.Token = tok.AccessToken
-	token.UserID = user.ID
-	if err = token.Create(db); err != nil {
+	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	c.setServiceCookie(ctx, "github", os.Getenv("DOMAIN"))
-	c.setUIDCookie(ctx, user.Login, os.Getenv("DOMAIN"))
+	token.Token = tokenStr
+	token.UserID = user.ID
+	if err = token.Create(c.DB); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token.Token})
 }
 
 func (c *GithubAuthController) Logout(ctx *gin.Context) {
-	if err := c.LogoutFromApp(ctx, new(models.GithubUser)); err != nil {
+	if err := c.LogoutFromApp(ctx, c.DB); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
@@ -99,8 +108,8 @@ func (c *GithubAuthController) Logout(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
 }
 
-func (c *GithubAuthController) getGitHubUser(token string) (*models.GithubUser, error) {
-	user := new(models.GithubUser)
+func (c *GithubAuthController) getGitHubUser(token string) (*requests.GithubUser, error) {
+	user := new(requests.GithubUser)
 	res, err := helpers.RequestToGithub(token)
 	if err != nil {
 		return nil, err

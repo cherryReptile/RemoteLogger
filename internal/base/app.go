@@ -6,9 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -58,11 +59,14 @@ func ConnectToDb() *sqlx.DB {
 		log.Fatalf("[FATAL] Not loading environment: %v", err)
 	}
 
-	db, err := sqlx.Open("sqlite3", "./tmp/db.db")
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	db, err := sqlx.Connect("postgres", fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	))
 
 	if err != nil {
 		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
