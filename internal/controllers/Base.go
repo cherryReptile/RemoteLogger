@@ -68,14 +68,6 @@ func (c *BaseJwtAuthController) LogoutFromApp(ctx *gin.Context, db *sqlx.DB) err
 	return nil
 }
 
-func (c *BaseController) setServiceCookie(ctx *gin.Context, service, domain string) {
-	ctx.SetCookie("service", service, 3600, homePath, domain, false, true)
-}
-
-func (c *BaseController) setUIDCookie(ctx *gin.Context, unique, domain string) {
-	ctx.SetCookie("user", unique, 3600, homePath, domain, false, true)
-}
-
 func (c *BaseJwtAuthController) setOAuthStateCookie(ctx *gin.Context, path, domain string) string {
 	b := make([]byte, 16)
 	rand.Read(b)

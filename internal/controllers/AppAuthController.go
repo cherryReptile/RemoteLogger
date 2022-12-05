@@ -9,7 +9,6 @@ import (
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
-	"os"
 )
 
 type AppAuthController struct {
@@ -70,9 +69,6 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	//c.setServiceCookie(ctx, "app", os.Getenv("DOMAIN"))
-	//c.setUIDCookie(ctx, user.Email, os.Getenv("DOMAIN"))
-
 	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": tokenModel})
 }
 
@@ -114,8 +110,6 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
-
-	c.setServiceCookie(ctx, "app", os.Getenv("DOMAIN"))
 
 	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusText(http.StatusOK), "token": tokenModel.Token})
 }
