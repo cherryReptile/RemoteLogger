@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option go_package = "/api";
+
+import "google/protobuf/timestamp.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisteredResponse) {}
+}
+
+message RegisterRequest {
+  string Email = 1;
+  string Password = 2;
+}
+
+message RegisteredResponse {
+  User usr = 1;
+  string TokenStr = 2;
+}
+
+message User {
+  uint64  ID = 1;
+  string UniqueRaw = 2;
+  string Password = 3;
+  string AuthorizedBy = 4;
+  google.protobuf.Timestamp CreatedAt = 5;
+}
+//
+//message Token {
+//  string TokenStr = 1;
+//}
