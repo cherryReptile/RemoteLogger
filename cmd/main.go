@@ -2,6 +2,8 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/pavel-one/GoStarter/grpc/handlers"
+	"github.com/pavel-one/GoStarter/grpc/server"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
 	"github.com/pavel-one/GoStarter/internal/middlewars"
@@ -11,9 +13,11 @@ import (
 
 func main() {
 	fatalChan := make(chan error, 1)
+	gRPCFatal := make(chan error, 1)
 
 	app := new(base.App)
 	app.Init()
+	grpcServer := server.NewServer(server.Services{AuthServer: handlers.NewAuthService(app.DB)})
 
 	app.Router.Use(gin.Logger())
 
@@ -25,7 +29,7 @@ func main() {
 	authGit.GET("/login", githubC.Login)
 
 	appAuthC := new(controllers.AppAuthController)
-	appAuthC.Init(app.DB)
+	//appAuthC.Init(app.DB)
 	authApp := auth.Group("/app")
 	authApp.POST("/register", appAuthC.Register)
 	authApp.POST("/login", appAuthC.Login)
@@ -52,6 +56,13 @@ func main() {
 	home.GET("/telegram/logout", tgAuthC.Logout)
 
 	go app.Run("80", fatalChan)
+	go grpcServer.ListenAndServe("9000", fatalChan)
+
+	errG := <-gRPCFatal
+	if errG != nil {
+		grpcServer.Close()
+		log.Printf("[FATAL] %v", errG)
+	}
 
 	err := <-fatalChan
 	if err != nil {
