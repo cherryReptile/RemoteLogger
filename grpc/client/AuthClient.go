@@ -12,6 +12,7 @@ func Register(request *api.AppRequest) (*api.AppResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 	c := api.NewAuthServiceClient(conn)
 	res, err := c.Register(context.Background(), request)
 	if err != nil {
@@ -26,6 +27,7 @@ func Login(request *api.AppRequest) (*api.AppResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
 	c := api.NewAuthServiceClient(conn)
 	res, err := c.Login(context.Background(), request)
 	if err != nil {
