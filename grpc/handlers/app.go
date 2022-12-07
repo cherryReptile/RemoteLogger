@@ -20,7 +20,7 @@ func NewAuthService(db *sqlx.DB) *AuthService {
 	return &AuthService{DB: db}
 }
 
-func (a *AuthService) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisteredResponse, error) {
+func (a *AuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(models.User)
 	tokenModel := new(models.AccessToken)
 
@@ -60,8 +60,8 @@ func (a *AuthService) Register(ctx context.Context, req *api.RegisterRequest) (*
 		return nil, err
 	}
 
-	return &api.RegisteredResponse{
-		Usr: &api.User{
+	return &api.AppResponse{
+		Struct: &api.User{
 			ID:           uint64(user.ID),
 			UniqueRaw:    user.UniqueRaw,
 			Password:     user.Password,
@@ -69,4 +69,39 @@ func (a *AuthService) Register(ctx context.Context, req *api.RegisterRequest) (*
 		},
 		TokenStr: tokenModel.Token,
 	}, nil
+}
+
+func (a *AuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+	user := new(models.User)
+	tokenModel := new(models.AccessToken)
+
+	if err := user.FindByUniqueAndService(a.DB, req.Email, "app"); err != nil {
+		return nil, err
+	}
+
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		return nil, err
+	}
+
+	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, "app")
+	if err != nil {
+		return nil, err
+	}
+
+	tokenModel.Token = tokenStr
+	tokenModel.UserID = user.ID
+	if err = tokenModel.Create(a.DB); err != nil {
+		return nil, err
+	}
+
+	return &api.AppResponse{Struct: &api.User{
+		ID:           uint64(user.ID),
+		UniqueRaw:    user.UniqueRaw,
+		AuthorizedBy: user.AuthorizedBy,
+		CreatedAt:    user.CreatedAt.String(),
+	}, TokenStr: tokenModel.Token}, nil
 }

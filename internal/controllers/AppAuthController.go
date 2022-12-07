@@ -6,10 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/client"
-	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
 )
@@ -31,7 +28,7 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	res, err := client.Register(&api.RegisterRequest{Email: reqU.Email, Password: reqU.Password})
+	res, err := client.Register(&api.AppRequest{Email: reqU.Email, Password: reqU.Password})
 	if err != nil {
 		e := strings.Split(err.Error(), "=")
 		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
@@ -78,13 +75,13 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 	//	return
 	//}
 
-	ctx.JSON(http.StatusOK, gin.H{"user": res.Usr, "token": res.TokenStr})
+	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 	//ctx.JSON(http.StatusOK, gin.H{"user": user, "token": tokenModel})
 }
 
 func (c *AppAuthController) Login(ctx *gin.Context) {
-	user := new(models.User)
-	tokenModel := new(models.AccessToken)
+	//user := new(models.User)
+	//tokenModel := new(models.AccessToken)
 
 	reqU := new(requests.UserRequest)
 	if err := ctx.ShouldBindJSON(reqU); err != nil {
@@ -92,36 +89,43 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user.UniqueRaw = reqU.Email
-	if err := user.FindByUniqueAndService(c.DB, user.UniqueRaw, "app"); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	if user.ID == 0 {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-		return
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqU.Password)); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, "app")
+	res, err := client.Login(&api.AppRequest{Email: reqU.Email, Password: reqU.Password})
 	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
+		e := strings.Split(err.Error(), "=")
+		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
 		return
 	}
 
-	tokenModel.Token = tokenStr
-	tokenModel.UserID = user.ID
-	if err = tokenModel.Create(c.DB); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
+	//user.UniqueRaw = reqU.Email
+	//if err := user.FindByUniqueAndService(c.DB, user.UniqueRaw, "app"); err != nil {
+	//	c.ERROR(ctx, http.StatusBadRequest, err)
+	//	return
+	//}
+	//
+	//if user.ID == 0 {
+	//	c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
+	//	return
+	//}
+	//
+	//if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqU.Password)); err != nil {
+	//	c.ERROR(ctx, http.StatusBadRequest, err)
+	//	return
+	//}
+	//
+	//tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, "app")
+	//if err != nil {
+	//	c.ERROR(ctx, http.StatusBadRequest, err)
+	//	return
+	//}
+	//
+	//tokenModel.Token = tokenStr
+	//tokenModel.UserID = user.ID
+	//if err = tokenModel.Create(c.DB); err != nil {
+	//	c.ERROR(ctx, http.StatusBadRequest, err)
+	//	return
+	//}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": http.StatusText(http.StatusOK), "token": tokenModel.Token})
+	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
 func (c *AppAuthController) Logout(ctx *gin.Context) {
