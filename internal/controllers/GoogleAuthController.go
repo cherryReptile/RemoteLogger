@@ -65,7 +65,7 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := client.GithubLogin(&api.GitHubRequest{Login: reqUser.Email})
+	res, err := client.GoogleLogin(&api.GoogleRequest{Email: reqUser.Email})
 	if err != nil {
 		e := strings.Split(err.Error(), "=")
 		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
