@@ -11,16 +11,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AuthService struct {
-	api.UnimplementedAuthServiceServer
-	DB *sqlx.DB
+type AppAuthService struct {
+	api.UnimplementedAuthAppServiceServer
+	BaseDB
 }
 
-func NewAuthService(db *sqlx.DB) *AuthService {
-	return &AuthService{DB: db}
+func NewAppAuthService(db *sqlx.DB) *AppAuthService {
+	as := new(AppAuthService)
+	as.DB = db
+	return as
 }
 
-func (a *AuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(models.User)
 	tokenModel := new(models.AccessToken)
 
@@ -71,7 +73,7 @@ func (a *AuthService) Register(ctx context.Context, req *api.AppRequest) (*api.A
 	}, nil
 }
 
-func (a *AuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(models.User)
 	tokenModel := new(models.AccessToken)
 

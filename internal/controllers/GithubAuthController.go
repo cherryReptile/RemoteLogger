@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/appauth"
+	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type GithubAuthController struct {
@@ -23,8 +23,8 @@ type GithubAuthController struct {
 
 var GitRedirectLogin = "/api/v1/auth/github/login"
 
-func (c *GithubAuthController) Init(db *sqlx.DB) {
-	c.DB = db
+func (c *GithubAuthController) Init() {
+	//c.DB = db
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
@@ -38,8 +38,6 @@ func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) Login(ctx *gin.Context) {
-	user := new(models.User)
-	token := new(models.AccessToken)
 	oauthState, err := ctx.Cookie("oauthstate")
 
 	if err != nil {
@@ -68,35 +66,14 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user.FindByUniqueAndService(c.DB, reqUser.Login, "github")
-	if user.ID == 0 {
-		user.UniqueRaw = reqUser.Login
-		user.AuthorizedBy = "github"
-		if err = user.Create(c.DB); err != nil {
-			c.ERROR(ctx, http.StatusBadRequest, err)
-			return
-		}
-	}
-
-	if user.ID == 0 {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-		return
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	res, err := client.GithubLogin(&api.GitHubRequest{Login: reqUser.Login})
 	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
+		e := strings.Split(err.Error(), "=")
+		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
 		return
 	}
 
-	token.Token = tokenStr
-	token.UserID = user.ID
-	if err = token.Create(c.DB); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token.Token})
+	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
 func (c *GithubAuthController) Logout(ctx *gin.Context) {

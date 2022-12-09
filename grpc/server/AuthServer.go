@@ -9,7 +9,8 @@ import (
 )
 
 type Services struct {
-	AuthServer api.AuthServiceServer
+	App    api.AuthAppServiceServer
+	GitHub api.AuthGithubServiceServer
 }
 
 type Server struct {
@@ -32,7 +33,8 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 		log.Fatal(err)
 	}
 
-	api.RegisterAuthServiceServer(s.srv, s.Services.AuthServer)
+	api.RegisterAuthAppServiceServer(s.srv, s.Services.App)
+	api.RegisterAuthGithubServiceServer(s.srv, s.Services.GitHub)
 	log.Println("[DEBUG] Running gRCP server on port " + port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err

@@ -17,19 +17,21 @@ func main() {
 
 	app := new(base.App)
 	app.Init()
-	grpcServer := server.NewServer(server.Services{AuthServer: handlers.NewAuthService(app.DB)})
+	grpcServer := server.NewServer(server.Services{
+		App:    handlers.NewAppAuthService(app.DB),
+		GitHub: handlers.NewGitHubAuthService(app.DB),
+	})
 
 	app.Router.Use(gin.Logger())
 
 	githubC := new(controllers.GithubAuthController)
-	githubC.Init(app.DB)
+	githubC.Init()
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
 	authGit.GET("/", githubC.RedirectForAuth)
 	authGit.GET("/login", githubC.Login)
 
 	appAuthC := new(controllers.AppAuthController)
-	//appAuthC.Init(app.DB)
 	authApp := auth.Group("/app")
 	authApp.POST("/register", appAuthC.Register)
 	authApp.POST("/login", appAuthC.Login)

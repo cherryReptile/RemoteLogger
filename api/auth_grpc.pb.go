@@ -18,122 +18,208 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// AuthServiceClient is the client API for AuthService service.
+// AuthAppServiceClient is the client API for AuthAppService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type AuthServiceClient interface {
+type AuthAppServiceClient interface {
 	Register(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error)
 	Login(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error)
 }
 
-type authServiceClient struct {
+type authAppServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
-	return &authServiceClient{cc}
+func NewAuthAppServiceClient(cc grpc.ClientConnInterface) AuthAppServiceClient {
+	return &authAppServiceClient{cc}
 }
 
-func (c *authServiceClient) Register(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+func (c *authAppServiceClient) Register(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error) {
 	out := new(AppResponse)
-	err := c.cc.Invoke(ctx, "/AuthService/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/AuthAppService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *authServiceClient) Login(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+func (c *authAppServiceClient) Login(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error) {
 	out := new(AppResponse)
-	err := c.cc.Invoke(ctx, "/AuthService/Login", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/AuthAppService/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// AuthServiceServer is the server API for AuthService service.
-// All implementations must embed UnimplementedAuthServiceServer
+// AuthAppServiceServer is the server API for AuthAppService service.
+// All implementations must embed UnimplementedAuthAppServiceServer
 // for forward compatibility
-type AuthServiceServer interface {
+type AuthAppServiceServer interface {
 	Register(context.Context, *AppRequest) (*AppResponse, error)
 	Login(context.Context, *AppRequest) (*AppResponse, error)
-	mustEmbedUnimplementedAuthServiceServer()
+	mustEmbedUnimplementedAuthAppServiceServer()
 }
 
-// UnimplementedAuthServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedAuthServiceServer struct {
+// UnimplementedAuthAppServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthAppServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) Register(context.Context, *AppRequest) (*AppResponse, error) {
+func (UnimplementedAuthAppServiceServer) Register(context.Context, *AppRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
-func (UnimplementedAuthServiceServer) Login(context.Context, *AppRequest) (*AppResponse, error) {
+func (UnimplementedAuthAppServiceServer) Login(context.Context, *AppRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
+func (UnimplementedAuthAppServiceServer) mustEmbedUnimplementedAuthAppServiceServer() {}
 
-// UnsafeAuthServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to AuthServiceServer will
+// UnsafeAuthAppServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthAppServiceServer will
 // result in compilation errors.
-type UnsafeAuthServiceServer interface {
-	mustEmbedUnimplementedAuthServiceServer()
+type UnsafeAuthAppServiceServer interface {
+	mustEmbedUnimplementedAuthAppServiceServer()
 }
 
-func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
-	s.RegisterService(&AuthService_ServiceDesc, srv)
+func RegisterAuthAppServiceServer(s grpc.ServiceRegistrar, srv AuthAppServiceServer) {
+	s.RegisterService(&AuthAppService_ServiceDesc, srv)
 }
 
-func _AuthService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthAppService_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AppRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).Register(ctx, in)
+		return srv.(AuthAppServiceServer).Register(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/Register",
+		FullMethod: "/AuthAppService/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Register(ctx, req.(*AppRequest))
+		return srv.(AuthAppServiceServer).Register(ctx, req.(*AppRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthAppService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AppRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServiceServer).Login(ctx, in)
+		return srv.(AuthAppServiceServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/AuthService/Login",
+		FullMethod: "/AuthAppService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).Login(ctx, req.(*AppRequest))
+		return srv.(AuthAppServiceServer).Login(ctx, req.(*AppRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
+// AuthAppService_ServiceDesc is the grpc.ServiceDesc for AuthAppService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var AuthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "AuthService",
-	HandlerType: (*AuthServiceServer)(nil),
+var AuthAppService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AuthAppService",
+	HandlerType: (*AuthAppServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Register",
-			Handler:    _AuthService_Register_Handler,
+			Handler:    _AuthAppService_Register_Handler,
 		},
 		{
 			MethodName: "Login",
-			Handler:    _AuthService_Login_Handler,
+			Handler:    _AuthAppService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/auth.proto",
+}
+
+// AuthGithubServiceClient is the client API for AuthGithubService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AuthGithubServiceClient interface {
+	Login(ctx context.Context, in *GitHubRequest, opts ...grpc.CallOption) (*AppResponse, error)
+}
+
+type authGithubServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAuthGithubServiceClient(cc grpc.ClientConnInterface) AuthGithubServiceClient {
+	return &authGithubServiceClient{cc}
+}
+
+func (c *authGithubServiceClient) Login(ctx context.Context, in *GitHubRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+	out := new(AppResponse)
+	err := c.cc.Invoke(ctx, "/AuthGithubService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthGithubServiceServer is the server API for AuthGithubService service.
+// All implementations must embed UnimplementedAuthGithubServiceServer
+// for forward compatibility
+type AuthGithubServiceServer interface {
+	Login(context.Context, *GitHubRequest) (*AppResponse, error)
+	mustEmbedUnimplementedAuthGithubServiceServer()
+}
+
+// UnimplementedAuthGithubServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthGithubServiceServer struct {
+}
+
+func (UnimplementedAuthGithubServiceServer) Login(context.Context, *GitHubRequest) (*AppResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthGithubServiceServer) mustEmbedUnimplementedAuthGithubServiceServer() {}
+
+// UnsafeAuthGithubServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthGithubServiceServer will
+// result in compilation errors.
+type UnsafeAuthGithubServiceServer interface {
+	mustEmbedUnimplementedAuthGithubServiceServer()
+}
+
+func RegisterAuthGithubServiceServer(s grpc.ServiceRegistrar, srv AuthGithubServiceServer) {
+	s.RegisterService(&AuthGithubService_ServiceDesc, srv)
+}
+
+func _AuthGithubService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GitHubRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGithubServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthGithubService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGithubServiceServer).Login(ctx, req.(*GitHubRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthGithubService_ServiceDesc is the grpc.ServiceDesc for AuthGithubService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AuthGithubService",
+	HandlerType: (*AuthGithubServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _AuthGithubService_Login_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

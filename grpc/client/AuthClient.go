@@ -7,13 +7,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func Register(request *api.AppRequest) (*api.AppResponse, error) {
+func AppRegister(request *api.AppRequest) (*api.AppResponse, error) {
 	conn, err := newConn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
-	c := api.NewAuthServiceClient(conn)
+	c := api.NewAuthAppServiceClient(conn)
 	res, err := c.Register(context.Background(), request)
 	if err != nil {
 		return nil, err
@@ -22,13 +22,13 @@ func Register(request *api.AppRequest) (*api.AppResponse, error) {
 	return res, nil
 }
 
-func Login(request *api.AppRequest) (*api.AppResponse, error) {
+func AppLogin(request *api.AppRequest) (*api.AppResponse, error) {
 	conn, err := newConn()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Close()
-	c := api.NewAuthServiceClient(conn)
+	c := api.NewAuthAppServiceClient(conn)
 	res, err := c.Login(context.Background(), request)
 	if err != nil {
 		return nil, err
@@ -45,4 +45,19 @@ func newConn() (*grpc.ClientConn, error) {
 	}
 
 	return conn, nil
+}
+
+func GithubLogin(request *api.GitHubRequest) (*api.AppResponse, error) {
+	conn, err := newConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	c := api.NewAuthGithubServiceClient(conn)
+	res, err := c.Login(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
