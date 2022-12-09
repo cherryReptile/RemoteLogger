@@ -2,39 +2,34 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/internal/appauth"
 	"github.com/pavel-one/GoStarter/internal/models"
 )
 
-type GitHubAuthService struct {
-	api.UnimplementedAuthGithubServiceServer
+type TelegramAuthService struct {
+	api.UnimplementedAuthTelegramServiceServer
 	BaseDB
 }
 
-func NewGitHubAuthService(db *sqlx.DB) *GitHubAuthService {
-	gs := new(GitHubAuthService)
+func NewTelegramAuthService(db *sqlx.DB) *TelegramAuthService {
+	gs := new(TelegramAuthService)
 	gs.DB = db
 	return gs
 }
 
-func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (*api.AppResponse, error) {
+func (a *TelegramAuthService) Login(ctx context.Context, req *api.TelegramRequest) (*api.AppResponse, error) {
 	user := new(models.User)
 	token := new(models.AccessToken)
 
-	user.FindByUniqueAndService(a.DB, req.Login, "github")
+	user.FindByUniqueAndService(a.DB, req.Username, "telegram")
 	if user.ID == 0 {
-		user.UniqueRaw = req.Login
-		user.AuthorizedBy = "github"
+		user.UniqueRaw = req.Username
+		user.AuthorizedBy = "telegram"
 		if err := user.Create(a.DB); err != nil {
 			return nil, err
 		}
-	}
-
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
 	}
 
 	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)

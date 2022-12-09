@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
+	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"net/http"
 	"os"
@@ -22,8 +22,6 @@ func (c *TelegramAuthController) Init(db *sqlx.DB) {
 }
 
 func (c *TelegramAuthController) Login(ctx *gin.Context) {
-	tokenModel := new(models.AccessToken)
-	user := new(models.User)
 	reqUser := new(requests.TelegramUser)
 	if err := ctx.ShouldBindJSON(reqUser); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
@@ -36,30 +34,14 @@ func (c *TelegramAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user.FindByUniqueAndService(c.DB, reqUser.Username, "telegram")
-	if user.ID == 0 {
-		user.UniqueRaw = reqUser.Username
-		user.AuthorizedBy = "telegram"
-		if err := user.Create(c.DB); err != nil {
-			c.ERROR(ctx, http.StatusBadRequest, err)
-			return
-		}
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	res, err := client.TelegramLogin(&api.TelegramRequest{Username: reqUser.Username})
 	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
+		e := strings.Split(err.Error(), "=")
+		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
 		return
 	}
 
-	tokenModel.Token = tokenStr
-	tokenModel.UserID = user.ID
-	if err = tokenModel.Create(c.DB); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": tokenModel.Token})
+	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
 func (c *TelegramAuthController) Logout(ctx *gin.Context) {

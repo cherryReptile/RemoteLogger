@@ -48,11 +48,5 @@ func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (
 		return nil, err
 	}
 
-	return &api.AppResponse{
-		Struct: &api.User{
-			ID:           uint64(user.ID),
-			UniqueRaw:    user.UniqueRaw,
-			AuthorizedBy: user.AuthorizedBy,
-			CreatedAt:    user.CreatedAt.String(),
-		}, TokenStr: token.Token}, nil
+	return ToAppResponse(user, token), nil
 }

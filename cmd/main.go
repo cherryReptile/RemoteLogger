@@ -18,9 +18,10 @@ func main() {
 	app := new(base.App)
 	app.Init()
 	grpcServer := server.NewServer(server.Services{
-		App:    handlers.NewAppAuthService(app.DB),
-		GitHub: handlers.NewGitHubAuthService(app.DB),
-		Google: handlers.NewGoogleAuthService(app.DB),
+		App:      handlers.NewAppAuthService(app.DB),
+		GitHub:   handlers.NewGitHubAuthService(app.DB),
+		Google:   handlers.NewGoogleAuthService(app.DB),
+		Telegram: handlers.NewTelegramAuthService(app.DB),
 	})
 
 	app.Router.Use(gin.Logger())

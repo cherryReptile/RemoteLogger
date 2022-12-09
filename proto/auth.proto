@@ -17,6 +17,10 @@ service AuthGoogleService {
   rpc Login(GoogleRequest) returns (AppResponse) {}
 }
 
+service AuthTelegramService {
+  rpc Login(TelegramRequest) returns (AppResponse) {}
+}
+
 message AppRequest {
   string Email = 1;
   string Password = 2;
@@ -28,6 +32,10 @@ message GitHubRequest {
 
 message GoogleRequest {
   string Email = 1;
+}
+
+message TelegramRequest {
+  string Username = 1;
 }
 
 message AppResponse {

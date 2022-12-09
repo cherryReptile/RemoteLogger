@@ -311,3 +311,89 @@ var AuthGoogleService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/auth.proto",
 }
+
+// AuthTelegramServiceClient is the client API for AuthTelegramService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AuthTelegramServiceClient interface {
+	Login(ctx context.Context, in *TelegramRequest, opts ...grpc.CallOption) (*AppResponse, error)
+}
+
+type authTelegramServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAuthTelegramServiceClient(cc grpc.ClientConnInterface) AuthTelegramServiceClient {
+	return &authTelegramServiceClient{cc}
+}
+
+func (c *authTelegramServiceClient) Login(ctx context.Context, in *TelegramRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+	out := new(AppResponse)
+	err := c.cc.Invoke(ctx, "/AuthTelegramService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthTelegramServiceServer is the server API for AuthTelegramService service.
+// All implementations must embed UnimplementedAuthTelegramServiceServer
+// for forward compatibility
+type AuthTelegramServiceServer interface {
+	Login(context.Context, *TelegramRequest) (*AppResponse, error)
+	mustEmbedUnimplementedAuthTelegramServiceServer()
+}
+
+// UnimplementedAuthTelegramServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthTelegramServiceServer struct {
+}
+
+func (UnimplementedAuthTelegramServiceServer) Login(context.Context, *TelegramRequest) (*AppResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthTelegramServiceServer) mustEmbedUnimplementedAuthTelegramServiceServer() {}
+
+// UnsafeAuthTelegramServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthTelegramServiceServer will
+// result in compilation errors.
+type UnsafeAuthTelegramServiceServer interface {
+	mustEmbedUnimplementedAuthTelegramServiceServer()
+}
+
+func RegisterAuthTelegramServiceServer(s grpc.ServiceRegistrar, srv AuthTelegramServiceServer) {
+	s.RegisterService(&AuthTelegramService_ServiceDesc, srv)
+}
+
+func _AuthTelegramService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TelegramRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthTelegramServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthTelegramService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthTelegramServiceServer).Login(ctx, req.(*TelegramRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthTelegramService_ServiceDesc is the grpc.ServiceDesc for AuthTelegramService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AuthTelegramService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AuthTelegramService",
+	HandlerType: (*AuthTelegramServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _AuthTelegramService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/auth.proto",
+}

@@ -24,7 +24,7 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(models.User)
-	tokenModel := new(models.AccessToken)
+	token := new(models.AccessToken)
 
 	user.FindByUniqueAndService(a.DB, req.Email, "app")
 	if user.ID != 0 {
@@ -55,27 +55,19 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	tokenModel.Token = tokenStr
-	tokenModel.UserID = user.ID
+	token.Token = tokenStr
+	token.UserID = user.ID
 
-	if err = tokenModel.Create(a.DB); err != nil {
+	if err = token.Create(a.DB); err != nil {
 		return nil, err
 	}
 
-	return &api.AppResponse{
-		Struct: &api.User{
-			ID:           uint64(user.ID),
-			UniqueRaw:    user.UniqueRaw,
-			Password:     user.Password,
-			AuthorizedBy: user.AuthorizedBy,
-		},
-		TokenStr: tokenModel.Token,
-	}, nil
+	return ToAppResponse(user, token), nil
 }
 
 func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(models.User)
-	tokenModel := new(models.AccessToken)
+	token := new(models.AccessToken)
 
 	if err := user.FindByUniqueAndService(a.DB, req.Email, "app"); err != nil {
 		return nil, err
@@ -94,16 +86,11 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 		return nil, err
 	}
 
-	tokenModel.Token = tokenStr
-	tokenModel.UserID = user.ID
-	if err = tokenModel.Create(a.DB); err != nil {
+	token.Token = tokenStr
+	token.UserID = user.ID
+	if err = token.Create(a.DB); err != nil {
 		return nil, err
 	}
 
-	return &api.AppResponse{Struct: &api.User{
-		ID:           uint64(user.ID),
-		UniqueRaw:    user.UniqueRaw,
-		AuthorizedBy: user.AuthorizedBy,
-		CreatedAt:    user.CreatedAt.String(),
-	}, TokenStr: tokenModel.Token}, nil
+	return ToAppResponse(user, token), nil
 }
