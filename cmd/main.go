@@ -20,6 +20,7 @@ func main() {
 	grpcServer := server.NewServer(server.Services{
 		App:    handlers.NewAppAuthService(app.DB),
 		GitHub: handlers.NewGitHubAuthService(app.DB),
+		Google: handlers.NewGoogleAuthService(app.DB),
 	})
 
 	app.Router.Use(gin.Logger())
@@ -37,7 +38,7 @@ func main() {
 	authApp.POST("/login", appAuthC.Login)
 
 	googleAuthC := new(controllers.GoogleAuthController)
-	googleAuthC.Init(app.DB)
+	googleAuthC.Init()
 	authGo := auth.Group("/google")
 	authGo.GET("/", googleAuthC.RedirectForAuth)
 	authGo.GET("/login", googleAuthC.Login)

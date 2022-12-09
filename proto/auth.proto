@@ -13,18 +13,26 @@ service AuthGithubService {
   rpc Login(GitHubRequest) returns (AppResponse) {}
 }
 
+service AuthGoogleService {
+  rpc Login(GoogleRequest) returns (AppResponse) {}
+}
+
 message AppRequest {
   string Email = 1;
   string Password = 2;
 }
 
+message GitHubRequest {
+  string Login = 1;
+}
+
+message GoogleRequest {
+  string Email = 1;
+}
+
 message AppResponse {
   User Struct = 1;
   string TokenStr = 2;
-}
-
-message GitHubRequest {
-  string Login = 1;
 }
 
 message User {

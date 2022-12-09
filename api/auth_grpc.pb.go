@@ -225,3 +225,89 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/auth.proto",
 }
+
+// AuthGoogleServiceClient is the client API for AuthGoogleService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AuthGoogleServiceClient interface {
+	Login(ctx context.Context, in *GoogleRequest, opts ...grpc.CallOption) (*AppResponse, error)
+}
+
+type authGoogleServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAuthGoogleServiceClient(cc grpc.ClientConnInterface) AuthGoogleServiceClient {
+	return &authGoogleServiceClient{cc}
+}
+
+func (c *authGoogleServiceClient) Login(ctx context.Context, in *GoogleRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+	out := new(AppResponse)
+	err := c.cc.Invoke(ctx, "/AuthGoogleService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AuthGoogleServiceServer is the server API for AuthGoogleService service.
+// All implementations must embed UnimplementedAuthGoogleServiceServer
+// for forward compatibility
+type AuthGoogleServiceServer interface {
+	Login(context.Context, *GoogleRequest) (*AppResponse, error)
+	mustEmbedUnimplementedAuthGoogleServiceServer()
+}
+
+// UnimplementedAuthGoogleServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthGoogleServiceServer struct {
+}
+
+func (UnimplementedAuthGoogleServiceServer) Login(context.Context, *GoogleRequest) (*AppResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthGoogleServiceServer) mustEmbedUnimplementedAuthGoogleServiceServer() {}
+
+// UnsafeAuthGoogleServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthGoogleServiceServer will
+// result in compilation errors.
+type UnsafeAuthGoogleServiceServer interface {
+	mustEmbedUnimplementedAuthGoogleServiceServer()
+}
+
+func RegisterAuthGoogleServiceServer(s grpc.ServiceRegistrar, srv AuthGoogleServiceServer) {
+	s.RegisterService(&AuthGoogleService_ServiceDesc, srv)
+}
+
+func _AuthGoogleService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGoogleServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthGoogleService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGoogleServiceServer).Login(ctx, req.(*GoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AuthGoogleService_ServiceDesc is the grpc.ServiceDesc for AuthGoogleService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AuthGoogleService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "AuthGoogleService",
+	HandlerType: (*AuthGoogleServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Login",
+			Handler:    _AuthGoogleService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/auth.proto",
+}

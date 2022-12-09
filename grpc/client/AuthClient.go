@@ -61,3 +61,18 @@ func GithubLogin(request *api.GitHubRequest) (*api.AppResponse, error) {
 
 	return res, nil
 }
+
+func GoogleLogin(request *api.GoogleRequest) (*api.AppResponse, error) {
+	conn, err := newConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	c := api.NewAuthGoogleServiceClient(conn)
+	res, err := c.Login(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

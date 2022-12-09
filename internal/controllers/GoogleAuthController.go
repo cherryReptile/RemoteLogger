@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/appauth"
+	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var GoogleRedirectLogin = "/api/v1/auth/google/login"
@@ -23,8 +23,7 @@ type GoogleAuthController struct {
 	Config *oauth2.Config
 }
 
-func (c *GoogleAuthController) Init(db *sqlx.DB) {
-	c.DB = db
+func (c *GoogleAuthController) Init() {
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
@@ -39,8 +38,6 @@ func (c *GoogleAuthController) RedirectForAuth(ctx *gin.Context) {
 }
 
 func (c *GoogleAuthController) Login(ctx *gin.Context) {
-	user := new(models.User)
-	token := new(models.AccessToken)
 	oauthState, err := ctx.Cookie("oauthstate")
 
 	if err != nil {
@@ -68,35 +65,14 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	user.FindByUniqueAndService(c.DB, reqUser.Email, "google")
-	if user.ID == 0 {
-		user.UniqueRaw = reqUser.Email
-		user.AuthorizedBy = "google"
-		if err = user.Create(c.DB); err != nil {
-			c.ERROR(ctx, http.StatusBadRequest, err)
-			return
-		}
-	}
-
-	if user.ID == 0 {
-		c.ERROR(ctx, http.StatusBadRequest, errors.New("user not found"))
-		return
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	res, err := client.GithubLogin(&api.GitHubRequest{Login: reqUser.Email})
 	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
+		e := strings.Split(err.Error(), "=")
+		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
 		return
 	}
 
-	token.Token = tokenStr
-	token.UserID = user.ID
-	if err = token.Create(c.DB); err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token})
+	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
 func (c *GoogleAuthController) Logout(ctx *gin.Context) {
