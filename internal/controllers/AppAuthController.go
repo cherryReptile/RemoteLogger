@@ -1,18 +1,16 @@
 package controllers
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"net/http"
-	"strings"
 )
 
 type AppAuthController struct {
-	BaseJwtAuthController
+	BaseAuthController
 }
 
 func (c *AppAuthController) Register(ctx *gin.Context) {
@@ -24,8 +22,7 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 
 	res, err := client.AppRegister(&api.AppRequest{Email: reqU.Email, Password: reqU.Password})
 	if err != nil {
-		e := strings.Split(err.Error(), "=")
-		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
+		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
@@ -41,8 +38,7 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 
 	res, err := client.AppLogin(&api.AppRequest{Email: reqU.Email, Password: reqU.Password})
 	if err != nil {
-		e := strings.Split(err.Error(), "=")
-		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
+		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 

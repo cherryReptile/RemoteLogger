@@ -37,16 +37,6 @@ func AppLogin(request *api.AppRequest) (*api.AppResponse, error) {
 	return res, nil
 }
 
-func newConn() (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(":9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
-}
-
 func GithubLogin(request *api.GitHubRequest) (*api.AppResponse, error) {
 	conn, err := newConn()
 	if err != nil {
@@ -120,4 +110,14 @@ func CheckAuth(request *api.TokenRequest) (*api.CheckAuthResponse, error) {
 	}
 
 	return res, nil
+}
+
+func newConn() (*grpc.ClientConn, error) {
+	conn, err := grpc.Dial(":9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
 }

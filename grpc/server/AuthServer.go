@@ -1,14 +1,12 @@
 package server
 
 import (
-	"fmt"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"log"
 	"net"
 )
 
@@ -74,15 +72,15 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterAuthGithubServiceServer(s.srv, s.Services.GitHub)
 	api.RegisterAuthGoogleServiceServer(s.srv, s.Services.Google)
 	api.RegisterAuthTelegramServiceServer(s.srv, s.Services.Telegram)
-	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
 	api.RegisterCheckAuthServiceServer(s.srv, s.Services.CheckAuth)
-	log.Println("[DEBUG] Running gRCP server on port " + port)
+	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
+	logrus.Info("[DEBUG] Running gRCP server on port " + port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err
 	}
 }
 
 func (s *Server) Close() {
-	fmt.Println("[DEBUG] grpc auth server close")
+	logrus.Info("[DEBUG] grpc auth server close")
 	s.srv.Stop()
 }

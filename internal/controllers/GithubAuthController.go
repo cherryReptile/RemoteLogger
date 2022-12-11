@@ -17,7 +17,7 @@ import (
 )
 
 type GithubAuthController struct {
-	BaseJwtAuthController
+	BaseAuthController
 	Config *oauth2.Config
 }
 

@@ -14,7 +14,7 @@ import (
 )
 
 type TelegramAuthController struct {
-	BaseJwtAuthController
+	BaseAuthController
 }
 
 func (c *TelegramAuthController) Init() {

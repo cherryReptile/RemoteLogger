@@ -6,7 +6,7 @@ import (
 	"github.com/pavel-one/GoStarter/grpc/server"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
-	"github.com/pavel-one/GoStarter/internal/middlewars"
+	"github.com/pavel-one/GoStarter/internal/middlewares"
 	"log"
 	"os"
 )
@@ -54,7 +54,7 @@ func main() {
 	testC := new(controllers.TestController)
 	testC.Init()
 	home := app.Router.Group("/home")
-	home.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
+	home.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken())
 
 	home.GET("/test", testC.Test)
 	home.GET("/app/logout", appAuthC.Logout)
