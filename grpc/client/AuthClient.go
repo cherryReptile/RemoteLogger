@@ -7,8 +7,28 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+type ServiceClients struct {
+	Conn      *grpc.ClientConn
+	App       api.AuthAppServiceClient
+	GitHub    api.AuthGithubServiceClient
+	Google    api.AuthGoogleServiceClient
+	Telegram  api.AuthTelegramServiceClient
+	CheckAuth api.CheckAuthServiceClient
+	Logout    api.LogoutServiceClient
+}
+
+func (s *ServiceClients) Init(conn *grpc.ClientConn) {
+	s.Conn = conn
+	s.App = api.NewAuthAppServiceClient(s.Conn)
+	s.GitHub = api.NewAuthGithubServiceClient(s.Conn)
+	s.Google = api.NewAuthGoogleServiceClient(s.Conn)
+	s.Telegram = api.NewAuthTelegramServiceClient(s.Conn)
+	s.CheckAuth = api.NewCheckAuthServiceClient(s.Conn)
+	s.Logout = api.NewLogoutServiceClient(s.Conn)
+}
+
 func AppRegister(request *api.AppRequest) (*api.AppResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +43,7 @@ func AppRegister(request *api.AppRequest) (*api.AppResponse, error) {
 }
 
 func AppLogin(request *api.AppRequest) (*api.AppResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +58,7 @@ func AppLogin(request *api.AppRequest) (*api.AppResponse, error) {
 }
 
 func GithubLogin(request *api.GitHubRequest) (*api.AppResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +73,7 @@ func GithubLogin(request *api.GitHubRequest) (*api.AppResponse, error) {
 }
 
 func GoogleLogin(request *api.GoogleRequest) (*api.AppResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +88,7 @@ func GoogleLogin(request *api.GoogleRequest) (*api.AppResponse, error) {
 }
 
 func TelegramLogin(request *api.TelegramRequest) (*api.AppResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +103,7 @@ func TelegramLogin(request *api.TelegramRequest) (*api.AppResponse, error) {
 }
 
 func Logout(request *api.TokenRequest) (*api.LogoutResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +118,7 @@ func Logout(request *api.TokenRequest) (*api.LogoutResponse, error) {
 }
 
 func CheckAuth(request *api.TokenRequest) (*api.CheckAuthResponse, error) {
-	conn, err := newConn()
+	conn, err := NewConn()
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +132,7 @@ func CheckAuth(request *api.TokenRequest) (*api.CheckAuthResponse, error) {
 	return res, nil
 }
 
-func newConn() (*grpc.ClientConn, error) {
+func NewConn() (*grpc.ClientConn, error) {
 	conn, err := grpc.Dial(":9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {

@@ -1,9 +1,9 @@
 package middlewares
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"net/http"
 	"strings"
@@ -21,7 +21,7 @@ func CheckAuthHeader() gin.HandlerFunc {
 	}
 }
 
-func CheckUserAndToken() gin.HandlerFunc {
+func CheckUserAndToken(checkAuthService api.CheckAuthServiceClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := helpers.GetAndCastToken(c)
 		if err != nil {
@@ -29,7 +29,7 @@ func CheckUserAndToken() gin.HandlerFunc {
 			return
 		}
 
-		res, err := client.CheckAuth(&api.TokenRequest{Token: token})
+		res, err := checkAuthService.CheckAuth(context.Background(), &api.TokenRequest{Token: token})
 		if err != nil || !res.Ok {
 			e := strings.Split(err.Error(), "=")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": e[2]})

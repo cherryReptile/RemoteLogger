@@ -4,24 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
+//TODO: this look like proxy and in the future will be renamed
+
 type App struct {
 	Router *gin.Engine
-	DB     *sqlx.DB
 	Server *http.Server
 }
 
 func (a *App) Init() {
 	a.Router = gin.New()
-	a.DB = ConnectToDb()
 }
 
 func (a *App) Run(port string, chErr chan error) {
@@ -42,35 +38,8 @@ func (a *App) Run(port string, chErr chan error) {
 }
 
 func (a *App) Close() {
-	if err := a.DB.Close(); err != nil {
-		log.Fatalf("[FATAL] Unable to close database: %v", err)
-		return
-	}
-
 	if err := a.Server.Close(); err != nil {
 		log.Fatalf("[FATAL] Unable to close server: %v", err)
 		return
 	}
-}
-
-func ConnectToDb() *sqlx.DB {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("[FATAL] Not loading environment: %v", err)
-	}
-
-	db, err := sqlx.Connect("postgres", fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-	))
-
-	if err != nil {
-		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
-	}
-
-	return db
 }

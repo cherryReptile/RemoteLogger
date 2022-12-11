@@ -18,10 +18,12 @@ import (
 
 type GoogleAuthController struct {
 	BaseAuthController
-	Config *oauth2.Config
+	GoogleService api.AuthGoogleServiceClient
+	Config        *oauth2.Config
 }
 
-func (c *GoogleAuthController) Init() {
+func (c *GoogleAuthController) Init(gs api.AuthGoogleServiceClient) {
+	c.GoogleService = gs
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
@@ -73,21 +75,6 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
-}
-
-func (c *GoogleAuthController) Logout(ctx *gin.Context) {
-	token, err := helpers.GetAndCastToken(ctx)
-	if err != nil {
-		c.ERROR(ctx, http.StatusUnauthorized, err)
-		return
-	}
-
-	res, err := client.Logout(&api.TokenRequest{Token: token})
-	if err != nil {
-		c.ERROR(ctx, http.StatusBadRequest, err)
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"message": res.Message})
 }
 
 func (c *GoogleAuthController) getGoogleUser(token string) (*requests.GoogleUser, error) {
