@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package logger.v1;
+option go_package = "/api";
+
+//import "google/protobuf/timestamp.proto";
+
+service AuthAppService {
+  rpc Register(AppRequest) returns (AppResponse) {}
+  rpc Login(AppRequest) returns (AppResponse) {}
+}
+
+service AuthGithubService {
+  rpc Login(GitHubRequest) returns (AppResponse) {}
+}
+
+service AuthGoogleService {
+  rpc Login(GoogleRequest) returns (AppResponse) {}
+}
+
+service AuthTelegramService {
+  rpc Login(TelegramRequest) returns (AppResponse) {}
+}
+
+service CheckAuthService {
+  rpc CheckAuth(TokenRequest) returns (CheckAuthResponse) {}
+}
+
+service LogoutService {
+  rpc Logout(TokenRequest) returns (LogoutResponse) {}
+}
+
+message AppRequest {
+  string Email = 1;
+  string Password = 2;
+}
+
+message GitHubRequest {
+  string Login = 1;
+}
+
+message GoogleRequest {
+  string Email = 1;
+}
+
+message TelegramRequest {
+  string Username = 1;
+}
+
+message AppResponse {
+  User Struct = 1;
+  string TokenStr = 2;
+}
+
+message TokenRequest {
+  string Token = 1;
+}
+
+message LogoutResponse {
+  string Message = 1;
+}
+
+message CheckAuthResponse {
+  bool   Ok = 1;
+}
+
+message User {
+  uint64  ID = 1;
+  string UniqueRaw = 2;
+  string Password = 3;
+  string AuthorizedBy = 4;
+  string CreatedAt = 5;
+}

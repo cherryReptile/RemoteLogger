@@ -25,3 +25,7 @@ exec.root:
 	docker-compose exec -u root app bash
 log:
 	docker-compose logs -f app
+gen:
+	protoc --go_out=. --go_opt=paths=import \
+    	--go-grpc_out=. --go-grpc_opt=paths=import \
+    	proto/auth.proto

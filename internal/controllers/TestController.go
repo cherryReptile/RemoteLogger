@@ -13,7 +13,6 @@ func (c *TestController) Init() {}
 
 func (c *TestController) Test(ctx *gin.Context) {
 	ctx.MustGet("token")
-	ctx.JSON(http.StatusOK, "test")
 	t, _ := ctx.Get("token")
-	ctx.JSON(http.StatusOK, t)
+	ctx.JSON(http.StatusOK, gin.H{"message": "test", "token": t})
 }
