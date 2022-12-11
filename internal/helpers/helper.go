@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -50,4 +51,18 @@ func RequestToGoogle(token string) (*http.Response, error) {
 	}
 
 	return res, nil
+}
+
+func GetAndCastToken(ctx *gin.Context) (string, error) {
+	t, ok := ctx.Get("token")
+	if !ok {
+		return "", errors.New("cannot get token")
+	}
+
+	token, ok := t.(string)
+	if !ok {
+		return "", errors.New("invalid token")
+	}
+
+	return token, nil
 }

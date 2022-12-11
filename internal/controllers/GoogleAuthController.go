@@ -16,8 +16,6 @@ import (
 	"strings"
 )
 
-var GoogleRedirectLogin = "/api/v1/auth/google/login"
-
 type GoogleAuthController struct {
 	BaseJwtAuthController
 	Config *oauth2.Config
@@ -30,6 +28,8 @@ func (c *GoogleAuthController) Init() {
 	c.Config.Scopes = []string{"https://www.googleapis.com/auth/userinfo.email"}
 	c.Config.Endpoint = google.Endpoint
 }
+
+var GoogleRedirectLogin = "/api/v1/auth/google/login"
 
 func (c *GoogleAuthController) RedirectForAuth(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + "localhost" + GoogleRedirectLogin
@@ -76,11 +76,18 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 }
 
 func (c *GoogleAuthController) Logout(ctx *gin.Context) {
-	if err := c.LogoutFromApp(ctx, c.DB); err != nil {
+	token, err := helpers.GetAndCastToken(ctx)
+	if err != nil {
+		c.ERROR(ctx, http.StatusUnauthorized, err)
+		return
+	}
+
+	res, err := client.Logout(&api.TokenRequest{Token: token})
+	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": res.Message})
 }
 
 func (c *GoogleAuthController) getGoogleUser(token string) (*requests.GoogleUser, error) {

@@ -2,7 +2,8 @@ package middlewars
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"net/http"
 )
@@ -19,34 +20,19 @@ func CheckAuthHeader() gin.HandlerFunc {
 	}
 }
 
-func CheckUserAndToken(db *sqlx.DB) gin.HandlerFunc {
+func CheckUserAndToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t, ok := c.Get("token")
-		if !ok || t == nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "auth token is missing"})
+		token, err := helpers.GetAndCastToken(c)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		CheckApp(c, db, t.(string))
 
-		//service, err := c.Cookie("service")
-		//if err != nil {
-		//	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		//	return
-		//}
-
-		//switch service {
-		//case "github":
-		//	CheckGoogleOrGitHub(c, new(models.GithubUser), t.(string))
-		//case "google":
-		//	CheckGoogleOrGitHub(c, new(models.GoogleUser), t.(string))
-		//case "app":
-		//	CheckApp(c, new(models.AppUser), t.(string))
-		//case "telegram":
-		//	CheckApp(c, new(models.TelegramUser), t.(string))
-		//default:
-		//	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "unknown service"})
-		//	return
-		//}
+		res, err := client.CheckAuth(&api.TokenRequest{Token: token})
+		if err != nil || !res.Ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
 
 		//c.Next()
 	}

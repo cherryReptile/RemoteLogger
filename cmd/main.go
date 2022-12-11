@@ -18,10 +18,12 @@ func main() {
 	app := new(base.App)
 	app.Init()
 	grpcServer := server.NewServer(server.Services{
-		App:      handlers.NewAppAuthService(app.DB),
-		GitHub:   handlers.NewGitHubAuthService(app.DB),
-		Google:   handlers.NewGoogleAuthService(app.DB),
-		Telegram: handlers.NewTelegramAuthService(app.DB),
+		App:       handlers.NewAppAuthService(app.DB),
+		GitHub:    handlers.NewGitHubAuthService(app.DB),
+		Google:    handlers.NewGoogleAuthService(app.DB),
+		Telegram:  handlers.NewTelegramAuthService(app.DB),
+		CheckAuth: handlers.NewCheckAuthService(app.DB),
+		Logout:    handlers.NewLogoutAuthService(app.DB),
 	})
 
 	app.Router.Use(gin.Logger())
@@ -45,14 +47,15 @@ func main() {
 	authGo.GET("/login", googleAuthC.Login)
 
 	tgAuthC := new(controllers.TelegramAuthController)
-	tgAuthC.Init(app.DB)
+	tgAuthC.Init()
 	authTg := auth.Group("/telegram")
 	authTg.GET("/login")
 
 	testC := new(controllers.TestController)
 	testC.Init()
 	home := app.Router.Group("/home")
-	home.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken(app.DB))
+	home.Use(middlewars.CheckAuthHeader()).Use(middlewars.CheckUserAndToken())
+
 	home.GET("/test", testC.Test)
 	home.GET("/app/logout", appAuthC.Logout)
 	home.GET("/github/logout", githubC.Logout)

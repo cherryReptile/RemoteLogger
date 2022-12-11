@@ -24,7 +24,6 @@ type GithubAuthController struct {
 var GitRedirectLogin = "/api/v1/auth/github/login"
 
 func (c *GithubAuthController) Init() {
-	//c.DB = db
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
 	c.Config.ClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
@@ -77,12 +76,19 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) Logout(ctx *gin.Context) {
-	if err := c.LogoutFromApp(ctx, c.DB); err != nil {
+	token, err := helpers.GetAndCastToken(ctx)
+	if err != nil {
+		c.ERROR(ctx, http.StatusUnauthorized, err)
+		return
+	}
+
+	res, err := client.Logout(&api.TokenRequest{Token: token})
+	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "logout successfully"})
+	ctx.JSON(http.StatusOK, gin.H{"message": res.Message})
 }
 
 func (c *GithubAuthController) getGitHubUser(token string) (*requests.GithubUser, error) {

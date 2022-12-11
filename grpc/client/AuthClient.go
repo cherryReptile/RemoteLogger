@@ -91,3 +91,33 @@ func TelegramLogin(request *api.TelegramRequest) (*api.AppResponse, error) {
 
 	return res, nil
 }
+
+func Logout(request *api.TokenRequest) (*api.LogoutResponse, error) {
+	conn, err := newConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	c := api.NewLogoutServiceClient(conn)
+	res, err := c.Logout(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func CheckAuth(request *api.TokenRequest) (*api.CheckAuthResponse, error) {
+	conn, err := newConn()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	c := api.NewCheckAuthServiceClient(conn)
+	res, err := c.CheckAuth(context.Background(), request)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
