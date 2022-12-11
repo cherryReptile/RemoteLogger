@@ -397,3 +397,175 @@ var AuthTelegramService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/auth.proto",
 }
+
+// CheckAuthServiceClient is the client API for CheckAuthService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type CheckAuthServiceClient interface {
+	CheckAuth(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*CheckAuthResponse, error)
+}
+
+type checkAuthServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewCheckAuthServiceClient(cc grpc.ClientConnInterface) CheckAuthServiceClient {
+	return &checkAuthServiceClient{cc}
+}
+
+func (c *checkAuthServiceClient) CheckAuth(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*CheckAuthResponse, error) {
+	out := new(CheckAuthResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.CheckAuthService/CheckAuth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CheckAuthServiceServer is the server API for CheckAuthService service.
+// All implementations must embed UnimplementedCheckAuthServiceServer
+// for forward compatibility
+type CheckAuthServiceServer interface {
+	CheckAuth(context.Context, *TokenRequest) (*CheckAuthResponse, error)
+	mustEmbedUnimplementedCheckAuthServiceServer()
+}
+
+// UnimplementedCheckAuthServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedCheckAuthServiceServer struct {
+}
+
+func (UnimplementedCheckAuthServiceServer) CheckAuth(context.Context, *TokenRequest) (*CheckAuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckAuth not implemented")
+}
+func (UnimplementedCheckAuthServiceServer) mustEmbedUnimplementedCheckAuthServiceServer() {}
+
+// UnsafeCheckAuthServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to CheckAuthServiceServer will
+// result in compilation errors.
+type UnsafeCheckAuthServiceServer interface {
+	mustEmbedUnimplementedCheckAuthServiceServer()
+}
+
+func RegisterCheckAuthServiceServer(s grpc.ServiceRegistrar, srv CheckAuthServiceServer) {
+	s.RegisterService(&CheckAuthService_ServiceDesc, srv)
+}
+
+func _CheckAuthService_CheckAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CheckAuthServiceServer).CheckAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.CheckAuthService/CheckAuth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CheckAuthServiceServer).CheckAuth(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// CheckAuthService_ServiceDesc is the grpc.ServiceDesc for CheckAuthService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var CheckAuthService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "logger.v1.CheckAuthService",
+	HandlerType: (*CheckAuthServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CheckAuth",
+			Handler:    _CheckAuthService_CheckAuth_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/auth.proto",
+}
+
+// LogoutServiceClient is the client API for LogoutService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type LogoutServiceClient interface {
+	Logout(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
+}
+
+type logoutServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewLogoutServiceClient(cc grpc.ClientConnInterface) LogoutServiceClient {
+	return &logoutServiceClient{cc}
+}
+
+func (c *logoutServiceClient) Logout(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
+	out := new(LogoutResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.LogoutService/Logout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// LogoutServiceServer is the server API for LogoutService service.
+// All implementations must embed UnimplementedLogoutServiceServer
+// for forward compatibility
+type LogoutServiceServer interface {
+	Logout(context.Context, *TokenRequest) (*LogoutResponse, error)
+	mustEmbedUnimplementedLogoutServiceServer()
+}
+
+// UnimplementedLogoutServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedLogoutServiceServer struct {
+}
+
+func (UnimplementedLogoutServiceServer) Logout(context.Context, *TokenRequest) (*LogoutResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedLogoutServiceServer) mustEmbedUnimplementedLogoutServiceServer() {}
+
+// UnsafeLogoutServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to LogoutServiceServer will
+// result in compilation errors.
+type UnsafeLogoutServiceServer interface {
+	mustEmbedUnimplementedLogoutServiceServer()
+}
+
+func RegisterLogoutServiceServer(s grpc.ServiceRegistrar, srv LogoutServiceServer) {
+	s.RegisterService(&LogoutService_ServiceDesc, srv)
+}
+
+func _LogoutService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LogoutServiceServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.LogoutService/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LogoutServiceServer).Logout(ctx, req.(*TokenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// LogoutService_ServiceDesc is the grpc.ServiceDesc for LogoutService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var LogoutService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "logger.v1.LogoutService",
+	HandlerType: (*LogoutServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Logout",
+			Handler:    _LogoutService_Logout_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/auth.proto",
+}

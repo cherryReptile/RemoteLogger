@@ -22,6 +22,14 @@ service AuthTelegramService {
   rpc Login(TelegramRequest) returns (AppResponse) {}
 }
 
+service CheckAuthService {
+  rpc CheckAuth(TokenRequest) returns (CheckAuthResponse) {}
+}
+
+service LogoutService {
+  rpc Logout(TokenRequest) returns (LogoutResponse) {}
+}
+
 message AppRequest {
   string Email = 1;
   string Password = 2;
@@ -42,6 +50,18 @@ message TelegramRequest {
 message AppResponse {
   User Struct = 1;
   string TokenStr = 2;
+}
+
+message TokenRequest {
+  string Token = 1;
+}
+
+message LogoutResponse {
+  string Message = 1;
+}
+
+message CheckAuthResponse {
+  bool   Ok = 2;
 }
 
 message User {
