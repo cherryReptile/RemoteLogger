@@ -2,8 +2,12 @@ package server
 
 import (
 	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"log"
 	"net"
 )
@@ -17,15 +21,45 @@ type Services struct {
 	Logout    api.LogoutServiceServer
 }
 
+type Logger struct {
+	Logrus     *logrus.Logger
+	CustomFunc grpc_logrus.CodeToLevel
+}
+
 type Server struct {
 	Services
 	srv *grpc.Server
 }
 
 func NewServer(services Services) *Server {
+	logger := new(Logger)
+	logger.Logrus = logrus.New()
+	logrusEntry := logrus.NewEntry(logger.Logrus)
+	logger.CustomFunc = func(code codes.Code) logrus.Level {
+		if code == codes.OK {
+			return logrus.InfoLevel
+		}
+		return logrus.ErrorLevel
+	}
+
+	logrusOpts := []grpc_logrus.Option{
+		grpc_logrus.WithLevels(logger.CustomFunc),
+	}
+
+	grpc_logrus.ReplaceGrpcLogger(logrusEntry)
+
+	opt := []grpc.ServerOption{
+		grpc_middleware.WithUnaryServerChain(
+			grpc_logrus.UnaryServerInterceptor(logrusEntry, logrusOpts...),
+		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_logrus.StreamServerInterceptor(logrusEntry, logrusOpts...),
+		),
+	}
+
 	return &Server{
 		Services: services,
-		srv:      grpc.NewServer(),
+		srv:      grpc.NewServer(opt...),
 	}
 
 }
