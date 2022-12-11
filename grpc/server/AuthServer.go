@@ -50,9 +50,6 @@ func NewServer(services Services) *Server {
 		grpc_middleware.WithUnaryServerChain(
 			grpc_logrus.UnaryServerInterceptor(logrusEntry, logrusOpts...),
 		),
-		grpc_middleware.WithStreamServerChain(
-			grpc_logrus.StreamServerInterceptor(logrusEntry, logrusOpts...),
-		),
 	}
 
 	return &Server{
