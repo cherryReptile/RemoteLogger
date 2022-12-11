@@ -61,7 +61,7 @@ message LogoutResponse {
 }
 
 message CheckAuthResponse {
-  bool   Ok = 2;
+  bool   Ok = 1;
 }
 
 message User {
