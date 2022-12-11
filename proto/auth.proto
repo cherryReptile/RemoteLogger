@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+package logger.v1;
 option go_package = "/api";
 
 //import "google/protobuf/timestamp.proto";
