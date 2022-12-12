@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/helpers"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"golang.org/x/oauth2"
@@ -67,7 +66,7 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := client.GoogleLogin(&api.GoogleRequest{Email: reqUser.Email})
+	res, err := c.GoogleService.Login(context.Background(), &api.GoogleRequest{Email: reqUser.Email})
 	if err != nil {
 		e := strings.Split(err.Error(), "=")
 		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))

@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"context"
 	"crypto/hmac"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ func (c *TelegramAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := client.TelegramLogin(&api.TelegramRequest{Username: reqUser.Username})
+	res, err := c.TelegramService.Login(context.Background(), &api.TelegramRequest{Username: reqUser.Username})
 	if err != nil {
 		e := strings.Split(err.Error(), "=")
 		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
