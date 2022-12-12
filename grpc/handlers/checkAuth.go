@@ -5,8 +5,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 )
 
 type CheckAuthService struct {
@@ -21,8 +21,8 @@ func NewCheckAuthService(db *sqlx.DB) *CheckAuthService {
 }
 
 func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 	claims, err := appauth.GetClaims(req.Token)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {

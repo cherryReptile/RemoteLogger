@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 )
 
 type GitHubAuthService struct {
@@ -21,8 +21,8 @@ func NewGitHubAuthService(db *sqlx.DB) *GitHubAuthService {
 }
 
 func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (*api.AppResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 
 	user.FindByUniqueAndService(a.DB, req.Login, "github")
 	if user.ID == 0 {

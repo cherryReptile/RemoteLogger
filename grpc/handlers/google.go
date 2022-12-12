@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 )
 
 type GoogleAuthService struct {
@@ -21,8 +21,8 @@ func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 }
 
 func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (*api.AppResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 
 	user.FindByUniqueAndService(a.DB, req.Email, "google")
 	if user.ID == 0 {

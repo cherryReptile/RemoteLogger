@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,8 +23,8 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 }
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 
 	user.FindByUniqueAndService(a.DB, req.Email, "app")
 	if user.ID != 0 {
@@ -66,8 +66,8 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 }
 
 func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 
 	if err := user.FindByUniqueAndService(a.DB, req.Email, "app"); err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/internal/models"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 )
 
 type LogoutService struct {
@@ -20,7 +20,7 @@ func NewLogoutAuthService(db *sqlx.DB) *LogoutService {
 }
 
 func (l *LogoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
-	token := new(models.AccessToken)
+	token := new(pgmodels.AccessToken)
 
 	if err := token.GetByToken(l.DB, req.Token); err != nil {
 		return nil, err

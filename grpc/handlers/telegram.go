@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 	"github.com/pavel-one/GoStarter/internal/appauth"
-	"github.com/pavel-one/GoStarter/internal/models"
 )
 
 type TelegramAuthService struct {
@@ -20,8 +20,8 @@ func NewTelegramAuthService(db *sqlx.DB) *TelegramAuthService {
 }
 
 func (a *TelegramAuthService) Login(ctx context.Context, req *api.TelegramRequest) (*api.AppResponse, error) {
-	user := new(models.User)
-	token := new(models.AccessToken)
+	user := new(pgmodels.User)
+	token := new(pgmodels.AccessToken)
 
 	user.FindByUniqueAndService(a.DB, req.Username, "telegram")
 	if user.ID == 0 {
