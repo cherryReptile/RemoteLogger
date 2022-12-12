@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
+	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
 	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
-	"github.com/pavel-one/GoStarter/internal/appauth"
 )
 
 type GitHubAuthService struct {
