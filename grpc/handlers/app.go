@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
@@ -28,7 +27,6 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	user.FindByUniqueAndService(a.DB, req.Email, "app")
 	if user.ID != 0 {
-		fmt.Println("user already exists")
 		return nil, errors.New("this user already exists")
 	}
 

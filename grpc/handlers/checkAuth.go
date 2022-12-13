@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
@@ -37,12 +38,12 @@ func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest)
 	}
 
 	if err = user.FindByUniqueAndService(c.DB, claims.Unique, claims.Service); err != nil {
-		return nil, err
+		return nil, errors.New("user not found")
 	}
 
 	token, err = user.GetTokenByStr(c.DB, req.Token)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("token not found")
 	}
 	if token.ID == 0 {
 		return nil, err
