@@ -79,7 +79,7 @@ func main() {
 	home.GET("/logout", logoutC.Logout)
 
 	go app.Run("80", fatalChan)
-	go grpcServer.ListenAndServe("9000", fatalChan)
+	go grpcServer.ListenAndServe("9000", gRPCFatal)
 
 	errG := <-gRPCFatal
 	if errG != nil {
