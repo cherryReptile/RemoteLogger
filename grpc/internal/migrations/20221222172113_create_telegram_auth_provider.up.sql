@@ -1,0 +1,1 @@
+insert into auth_providers(provider, unique_key) values ('telegram', 'username')

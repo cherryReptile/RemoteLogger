@@ -1,0 +1,1 @@
+delete from auth_providers where provider='app'
