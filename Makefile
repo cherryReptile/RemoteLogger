@@ -16,7 +16,7 @@ down:
 exec:
 	docker-compose exec app sh
 migrate:
-	docker-compose exec app migrate create -ext sql -dir internal/migrations ${name}
+	docker-compose exec app migrate create -ext sql -dir grpc/internal/migrations ${name}
 migrate.up:
 	docker-compose exec app migrate -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/$(DB_NAME)?sslmode=disable" -path grpc/internal/migrations up
 migrate.down:
