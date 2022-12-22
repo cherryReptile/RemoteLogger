@@ -9,7 +9,7 @@ import (
 type AccessToken struct {
 	ID        uint      `json:"id" db:"id""`
 	Token     string    `json:"access_token" db:"token"`
-	UserID    uint      `json:"user_id" db:"user_id"`
+	UserUUID  string    `json:"user_id" db:"user_id"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 

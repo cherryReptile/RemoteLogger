@@ -65,9 +65,8 @@ message CheckAuthResponse {
 }
 
 message User {
-  uint64  ID = 1;
-  string UniqueRaw = 2;
+  string UUID = 1;
+  string Login = 2;
   string Password = 3;
-  string AuthorizedBy = 4;
   string CreatedAt = 5;
 }

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
@@ -21,29 +20,25 @@ func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 }
 
 func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (*api.AppResponse, error) {
+	provider := "google"
 	user := new(pgmodels.User)
 	token := new(pgmodels.AccessToken)
 
-	user.FindByUniqueAndService(a.DB, req.Email, "google")
-	if user.ID == 0 {
-		user.UniqueRaw = req.Email
-		user.AuthorizedBy = "google"
-		if err := user.Create(a.DB); err != nil {
+	user.CheckOnExistsWithoutPassword(a.DB, req.Email, provider)
+	if user.ID == "" {
+		user.Login = req.Email
+		if err := user.Create(a.DB, provider); err != nil {
 			return nil, err
 		}
 	}
 
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	tokenStr, err := appauth.GenerateToken(user.ID, user.Login, provider)
 	if err != nil {
 		return nil, err
 	}
 
 	token.Token = tokenStr
-	token.UserID = user.ID
+	token.UserUUID = user.ID
 	if err = token.Create(a.DB); err != nil {
 		return nil, err
 	}

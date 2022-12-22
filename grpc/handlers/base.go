@@ -12,9 +12,8 @@ type BaseDB struct {
 
 func ToAppResponse(user *pgmodels.User, token *pgmodels.AccessToken) *api.AppResponse {
 	res := api.AppResponse{Struct: &api.User{}, TokenStr: ""}
-	res.Struct.ID = uint64(user.ID)
-	res.Struct.UniqueRaw = user.UniqueRaw
-	res.Struct.AuthorizedBy = user.AuthorizedBy
+	res.Struct.UUID = user.ID
+	res.Struct.Login = user.Login
 	res.Struct.CreatedAt = user.CreatedAt.String()
 	res.TokenStr = token.Token
 

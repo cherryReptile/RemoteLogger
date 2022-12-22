@@ -2,11 +2,14 @@ package handlers
 
 import (
 	"context"
-	"errors"
-	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
 	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
+
+	//"errors"
+	"github.com/jmoiron/sqlx"
+	"github.com/pavel-one/GoStarter/api"
+	//"github.com/pavel-one/GoStarter/grpc/internal/appauth"
+	//"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 )
 
 type GitHubAuthService struct {
@@ -21,29 +24,25 @@ func NewGitHubAuthService(db *sqlx.DB) *GitHubAuthService {
 }
 
 func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (*api.AppResponse, error) {
+	provider := "github"
 	user := new(pgmodels.User)
 	token := new(pgmodels.AccessToken)
 
-	user.FindByUniqueAndService(a.DB, req.Login, "github")
-	if user.ID == 0 {
-		user.UniqueRaw = req.Login
-		user.AuthorizedBy = "github"
-		if err := user.Create(a.DB); err != nil {
+	user.CheckOnExistsWithoutPassword(a.DB, req.Login, provider)
+	if user.ID == "" {
+		user.Login = req.Login
+		if err := user.Create(a.DB, provider); err != nil {
 			return nil, err
 		}
 	}
 
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+	tokenStr, err := appauth.GenerateToken(user.ID, user.Login, provider)
 	if err != nil {
 		return nil, err
 	}
 
 	token.Token = tokenStr
-	token.UserID = user.ID
+	token.UserUUID = user.ID
 	if err = token.Create(a.DB); err != nil {
 		return nil, err
 	}
