@@ -49,5 +49,5 @@ func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest)
 		return nil, err
 	}
 
-	return &api.CheckAuthResponse{Ok: true}, nil
+	return &api.CheckAuthResponse{UserUUID: user.ID}, nil
 }

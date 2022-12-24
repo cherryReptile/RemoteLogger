@@ -47,7 +47,8 @@ func main() {
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
 	authGit.GET("/", githubC.RedirectForAuth)
-	authGit.GET("/login", githubC.Login)
+	authGit.GET("/token", githubC.GetAccessToken)
+	authGit.POST("/login", githubC.Login)
 
 	appAuthC := new(controllers.AppAuthController)
 	appAuthC.Init(grpcClients.App)
@@ -67,12 +68,17 @@ func main() {
 	authTg := auth.Group("/telegram")
 	authTg.GET("/login")
 
-	testC := new(controllers.TestController)
-	testC.Init()
+	homeC := new(controllers.HomeController)
+	homeC.Init()
 	home := app.Router.Group("/home")
 	home.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken(grpcClients.CheckAuth))
 
-	home.GET("/test", testC.Test)
+	home.GET("/test", homeC.Test)
+	//home.GET("/account/add/app", homeC.AddApp)
+	//home.GET("/account/add/github/redirect", githubC.RedirectForAddAccount)
+	//home.GET("/account/add/github", githubC.AddAccount)
+	//home.GET("/account/add/google", homeC.AddGoogle)
+	//home.GET("/account/add/telegram", homeC.AddTelegram)
 
 	logoutC := new(controllers.LogoutController)
 	logoutC.Init(grpcClients.Logout)

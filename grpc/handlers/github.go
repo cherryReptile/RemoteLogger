@@ -27,11 +27,27 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (
 	provider := "github"
 	user := new(pgmodels.User)
 	token := new(pgmodels.AccessToken)
+	ap := new(pgmodels.AuthProvider)
+	pd := new(pgmodels.ProvidersData)
 
 	user.CheckOnExistsWithoutPassword(a.DB, req.Login, provider)
 	if user.ID == "" {
 		user.Login = req.Login
 		if err := user.Create(a.DB, provider); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := ap.GetByProvider(a.DB, provider); err != nil {
+		return nil, err
+	}
+
+	pd.UserData = req.Data
+	pd.UserID = user.ID
+	pd.ProviderID = ap.ID
+	pd.FindByUserUUIDAndProviderID(a.DB, user.ID, ap.ID)
+	if pd.ID == 0 {
+		if err := pd.Create(a.DB); err != nil {
 			return nil, err
 		}
 	}
@@ -49,3 +65,30 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (
 
 	return ToAppResponse(user, token), nil
 }
+
+//func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRequest) (*api.AddedResponse, error) {
+//	provider := "github"
+//	user := new(pgmodels.User)
+//	inter := new(pgmodels.Intermediate)
+//	ap := new(pgmodels.AuthProvider)
+//
+//	user.CheckOnExistsWithoutPassword(a.DB, req.Request.Login, provider)
+//	if user.ID != "" {
+//		return nil, errors.New("sorry this user authorized regardless of this account")
+//	}
+//
+//	if err := ap.GetByProvider(a.DB, provider); err != nil {
+//		return nil, err
+//	}
+//
+//	if err := inter.Create(a.DB, req.UserUUID, ap.ID); err != nil {
+//		return nil, err
+//	}
+//
+//	return &api.AddedResponse{Message: "GitHub account added successfully", Struct: &api.User{
+//		UUID:      user.ID,
+//		Login:     user.Login,
+//		Password:  user.Password,
+//		CreatedAt: user.CreatedAt.String(),
+//	}}, nil
+//}
