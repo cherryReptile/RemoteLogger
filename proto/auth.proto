@@ -8,6 +8,7 @@ option go_package = "/api";
 service AuthAppService {
   rpc Register(AppRequest) returns (AppResponse) {}
   rpc Login(AppRequest) returns (AppResponse) {}
+  rpc AddAccount(AddAppRequest) returns (AddedResponse) {}
 }
 
 service AuthGithubService {
@@ -35,6 +36,11 @@ service LogoutService {
 message AppRequest {
   string Email = 1;
   string Password = 2;
+}
+
+message AddAppRequest {
+  AppRequest Request = 1;
+  string UserUUID = 2;
 }
 
 message GitHubRequest {

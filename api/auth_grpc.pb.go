@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthAppServiceClient interface {
 	Register(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error)
 	Login(ctx context.Context, in *AppRequest, opts ...grpc.CallOption) (*AppResponse, error)
+	AddAccount(ctx context.Context, in *AddAppRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
 
 type authAppServiceClient struct {
@@ -52,12 +53,22 @@ func (c *authAppServiceClient) Login(ctx context.Context, in *AppRequest, opts .
 	return out, nil
 }
 
+func (c *authAppServiceClient) AddAccount(ctx context.Context, in *AddAppRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
+	out := new(AddedResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.AuthAppService/AddAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthAppServiceServer is the server API for AuthAppService service.
 // All implementations must embed UnimplementedAuthAppServiceServer
 // for forward compatibility
 type AuthAppServiceServer interface {
 	Register(context.Context, *AppRequest) (*AppResponse, error)
 	Login(context.Context, *AppRequest) (*AppResponse, error)
+	AddAccount(context.Context, *AddAppRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthAppServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedAuthAppServiceServer) Register(context.Context, *AppRequest) 
 }
 func (UnimplementedAuthAppServiceServer) Login(context.Context, *AppRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthAppServiceServer) AddAccount(context.Context, *AddAppRequest) (*AddedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAccount not implemented")
 }
 func (UnimplementedAuthAppServiceServer) mustEmbedUnimplementedAuthAppServiceServer() {}
 
@@ -120,6 +134,24 @@ func _AuthAppService_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthAppService_AddAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAppRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthAppServiceServer).AddAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.AuthAppService/AddAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthAppServiceServer).AddAccount(ctx, req.(*AddAppRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthAppService_ServiceDesc is the grpc.ServiceDesc for AuthAppService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var AuthAppService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthAppService_Login_Handler,
+		},
+		{
+			MethodName: "AddAccount",
+			Handler:    _AuthAppService_AddAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

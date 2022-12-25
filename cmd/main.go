@@ -78,6 +78,7 @@ func main() {
 	accounts := home.Group("/account")
 	accounts.POST("/github", githubC.AddAccount)
 	accounts.POST("/google", googleAuthC.AddAccount)
+	accounts.POST("/app", appAuthC.AddAccount)
 
 	logoutC := new(controllers.LogoutController)
 	logoutC.Init(grpcClients.Logout)

@@ -128,3 +128,54 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 	return ToAppResponse(user, token), nil
 }
+
+func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
+	provider := "app"
+	user := new(pgmodels.User)
+	inter := new(pgmodels.Intermediate)
+	pd := new(pgmodels.ProvidersData)
+	ap := new(pgmodels.AuthProvider)
+
+	user.CheckOnExistsWithoutPassword(a.DB, req.Request.Email, provider)
+	if user.ID != "" {
+		return nil, errors.New("sorry this user authorized regardless of this account")
+	}
+	user.FindByUUID(a.DB, req.UserUUID)
+
+	if err := ap.GetByProvider(a.DB, provider); err != nil {
+		return nil, err
+	}
+
+	inter.Find(a.DB, req.UserUUID, ap.ID)
+	if inter.ID != 0 {
+		return nil, errors.New("sorry this account already been added")
+	}
+
+	if err := inter.Create(a.DB, req.UserUUID, ap.ID); err != nil {
+		return nil, err
+	}
+
+	hashP, err := bcrypt.GenerateFromPassword([]byte(req.Request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	json, err := json.Marshal(map[string]string{"email": req.Request.Email, "password": string(hashP)})
+	if err != nil {
+		return nil, err
+	}
+
+	pd.UserData = json
+	pd.UserID = req.UserUUID
+	pd.ProviderID = ap.ID
+	if err = pd.Create(a.DB); err != nil {
+		return nil, err
+	}
+
+	return &api.AddedResponse{
+		Message: "App account added successfully",
+		Struct: &api.User{
+			UUID:      user.ID,
+			Login:     user.Login,
+			CreatedAt: user.CreatedAt.String(),
+		}}, nil
+}
