@@ -77,11 +77,7 @@ func main() {
 	home.GET("/test", homeC.Test)
 	accounts := home.Group("/account")
 	accounts.POST("/github", githubC.AddAccount)
-	//home.GET("/account/add/app", homeC.AddApp)
-	//home.GET("/account/add/github/redirect", githubC.RedirectForAddAccount)
-	//home.GET("/account/add/github", githubC.AddAccount)
-	//home.GET("/account/add/google", homeC.AddGoogle)
-	//home.GET("/account/add/telegram", homeC.AddTelegram)
+	accounts.POST("/google", googleAuthC.AddAccount)
 
 	logoutC := new(controllers.LogoutController)
 	logoutC.Init(grpcClients.Logout)

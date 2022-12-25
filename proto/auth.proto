@@ -17,6 +17,7 @@ service AuthGithubService {
 
 service AuthGoogleService {
   rpc Login(GoogleRequest) returns (AppResponse) {}
+  rpc AddAccount(AddGoogleRequest) returns (AddedResponse) {}
 }
 
 service AuthTelegramService {
@@ -49,6 +50,11 @@ message AddGitHubRequest {
 message GoogleRequest {
   string Email = 1;
   bytes  Data = 2;
+}
+
+message AddGoogleRequest {
+  GoogleRequest Request = 1;
+  string UserUUID = 2;
 }
 
 message TelegramRequest {

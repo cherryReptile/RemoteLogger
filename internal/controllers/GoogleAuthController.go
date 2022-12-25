@@ -79,6 +79,37 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
+func (c *GoogleAuthController) AddAccount(ctx *gin.Context) {
+	t := new(requests.Token)
+	if err := ctx.ShouldBindJSON(t); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	uuid, err := helpers.GetAndCastUserUUID(ctx)
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	login, body, err := c.getGoogleUserAndBody(t.Token)
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	res, err := c.GoogleService.AddAccount(context.Background(), &api.AddGoogleRequest{
+		UserUUID: uuid,
+		Request:  &api.GoogleRequest{Email: login, Data: body},
+	})
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
+}
+
 func (c *GoogleAuthController) getGoogleUserAndBody(token string) (string, []byte, error) {
 	user := new(requests.GoogleUser)
 	res, err := helpers.RequestToGoogle(token)

@@ -267,6 +267,7 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGoogleServiceClient interface {
 	Login(ctx context.Context, in *GoogleRequest, opts ...grpc.CallOption) (*AppResponse, error)
+	AddAccount(ctx context.Context, in *AddGoogleRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
 
 type authGoogleServiceClient struct {
@@ -286,11 +287,21 @@ func (c *authGoogleServiceClient) Login(ctx context.Context, in *GoogleRequest, 
 	return out, nil
 }
 
+func (c *authGoogleServiceClient) AddAccount(ctx context.Context, in *AddGoogleRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
+	out := new(AddedResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.AuthGoogleService/AddAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthGoogleServiceServer is the server API for AuthGoogleService service.
 // All implementations must embed UnimplementedAuthGoogleServiceServer
 // for forward compatibility
 type AuthGoogleServiceServer interface {
 	Login(context.Context, *GoogleRequest) (*AppResponse, error)
+	AddAccount(context.Context, *AddGoogleRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGoogleServiceServer()
 }
 
@@ -300,6 +311,9 @@ type UnimplementedAuthGoogleServiceServer struct {
 
 func (UnimplementedAuthGoogleServiceServer) Login(context.Context, *GoogleRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthGoogleServiceServer) AddAccount(context.Context, *AddGoogleRequest) (*AddedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAccount not implemented")
 }
 func (UnimplementedAuthGoogleServiceServer) mustEmbedUnimplementedAuthGoogleServiceServer() {}
 
@@ -332,6 +346,24 @@ func _AuthGoogleService_Login_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthGoogleService_AddAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGoogleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGoogleServiceServer).AddAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.AuthGoogleService/AddAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGoogleServiceServer).AddAccount(ctx, req.(*AddGoogleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthGoogleService_ServiceDesc is the grpc.ServiceDesc for AuthGoogleService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +374,10 @@ var AuthGoogleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthGoogleService_Login_Handler,
+		},
+		{
+			MethodName: "AddAccount",
+			Handler:    _AuthGoogleService_AddAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
