@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/internal/helpers"
@@ -120,6 +121,9 @@ func (c *GithubAuthController) getGitHubUserAndBody(token string) (string, []byt
 		return "", nil, err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return "", nil, errors.New("github oauth2 failed because returning not ok code")
+	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)

@@ -117,6 +117,9 @@ func (c *GoogleAuthController) getGoogleUserAndBody(token string) (string, []byt
 		return "", nil, err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return "", nil, errors.New("google oauth2 failed because returning not ok code")
+	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
