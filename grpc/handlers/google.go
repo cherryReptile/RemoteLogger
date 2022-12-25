@@ -97,7 +97,7 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 	}
 
 	return &api.AddedResponse{
-		Message: "GitHub account added successfully",
+		Message: "Google account added successfully",
 		Struct: &api.User{
 			UUID:      user.ID,
 			Login:     user.Login,
