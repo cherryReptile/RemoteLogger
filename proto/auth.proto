@@ -12,7 +12,7 @@ service AuthAppService {
 
 service AuthGithubService {
   rpc Login(GitHubRequest) returns (AppResponse) {}
-  //  rpc AddAccount(AddGitHubRequest) returns (AddedResponse) {}
+  rpc AddAccount(AddGitHubRequest) returns (AddedResponse) {}
 }
 
 service AuthGoogleService {
@@ -41,10 +41,10 @@ message GitHubRequest {
   bytes Data = 2;
 }
 
-//message AddGitHubRequest {
-//  GitHubRequest Request = 1;
-//  string UserUUID = 2;
-//}
+message AddGitHubRequest {
+  GitHubRequest Request = 1;
+  string UserUUID = 2;
+}
 
 message GoogleRequest {
   string Email = 1;
@@ -60,10 +60,10 @@ message AppResponse {
   string TokenStr = 2;
 }
 
-//message AddedResponse {
-//  User  Struct = 1;
-//  string Message = 2;
-//}
+message AddedResponse {
+  User  Struct = 1;
+  string Message = 2;
+}
 
 message TokenRequest {
   string Token = 1;
@@ -80,6 +80,5 @@ message CheckAuthResponse {
 message User {
   string UUID = 1;
   string Login = 2;
-  string Password = 3;
   string CreatedAt = 5;
 }

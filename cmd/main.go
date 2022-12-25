@@ -75,6 +75,8 @@ func main() {
 	home.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken(grpcClients.CheckAuth))
 
 	home.GET("/test", homeC.Test)
+	accounts := home.Group("/account")
+	accounts.POST("/github", githubC.AddAccount)
 	//home.GET("/account/add/app", homeC.AddApp)
 	//home.GET("/account/add/github/redirect", githubC.RedirectForAddAccount)
 	//home.GET("/account/add/github", githubC.AddAccount)

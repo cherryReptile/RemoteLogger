@@ -83,31 +83,34 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
-	//t := new(requests.Token)
-	//if err := ctx.ShouldBindJSON(t); err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-	//
-	//uuid, err := helpers.GetAndCastUserUUID(ctx)
-	//if err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-	//
-	//reqUser, err := c.getGitHubUserAndBody(t.Token)
-	//if err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-	//
-	//res, err := c.GithubService.AddAccount(context.Background(), &api.AddGitHubRequest{UserUUID: uuid, Request: &api.GitHubRequest{Login: reqUser.Login}})
-	//if err != nil {
-	//	c.ERROR(ctx, http.StatusBadRequest, err)
-	//	return
-	//}
-	//
-	//ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
+	t := new(requests.Token)
+	if err := ctx.ShouldBindJSON(t); err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	uuid, err := helpers.GetAndCastUserUUID(ctx)
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	login, body, err := c.getGitHubUserAndBody(t.Token)
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	res, err := c.GithubService.AddAccount(context.Background(), &api.AddGitHubRequest{
+		UserUUID: uuid,
+		Request:  &api.GitHubRequest{Login: login, Data: body},
+	})
+	if err != nil {
+		c.ERROR(ctx, http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
 }
 
 func (c *GithubAuthController) getGitHubUserAndBody(token string) (string, []byte, error) {

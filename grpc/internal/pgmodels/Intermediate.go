@@ -31,3 +31,10 @@ func (i *Intermediate) Create(db *sqlx.DB, uuid string, providerID uint) error {
 
 	return nil
 }
+
+func (i *Intermediate) Find(db *sqlx.DB, userUUID string, providerID uint) error {
+	if err := db.Get(i, "SELECT * FROM intermediate WHERE user_id=$1 AND provider_id=$2 LIMIT 1", userUUID, providerID); err != nil {
+		return err
+	}
+	return nil
+}

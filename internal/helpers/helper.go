@@ -78,16 +78,16 @@ func TrimJson(jsonBytes []byte) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-//func GetAndCastUserUUID(ctx *gin.Context) (string, error) {
-//	u, ok := ctx.Get("userUUID")
-//	if !ok {
-//		return "", errors.New("cannot user uuid")
-//	}
-//
-//	uuid, ok := u.(string)
-//	if !ok {
-//		return "", errors.New("invalid uuid")
-//	}
-//
-//	return uuid, nil
-//}
+func GetAndCastUserUUID(ctx *gin.Context) (string, error) {
+	u, ok := ctx.Get("userUUID")
+	if !ok {
+		return "", errors.New("cannot user uuid")
+	}
+
+	uuid, ok := u.(string)
+	if !ok {
+		return "", errors.New("invalid uuid")
+	}
+
+	return uuid, nil
+}

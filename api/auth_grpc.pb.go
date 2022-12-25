@@ -145,6 +145,7 @@ var AuthAppService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGithubServiceClient interface {
 	Login(ctx context.Context, in *GitHubRequest, opts ...grpc.CallOption) (*AppResponse, error)
+	AddAccount(ctx context.Context, in *AddGitHubRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
 
 type authGithubServiceClient struct {
@@ -164,11 +165,21 @@ func (c *authGithubServiceClient) Login(ctx context.Context, in *GitHubRequest, 
 	return out, nil
 }
 
+func (c *authGithubServiceClient) AddAccount(ctx context.Context, in *AddGitHubRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
+	out := new(AddedResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.AuthGithubService/AddAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthGithubServiceServer is the server API for AuthGithubService service.
 // All implementations must embed UnimplementedAuthGithubServiceServer
 // for forward compatibility
 type AuthGithubServiceServer interface {
 	Login(context.Context, *GitHubRequest) (*AppResponse, error)
+	AddAccount(context.Context, *AddGitHubRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGithubServiceServer()
 }
 
@@ -178,6 +189,9 @@ type UnimplementedAuthGithubServiceServer struct {
 
 func (UnimplementedAuthGithubServiceServer) Login(context.Context, *GitHubRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthGithubServiceServer) AddAccount(context.Context, *AddGitHubRequest) (*AddedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAccount not implemented")
 }
 func (UnimplementedAuthGithubServiceServer) mustEmbedUnimplementedAuthGithubServiceServer() {}
 
@@ -210,6 +224,24 @@ func _AuthGithubService_Login_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthGithubService_AddAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddGitHubRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGithubServiceServer).AddAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.AuthGithubService/AddAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGithubServiceServer).AddAccount(ctx, req.(*AddGitHubRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthGithubService_ServiceDesc is the grpc.ServiceDesc for AuthGithubService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -220,6 +252,10 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _AuthGithubService_Login_Handler,
+		},
+		{
+			MethodName: "AddAccount",
+			Handler:    _AuthGithubService_AddAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
