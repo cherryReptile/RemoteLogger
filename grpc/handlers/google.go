@@ -27,7 +27,7 @@ func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Email, provider)
+	user.FindByLoginAndProvider(a.DB, req.Email, provider)
 	if user.ID == "" {
 		user.Login = req.Email
 		if err := user.Create(a.DB, provider); err != nil {
@@ -70,11 +70,11 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 	pd := new(pgmodels.ProvidersData)
 	ap := new(pgmodels.AuthProvider)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Request.Email, provider)
+	user.FindByLoginAndProvider(a.DB, req.Request.Email, provider)
 	if user.ID != "" {
 		return nil, errors.New("sorry this user authorized regardless of this account")
 	}
-	user.FindByUUID(a.DB, req.UserUUID)
+	user.Find(a.DB, req.UserUUID)
 
 	if err := ap.GetByProvider(a.DB, provider); err != nil {
 		return nil, err

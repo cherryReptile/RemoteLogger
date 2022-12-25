@@ -37,7 +37,7 @@ func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest)
 		return nil, err
 	}
 
-	if err = user.CheckOnExistsWithoutPassword(c.DB, claims.Unique, claims.Service); err != nil {
+	if err = user.FindByLoginAndProvider(c.DB, claims.Unique, claims.Service); err != nil {
 		return nil, errors.New("user not found")
 	}
 

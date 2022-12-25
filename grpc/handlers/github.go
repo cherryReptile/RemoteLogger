@@ -31,7 +31,7 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (
 	ap := new(pgmodels.AuthProvider)
 	pd := new(pgmodels.ProvidersData)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Login, provider)
+	user.FindByLoginAndProvider(a.DB, req.Login, provider)
 	if user.ID == "" {
 		user.Login = req.Login
 		if err := user.Create(a.DB, provider); err != nil {
@@ -74,11 +74,14 @@ func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRe
 	pd := new(pgmodels.ProvidersData)
 	ap := new(pgmodels.AuthProvider)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Request.Login, provider)
+	user.FindByLoginAndProvider(a.DB, req.Request.Login, provider)
 	if user.ID != "" {
 		return nil, errors.New("sorry this user authorized regardless of this account")
 	}
-	user.FindByUUID(a.DB, req.UserUUID)
+	user.Find(a.DB, req.UserUUID)
+	if user.ID == "" {
+		return nil, errors.New("user not found")
+	}
 
 	if err := ap.GetByProvider(a.DB, provider); err != nil {
 		return nil, err

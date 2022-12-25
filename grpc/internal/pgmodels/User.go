@@ -43,14 +43,14 @@ func (u *User) Create(db *sqlx.DB, provider string) error {
 	return nil
 }
 
-func (u *User) FindByUUID(db *sqlx.DB, uuid string) error {
+func (u *User) Find(db *sqlx.DB, uuid string) error {
 	if err := db.Get(u, "SELECT * FROM users WHERE id=$1", uuid); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *User) CheckOnExistsWithoutPassword(db *sqlx.DB, login, provider string) error {
+func (u *User) FindByLoginAndProvider(db *sqlx.DB, login, provider string) error {
 	if err := db.Get(u,
 		`select users.id, login, users.created_at 
 	from users

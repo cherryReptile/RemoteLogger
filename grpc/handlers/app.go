@@ -28,7 +28,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Email, "app")
+	user.FindByLoginAndProvider(a.DB, req.Email, "app")
 	if user.ID != "" {
 		return nil, errors.New("this user already exists")
 	}
@@ -87,7 +87,7 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
-	if err := user.CheckOnExistsWithoutPassword(a.DB, req.Email, "app"); err != nil {
+	if err := user.FindByLoginAndProvider(a.DB, req.Email, "app"); err != nil {
 		return nil, err
 	}
 
@@ -136,11 +136,11 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	pd := new(pgmodels.ProvidersData)
 	ap := new(pgmodels.AuthProvider)
 
-	user.CheckOnExistsWithoutPassword(a.DB, req.Request.Email, provider)
+	user.FindByLoginAndProvider(a.DB, req.Request.Email, provider)
 	if user.ID != "" {
 		return nil, errors.New("sorry this user authorized regardless of this account")
 	}
-	user.FindByUUID(a.DB, req.UserUUID)
+	user.Find(a.DB, req.UserUUID)
 
 	if err := ap.GetByProvider(a.DB, provider); err != nil {
 		return nil, err
