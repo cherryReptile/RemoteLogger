@@ -96,11 +96,5 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 		return nil, err
 	}
 
-	return &api.AddedResponse{
-		Message: "Google account added successfully",
-		Struct: &api.User{
-			UUID:      user.ID,
-			Login:     user.Login,
-			CreatedAt: user.CreatedAt.String(),
-		}}, nil
+	return ToAddedResponse("Google account added successfully", user), nil
 }

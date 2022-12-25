@@ -19,3 +19,13 @@ func ToAppResponse(user *pgmodels.User, token *pgmodels.AccessToken) *api.AppRes
 
 	return &res
 }
+
+func ToAddedResponse(message string, user *pgmodels.User) *api.AddedResponse {
+	return &api.AddedResponse{
+		Message: message,
+		Struct: &api.User{
+			UUID:      user.ID,
+			Login:     user.Login,
+			CreatedAt: user.CreatedAt.String(),
+		}}
+}

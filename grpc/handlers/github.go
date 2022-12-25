@@ -100,11 +100,5 @@ func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRe
 		return nil, err
 	}
 
-	return &api.AddedResponse{
-		Message: "GitHub account added successfully",
-		Struct: &api.User{
-			UUID:      user.ID,
-			Login:     user.Login,
-			CreatedAt: user.CreatedAt.String(),
-		}}, nil
+	return ToAddedResponse("GitHub account added successfully", user), nil
 }

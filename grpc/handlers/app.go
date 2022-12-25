@@ -171,11 +171,5 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, err
 	}
 
-	return &api.AddedResponse{
-		Message: "App account added successfully",
-		Struct: &api.User{
-			UUID:      user.ID,
-			Login:     user.Login,
-			CreatedAt: user.CreatedAt.String(),
-		}}, nil
+	return ToAddedResponse("App account added successfully", user), nil
 }
