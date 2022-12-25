@@ -78,6 +78,7 @@ func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRe
 	if user.ID != "" {
 		return nil, errors.New("sorry this user authorized regardless of this account")
 	}
+	user.FindByUUID(a.DB, req.UserUUID)
 
 	if err := ap.GetByProvider(a.DB, provider); err != nil {
 		return nil, err
