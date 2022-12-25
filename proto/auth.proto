@@ -48,6 +48,7 @@ message GitHubRequest {
 
 message GoogleRequest {
   string Email = 1;
+  bytes  Data = 2;
 }
 
 message TelegramRequest {

@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/internal/helpers"
@@ -16,7 +15,7 @@ import (
 )
 
 type GithubAuthController struct {
-	BaseAuthController
+	BaseOAuthController
 	GithubService api.AuthGithubServiceClient
 	Config        *oauth2.Config
 }
@@ -62,7 +61,7 @@ func (c *GithubAuthController) GetAccessToken(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) Login(ctx *gin.Context) {
-	t := new(requests.GitHubToken)
+	t := new(requests.Token)
 	if err := ctx.ShouldBindJSON(t); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -84,7 +83,7 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 }
 
 func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
-	//t := new(requests.GitHubToken)
+	//t := new(requests.Token)
 	//if err := ctx.ShouldBindJSON(t); err != nil {
 	//	c.ERROR(ctx, http.StatusBadRequest, err)
 	//	return
@@ -109,21 +108,6 @@ func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
 	//}
 	//
 	//ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
-}
-
-func (c *GithubAuthController) checkOAuthStateCookie(ctx *gin.Context) (string, error) {
-	oauthState, err := ctx.Cookie("oauthstate")
-
-	if err != nil {
-		return "", err
-	}
-
-	if ctx.Query("state") != oauthState {
-		return "", errors.New("invalid state")
-	}
-
-	code := ctx.Query("code")
-	return code, nil
 }
 
 func (c *GithubAuthController) getGitHubUserAndBody(token string) (string, []byte, error) {

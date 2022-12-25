@@ -9,7 +9,7 @@ import (
 )
 
 type LogoutController struct {
-	BaseAuthController
+	BaseOAuthController
 	LogoutService api.LogoutServiceClient
 }
 

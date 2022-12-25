@@ -9,7 +9,7 @@ import (
 )
 
 type AppAuthController struct {
-	BaseAuthController
+	BaseOAuthController
 	AppService api.AuthAppServiceClient
 }
 

@@ -12,7 +12,7 @@ import (
 type BaseController struct {
 }
 
-type BaseAuthController struct {
+type BaseOAuthController struct {
 	BaseController
 }
 
@@ -28,7 +28,22 @@ func (c *BaseController) ERROR(ctx *gin.Context, code int, err error) {
 	})
 }
 
-func (c *BaseAuthController) setOAuthStateCookie(ctx *gin.Context, path, domain string) string {
+func (c *BaseOAuthController) checkOAuthStateCookie(ctx *gin.Context) (string, error) {
+	oauthState, err := ctx.Cookie("oauthstate")
+
+	if err != nil {
+		return "", err
+	}
+
+	if ctx.Query("state") != oauthState {
+		return "", errors.New("invalid state")
+	}
+
+	code := ctx.Query("code")
+	return code, nil
+}
+
+func (c *BaseOAuthController) setOAuthStateCookie(ctx *gin.Context, path, domain string) string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)

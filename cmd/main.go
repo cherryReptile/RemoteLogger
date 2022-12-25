@@ -61,7 +61,8 @@ func main() {
 	googleAuthC.Init(grpcClients.Google)
 	authGo := auth.Group("/google")
 	authGo.GET("/", googleAuthC.RedirectForAuth)
-	authGo.GET("/login", googleAuthC.Login)
+	authGo.GET("/token", googleAuthC.GetAccessToken)
+	authGo.POST("/login", googleAuthC.Login)
 
 	tgAuthC := new(controllers.TelegramAuthController)
 	tgAuthC.Init(grpcClients.Telegram)

@@ -1,5 +1,5 @@
 package requests
 
-type GitHubToken struct {
+type Token struct {
 	Token string `json:"token" binding:"required"`
 }
