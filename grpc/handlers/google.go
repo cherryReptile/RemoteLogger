@@ -73,7 +73,7 @@ func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (
 func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRequest) (*api.AddedResponse, error) {
 	provider := "google"
 	user := new(pgmodels.User)
-	inter := new(pgmodels.Intermediate)
+	up := new(pgmodels.UsersProviders)
 	pd := new(pgmodels.ProvidersData)
 	p := new(pgmodels.Provider)
 
@@ -92,7 +92,7 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 		return nil, errors.New("user already exists")
 	}
 
-	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
+	if err := up.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 

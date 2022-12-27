@@ -76,7 +76,7 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (
 func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRequest) (*api.AddedResponse, error) {
 	provider := "github"
 	user := new(pgmodels.User)
-	inter := new(pgmodels.Intermediate)
+	up := new(pgmodels.UsersProviders)
 	pd := new(pgmodels.ProvidersData)
 	p := new(pgmodels.Provider)
 
@@ -95,7 +95,7 @@ func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRe
 		return nil, errors.New("user already exists")
 	}
 
-	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
+	if err := up.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 

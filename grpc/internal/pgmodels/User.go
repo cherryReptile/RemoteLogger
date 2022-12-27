@@ -31,7 +31,7 @@ func (u *User) Create(db *sqlx.DB, providerID uint) error {
 		return err
 	}
 
-	intermediate := new(Intermediate)
+	intermediate := new(UsersProviders)
 	if err = intermediate.Create(db, u.ID, providerID); err != nil {
 		return err
 	}

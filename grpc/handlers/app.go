@@ -135,9 +135,8 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
-	//userData := new(resources.AppUserData)
 	user := new(pgmodels.User)
-	inter := new(pgmodels.Intermediate)
+	up := new(pgmodels.UsersProviders)
 	pd := new(pgmodels.ProvidersData)
 	p := new(pgmodels.Provider)
 
@@ -156,11 +155,7 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("user already exists")
 	}
 
-	//if err := json.Unmarshal(pd.UserData, &userData); err != nil {
-	//	return nil, err
-	//}
-
-	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
+	if err := up.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
