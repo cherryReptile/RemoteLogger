@@ -14,7 +14,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
-func (u *User) Create(db *sqlx.DB, provider string) error {
+func (u *User) Create(db *sqlx.DB, providerID uint) error {
 	u.ID = uuid.NewString()
 	u.CreatedAt = time.Now()
 
@@ -31,13 +31,8 @@ func (u *User) Create(db *sqlx.DB, provider string) error {
 		return err
 	}
 
-	authProvider := new(Provider)
-	if err = authProvider.GetByProvider(db, provider); err != nil {
-		return err
-	}
-
 	intermediate := new(Intermediate)
-	if err = intermediate.Create(db, u.ID, authProvider.ID); err != nil {
+	if err = intermediate.Create(db, u.ID, providerID); err != nil {
 		return err
 	}
 

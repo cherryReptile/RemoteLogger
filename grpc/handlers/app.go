@@ -24,6 +24,7 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 }
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+	provider := "app"
 	user := new(pgmodels.User)
 	p := new(pgmodels.Provider)
 	pd := new(pgmodels.ProvidersData)
@@ -34,7 +35,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, errors.New("this user already exists")
 	}
 
-	p.GetByProvider(a.DB, "app")
+	p.GetByProvider(a.DB, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown auth provider")
 	}
@@ -51,7 +52,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	user.Login = req.Email
 
-	err = user.Create(a.DB, "app")
+	err = user.Create(a.DB, p.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
-	userData := new(resources.AppUserData)
+	//userData := new(resources.AppUserData)
 	user := new(pgmodels.User)
 	inter := new(pgmodels.Intermediate)
 	pd := new(pgmodels.ProvidersData)
@@ -155,9 +156,9 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("user already exists")
 	}
 
-	if err := json.Unmarshal(pd.UserData, &userData); err != nil {
-		return nil, err
-	}
+	//if err := json.Unmarshal(pd.UserData, &userData); err != nil {
+	//	return nil, err
+	//}
 
 	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err

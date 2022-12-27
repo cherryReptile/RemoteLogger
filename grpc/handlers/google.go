@@ -30,9 +30,9 @@ func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (
 	user.FindByLoginAndProvider(a.DB, req.Email, provider)
 	if user.ID == "" {
 		user.Login = req.Email
-		if err := user.Create(a.DB, provider); err != nil {
-			return nil, err
-		}
+		//if err := user.Create(a.DB, 1); err != nil {
+		//	return nil, err
+		//}
 	}
 
 	if err := ap.GetByProvider(a.DB, provider); err != nil {
