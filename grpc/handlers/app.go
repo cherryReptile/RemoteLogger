@@ -25,12 +25,17 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(pgmodels.User)
 	ap := new(pgmodels.AuthProvider)
-	pd := new(pgmodels.ProvidersData)
+	//pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
 	user.FindByLoginAndProvider(a.DB, req.Email, "app")
 	if user.ID != "" {
 		return nil, errors.New("this user already exists")
+	}
+
+	pd, err := user.GetProviderData(a.DB, "app")
+	if err != nil {
+		return nil, err
 	}
 
 	hashP, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -54,7 +59,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, errors.New("unknown auth provider")
 	}
 
-	json, err := json.Marshal(map[string]string{"password": string(hashP)})
+	json, err := json.Marshal(map[string]string{"email": req.Email, "password": string(hashP)})
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package pgmodels
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"time"
@@ -54,12 +55,25 @@ func (u *User) FindByLoginAndProvider(db *sqlx.DB, login, provider string) error
 	if err := db.Get(u,
 		`select users.id, login, users.created_at 
 	from users
-    	left join intermediate i on i.user_id = users.id
-    	left join auth_providers ap on i.provider_id = ap.id
-	where users.login = $1 and ap.provider = $2 limit 1`, login, provider); err != nil {
+    	left join users_providers up on up.user_id = users.id
+    	left join providers p on up.provider_id = p.id
+	where users.login = $1 and p.provider = $2 limit 1`, login, provider); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (u *User) GetProviderData(db *sqlx.DB, provider string) (*ProvidersData, error) {
+	ap := new(AuthProvider)
+	pd := new(ProvidersData)
+	ap.GetByProvider(db, provider)
+
+	if ap.ID == 0 {
+		return nil, errors.New("unknown provider")
+	}
+
+	pd.FindByUserUUIDAndProviderID(db, u.ID, pd.ID)
+	return pd, nil
 }
 
 func (u *User) GetTokenByStr(db *sqlx.DB, token string) (*AccessToken, error) {

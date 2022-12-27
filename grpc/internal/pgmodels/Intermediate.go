@@ -17,7 +17,7 @@ func (i *Intermediate) Create(db *sqlx.DB, uuid string, providerID uint) error {
 	i.UserID = uuid
 	i.ProviderID = providerID
 	i.CreatedAt = time.Now()
-	_, err := db.NamedExec(`INSERT INTO intermediate (user_id, provider_id, created_at) 
+	_, err := db.NamedExec(`INSERT INTO users_providers (user_id, provider_id, created_at) 
 								VALUES (:user_id, :provider_id, :created_at)`, i)
 
 	if err != nil {
@@ -25,7 +25,7 @@ func (i *Intermediate) Create(db *sqlx.DB, uuid string, providerID uint) error {
 	}
 
 	// update model
-	if err = db.Get(i, "SELECT * FROM intermediate ORDER BY id DESC LIMIT 1"); err != nil {
+	if err = db.Get(i, "SELECT * FROM users_providers ORDER BY id DESC LIMIT 1"); err != nil {
 		return err
 	}
 
@@ -33,7 +33,7 @@ func (i *Intermediate) Create(db *sqlx.DB, uuid string, providerID uint) error {
 }
 
 func (i *Intermediate) Find(db *sqlx.DB, userUUID string, providerID uint) error {
-	if err := db.Get(i, "SELECT * FROM intermediate WHERE user_id=$1 AND provider_id=$2 LIMIT 1", userUUID, providerID); err != nil {
+	if err := db.Get(i, "SELECT * FROM users_providers WHERE user_id=$1 AND provider_id=$2 LIMIT 1", userUUID, providerID); err != nil {
 		return err
 	}
 	return nil

@@ -1,4 +1,4 @@
-create table auth_providers
+create table providers
 (
     id           bigserial not null primary key,
     provider     varchar   not null unique,

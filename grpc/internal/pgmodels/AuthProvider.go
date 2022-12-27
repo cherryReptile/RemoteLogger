@@ -12,7 +12,7 @@ type AuthProvider struct {
 }
 
 func (a *AuthProvider) GetByProvider(db *sqlx.DB, provider string) error {
-	if err := db.Get(a, "SELECT * FROM auth_providers WHERE provider=$1 LIMIT 1", provider); err != nil {
+	if err := db.Get(a, "SELECT * FROM providers WHERE provider=$1 LIMIT 1", provider); err != nil {
 		return err
 	}
 
