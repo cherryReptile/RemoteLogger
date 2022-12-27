@@ -23,7 +23,7 @@ func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (*api.AppResponse, error) {
 	provider := "google"
 	user := new(pgmodels.User)
-	ap := new(pgmodels.AuthProvider)
+	ap := new(pgmodels.Provider)
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
@@ -68,7 +68,7 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 	user := new(pgmodels.User)
 	inter := new(pgmodels.Intermediate)
 	pd := new(pgmodels.ProvidersData)
-	ap := new(pgmodels.AuthProvider)
+	ap := new(pgmodels.Provider)
 
 	user.FindByLoginAndProvider(a.DB, req.Request.Email, provider)
 	if user.ID != "" {

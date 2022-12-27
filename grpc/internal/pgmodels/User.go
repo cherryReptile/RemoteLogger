@@ -31,7 +31,7 @@ func (u *User) Create(db *sqlx.DB, provider string) error {
 		return err
 	}
 
-	authProvider := new(AuthProvider)
+	authProvider := new(Provider)
 	if err = authProvider.GetByProvider(db, provider); err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (u *User) FindByLoginAndProvider(db *sqlx.DB, login, provider string) error
 }
 
 func (u *User) GetProviderData(db *sqlx.DB, provider string) (*ProvidersData, error) {
-	ap := new(AuthProvider)
+	ap := new(Provider)
 	pd := new(ProvidersData)
 	ap.GetByProvider(db, provider)
 

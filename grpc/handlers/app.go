@@ -8,6 +8,7 @@ import (
 	"github.com/pavel-one/GoStarter/api"
 	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
 	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
+	"github.com/pavel-one/GoStarter/grpc/internal/resources"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,8 +25,8 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	user := new(pgmodels.User)
-	ap := new(pgmodels.AuthProvider)
-	//pd := new(pgmodels.ProvidersData)
+	p := new(pgmodels.Provider)
+	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
 	user.FindByLoginAndProvider(a.DB, req.Email, "app")
@@ -33,9 +34,14 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, errors.New("this user already exists")
 	}
 
-	pd, err := user.GetProviderData(a.DB, "app")
-	if err != nil {
-		return nil, err
+	p.GetByProvider(a.DB, "app")
+	if p.ID == 0 {
+		return nil, errors.New("unknown auth provider")
+	}
+
+	pd.FindByUsernameAndProvider(a.DB, req.Email, p.ID)
+	if pd.ID != 0 {
+		return nil, errors.New("this user already exists")
 	}
 
 	hashP, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -54,11 +60,6 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	ap.GetByProvider(a.DB, "app")
-	if ap.ID == 0 {
-		return nil, errors.New("unknown auth provider")
-	}
-
 	json, err := json.Marshal(map[string]string{"email": req.Email, "password": string(hashP)})
 	if err != nil {
 		return nil, err
@@ -66,7 +67,8 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	pd.UserData = json
 	pd.UserID = user.ID
-	pd.ProviderID = ap.ID
+	pd.ProviderID = p.ID
+	pd.Username = user.Login
 	if err = pd.Create(a.DB); err != nil {
 		return nil, err
 	}
@@ -87,36 +89,32 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 }
 
 func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+	userData := new(resources.AppUserData)
 	user := new(pgmodels.User)
-	ap := new(pgmodels.AuthProvider)
+	p := new(pgmodels.Provider)
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
-	if err := user.FindByLoginAndProvider(a.DB, req.Email, "app"); err != nil {
-		return nil, err
+	p.GetByProvider(a.DB, "app")
+	if p.ID == 0 {
+		return nil, errors.New("unknown provider")
 	}
 
+	pd.FindByUsernameAndProvider(a.DB, req.Email, p.ID)
+	if pd.ID == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	user.Find(a.DB, pd.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	ap.GetByProvider(a.DB, "app")
-	if ap.ID == 0 {
-		return nil, errors.New("unknown provider")
-	}
-
-	pd.FindByUserUUIDAndProviderID(a.DB, user.ID, ap.ID)
-	if pd.ID == 0 {
-		return nil, errors.New("user's provider data not found")
-	}
-
-	var data map[string]string
-	err := json.Unmarshal(pd.UserData, &data)
-	if err != nil {
+	if err := json.Unmarshal(pd.UserData, &userData); err != nil {
 		return nil, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(data["password"]), []byte(req.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(req.Password)); err != nil {
 		return nil, err
 	}
 
@@ -136,27 +134,32 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
+	userData := new(resources.AppUserData)
 	user := new(pgmodels.User)
 	inter := new(pgmodels.Intermediate)
 	pd := new(pgmodels.ProvidersData)
-	ap := new(pgmodels.AuthProvider)
+	p := new(pgmodels.Provider)
 
-	user.FindByLoginAndProvider(a.DB, req.Request.Email, provider)
-	if user.ID != "" {
-		return nil, errors.New("sorry this user authorized regardless of this account")
-	}
 	user.Find(a.DB, req.UserUUID)
+	if user.ID == "" {
+		return nil, errors.New("invalid user's uuid")
+	}
 
-	if err := ap.GetByProvider(a.DB, provider); err != nil {
+	p.GetByProvider(a.DB, provider)
+	if p.ID == 0 {
+		return nil, errors.New("unknown provider")
+	}
+
+	pd.FindByUsernameAndProvider(a.DB, req.Request.Email, p.ID)
+	if pd.ID != 0 {
+		return nil, errors.New("user already exists")
+	}
+
+	if err := json.Unmarshal(pd.UserData, &userData); err != nil {
 		return nil, err
 	}
 
-	inter.Find(a.DB, req.UserUUID, ap.ID)
-	if inter.ID != 0 {
-		return nil, errors.New("sorry this account already been added")
-	}
-
-	if err := inter.Create(a.DB, req.UserUUID, ap.ID); err != nil {
+	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -171,7 +174,8 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 
 	pd.UserData = json
 	pd.UserID = req.UserUUID
-	pd.ProviderID = ap.ID
+	pd.ProviderID = p.ID
+	pd.Username = req.Request.Email
 	if err = pd.Create(a.DB); err != nil {
 		return nil, err
 	}

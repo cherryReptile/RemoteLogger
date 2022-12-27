@@ -28,7 +28,7 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.GitHubRequest) (
 	provider := "github"
 	user := new(pgmodels.User)
 	token := new(pgmodels.AccessToken)
-	ap := new(pgmodels.AuthProvider)
+	ap := new(pgmodels.Provider)
 	pd := new(pgmodels.ProvidersData)
 
 	user.FindByLoginAndProvider(a.DB, req.Login, provider)
@@ -72,7 +72,7 @@ func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddGitHubRe
 	user := new(pgmodels.User)
 	inter := new(pgmodels.Intermediate)
 	pd := new(pgmodels.ProvidersData)
-	ap := new(pgmodels.AuthProvider)
+	ap := new(pgmodels.Provider)
 
 	user.FindByLoginAndProvider(a.DB, req.Request.Login, provider)
 	if user.ID != "" {
