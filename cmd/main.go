@@ -46,8 +46,9 @@ func main() {
 
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
-	authGit.GET("/", githubC.RedirectForAuth)
-	authGit.GET("/login", githubC.Login)
+	authGit.GET("/", githubC.RedirectToGoogle)
+	authGit.GET("/token", githubC.GetAccessToken)
+	authGit.POST("/login", githubC.Login)
 
 	appAuthC := new(controllers.AppAuthController)
 	appAuthC.Init(grpcClients.App)
@@ -59,20 +60,25 @@ func main() {
 	googleAuthC := new(controllers.GoogleAuthController)
 	googleAuthC.Init(grpcClients.Google)
 	authGo := auth.Group("/google")
-	authGo.GET("/", googleAuthC.RedirectForAuth)
-	authGo.GET("/login", googleAuthC.Login)
+	authGo.GET("/", googleAuthC.RedirectToGoogle)
+	authGo.GET("/token", googleAuthC.GetAccessToken)
+	authGo.POST("/login", googleAuthC.Login)
 
 	tgAuthC := new(controllers.TelegramAuthController)
 	tgAuthC.Init(grpcClients.Telegram)
 	authTg := auth.Group("/telegram")
 	authTg.GET("/login")
 
-	testC := new(controllers.TestController)
-	testC.Init()
+	homeC := new(controllers.HomeController)
+	homeC.Init()
 	home := app.Router.Group("/home")
 	home.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken(grpcClients.CheckAuth))
 
-	home.GET("/test", testC.Test)
+	home.GET("/test", homeC.Test)
+	accounts := home.Group("/account")
+	accounts.POST("/github", githubC.AddAccount)
+	accounts.POST("/google", googleAuthC.AddAccount)
+	accounts.POST("/app", appAuthC.AddAccount)
 
 	logoutC := new(controllers.LogoutController)
 	logoutC.Init(grpcClients.Logout)

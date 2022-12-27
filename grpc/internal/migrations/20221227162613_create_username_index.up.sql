@@ -1,0 +1,1 @@
+create index providers_data_username_index on users_providers_data(username)

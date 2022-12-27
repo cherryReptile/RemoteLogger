@@ -71,7 +71,7 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterAuthTelegramServiceServer(s.srv, s.Services.Telegram)
 	api.RegisterCheckAuthServiceServer(s.srv, s.Services.CheckAuth)
 	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
-	logrus.Info("[DEBUG] Running gRCP server on port " + port)
+	logrus.Info("[DEBUG] Running gRPC server on port " + port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err
 	}

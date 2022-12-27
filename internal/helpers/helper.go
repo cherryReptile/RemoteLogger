@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -65,4 +67,27 @@ func GetAndCastToken(ctx *gin.Context) (string, error) {
 	}
 
 	return token, nil
+}
+
+func TrimJson(jsonBytes []byte) ([]byte, error) {
+	buffer := new(bytes.Buffer)
+	if err := json.Compact(buffer, jsonBytes); err != nil {
+		return nil, err
+	}
+
+	return buffer.Bytes(), nil
+}
+
+func GetAndCastUserUUID(ctx *gin.Context) (string, error) {
+	u, ok := ctx.Get("userUUID")
+	if !ok {
+		return "", errors.New("cannot user uuid")
+	}
+
+	uuid, ok := u.(string)
+	if !ok {
+		return "", errors.New("invalid uuid")
+	}
+
+	return uuid, nil
 }

@@ -1,0 +1,1 @@
+drop index if exists providers_data_username_index

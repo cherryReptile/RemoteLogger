@@ -2,51 +2,34 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
-	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
 )
 
 type GoogleAuthService struct {
 	api.UnimplementedAuthGoogleServiceServer
-	BaseDB
+	BaseOAuthHandler
 }
 
 func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 	gs := new(GoogleAuthService)
 	gs.DB = db
+	gs.Provider = "google"
 	return gs
 }
 
-func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (*api.AppResponse, error) {
-	user := new(pgmodels.User)
-	token := new(pgmodels.AccessToken)
-
-	user.FindByUniqueAndService(a.DB, req.Email, "google")
-	if user.ID == 0 {
-		user.UniqueRaw = req.Email
-		user.AuthorizedBy = "google"
-		if err := user.Create(a.DB); err != nil {
-			return nil, err
-		}
-	}
-
-	if user.ID == 0 {
-		return nil, errors.New("user not found")
-	}
-
-	tokenStr, err := appauth.GenerateToken(user.ID, user.UniqueRaw, user.AuthorizedBy)
+func (a *GoogleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
+	user, token, err := a.LoginDefault(req)
 	if err != nil {
 		return nil, err
 	}
+	return ToAppResponse(user, token), nil
+}
 
-	token.Token = tokenStr
-	token.UserID = user.ID
-	if err = token.Create(a.DB); err != nil {
+func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
+	user, err := a.AddAccountDefault(req)
+	if err != nil {
 		return nil, err
 	}
-
-	return ToAppResponse(user, token), nil
+	return ToAddedResponse("Google account added successfully", user), nil
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type TelegramAuthController struct {
-	BaseAuthController
+	BaseOAuthController
 	TelegramService api.AuthTelegramServiceClient
 }
 

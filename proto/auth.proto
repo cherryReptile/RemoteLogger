@@ -8,14 +8,17 @@ option go_package = "/api";
 service AuthAppService {
   rpc Register(AppRequest) returns (AppResponse) {}
   rpc Login(AppRequest) returns (AppResponse) {}
+  rpc AddAccount(AddAppRequest) returns (AddedResponse) {}
 }
 
 service AuthGithubService {
-  rpc Login(GitHubRequest) returns (AppResponse) {}
+  rpc Login(OAuthRequest) returns (AppResponse) {}
+  rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthGoogleService {
-  rpc Login(GoogleRequest) returns (AppResponse) {}
+  rpc Login(OAuthRequest) returns (AppResponse) {}
+  rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthTelegramService {
@@ -35,12 +38,19 @@ message AppRequest {
   string Password = 2;
 }
 
-message GitHubRequest {
-  string Login = 1;
+message AddAppRequest {
+  AppRequest Request = 1;
+  string UserUUID = 2;
 }
 
-message GoogleRequest {
-  string Email = 1;
+message OAuthRequest {
+  string Username = 1;
+  bytes Data = 2;
+}
+
+message AddOauthRequest {
+  OAuthRequest Request = 1;
+  string UserUUID = 2;
 }
 
 message TelegramRequest {
@@ -52,6 +62,11 @@ message AppResponse {
   string TokenStr = 2;
 }
 
+message AddedResponse {
+  User  Struct = 1;
+  string Message = 2;
+}
+
 message TokenRequest {
   string Token = 1;
 }
@@ -61,13 +76,11 @@ message LogoutResponse {
 }
 
 message CheckAuthResponse {
-  bool   Ok = 1;
+  string UserUUID = 1;
 }
 
 message User {
-  uint64  ID = 1;
-  string UniqueRaw = 2;
-  string Password = 3;
-  string AuthorizedBy = 4;
+  string UUID = 1;
+  string Login = 2;
   string CreatedAt = 5;
 }

@@ -30,12 +30,12 @@ func CheckUserAndToken(checkAuthService api.CheckAuthServiceClient) gin.HandlerF
 		}
 
 		res, err := checkAuthService.CheckAuth(context.Background(), &api.TokenRequest{Token: token})
-		if err != nil || !res.Ok {
+		if err != nil {
 			e := strings.Split(err.Error(), "=")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": e[2]})
 			return
 		}
-
+		c.Set("userUUID", res.UserUUID)
 		//c.Next()
 	}
 }
