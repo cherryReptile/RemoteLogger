@@ -12,13 +12,13 @@ service AuthAppService {
 }
 
 service AuthGithubService {
-  rpc Login(GitHubRequest) returns (AppResponse) {}
-  rpc AddAccount(AddGitHubRequest) returns (AddedResponse) {}
+  rpc Login(OAuthRequest) returns (AppResponse) {}
+  rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthGoogleService {
-  rpc Login(GoogleRequest) returns (AppResponse) {}
-  rpc AddAccount(AddGoogleRequest) returns (AddedResponse) {}
+  rpc Login(OAuthRequest) returns (AppResponse) {}
+  rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthTelegramService {
@@ -43,23 +43,13 @@ message AddAppRequest {
   string UserUUID = 2;
 }
 
-message GitHubRequest {
-  string Login = 1;
+message OAuthRequest {
+  string Username = 1;
   bytes Data = 2;
 }
 
-message AddGitHubRequest {
-  GitHubRequest Request = 1;
-  string UserUUID = 2;
-}
-
-message GoogleRequest {
-  string Email = 1;
-  bytes  Data = 2;
-}
-
-message AddGoogleRequest {
-  GoogleRequest Request = 1;
+message AddOauthRequest {
+  OAuthRequest Request = 1;
   string UserUUID = 2;
 }
 

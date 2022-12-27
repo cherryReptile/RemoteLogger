@@ -21,9 +21,7 @@ type GithubAuthController struct {
 	Config        *oauth2.Config
 }
 
-var GitRedirectLogin = "/api/v1/auth/github/login"
 var GitRedirectToExchangeToken = "/api/v1/auth/github/token"
-var GitRedirectForAdd = "/api/v1/home/account/add/github"
 
 func (c *GithubAuthController) Init(gs api.AuthGithubServiceClient) {
 	c.GithubService = gs
@@ -33,15 +31,9 @@ func (c *GithubAuthController) Init(gs api.AuthGithubServiceClient) {
 	c.Config.Endpoint = github.Endpoint
 }
 
-func (c *GithubAuthController) RedirectForAuth(ctx *gin.Context) {
+func (c *GithubAuthController) RedirectToGoogle(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectToExchangeToken
 	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GitRedirectToExchangeToken, os.Getenv("DOMAIN")))
-	ctx.Redirect(http.StatusTemporaryRedirect, u)
-}
-
-func (c *GithubAuthController) RedirectForAddAccount(ctx *gin.Context) {
-	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectForAdd
-	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GitRedirectForAdd, os.Getenv("DOMAIN")))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
@@ -74,7 +66,7 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.GithubService.Login(context.Background(), &api.GitHubRequest{Login: login, Data: body})
+	res, err := c.GithubService.Login(context.Background(), &api.OAuthRequest{Username: login, Data: body})
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -102,9 +94,9 @@ func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.GithubService.AddAccount(context.Background(), &api.AddGitHubRequest{
+	res, err := c.GithubService.AddAccount(context.Background(), &api.AddOauthRequest{
 		UserUUID: uuid,
-		Request:  &api.GitHubRequest{Login: login, Data: body},
+		Request:  &api.OAuthRequest{Username: login, Data: body},
 	})
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)

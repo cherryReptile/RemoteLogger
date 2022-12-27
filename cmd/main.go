@@ -46,7 +46,7 @@ func main() {
 
 	auth := app.Router.Group("/auth")
 	authGit := auth.Group("/github")
-	authGit.GET("/", githubC.RedirectForAuth)
+	authGit.GET("/", githubC.RedirectToGoogle)
 	authGit.GET("/token", githubC.GetAccessToken)
 	authGit.POST("/login", githubC.Login)
 
@@ -60,7 +60,7 @@ func main() {
 	googleAuthC := new(controllers.GoogleAuthController)
 	googleAuthC.Init(grpcClients.Google)
 	authGo := auth.Group("/google")
-	authGo.GET("/", googleAuthC.RedirectForAuth)
+	authGo.GET("/", googleAuthC.RedirectToGoogle)
 	authGo.GET("/token", googleAuthC.GetAccessToken)
 	authGo.POST("/login", googleAuthC.Login)
 

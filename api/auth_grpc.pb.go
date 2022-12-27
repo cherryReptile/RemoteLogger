@@ -180,8 +180,8 @@ var AuthAppService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGithubServiceClient interface {
-	Login(ctx context.Context, in *GitHubRequest, opts ...grpc.CallOption) (*AppResponse, error)
-	AddAccount(ctx context.Context, in *AddGitHubRequest, opts ...grpc.CallOption) (*AddedResponse, error)
+	Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error)
+	AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
 
 type authGithubServiceClient struct {
@@ -192,7 +192,7 @@ func NewAuthGithubServiceClient(cc grpc.ClientConnInterface) AuthGithubServiceCl
 	return &authGithubServiceClient{cc}
 }
 
-func (c *authGithubServiceClient) Login(ctx context.Context, in *GitHubRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+func (c *authGithubServiceClient) Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error) {
 	out := new(AppResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.AuthGithubService/Login", in, out, opts...)
 	if err != nil {
@@ -201,7 +201,7 @@ func (c *authGithubServiceClient) Login(ctx context.Context, in *GitHubRequest, 
 	return out, nil
 }
 
-func (c *authGithubServiceClient) AddAccount(ctx context.Context, in *AddGitHubRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
+func (c *authGithubServiceClient) AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
 	out := new(AddedResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.AuthGithubService/AddAccount", in, out, opts...)
 	if err != nil {
@@ -214,8 +214,8 @@ func (c *authGithubServiceClient) AddAccount(ctx context.Context, in *AddGitHubR
 // All implementations must embed UnimplementedAuthGithubServiceServer
 // for forward compatibility
 type AuthGithubServiceServer interface {
-	Login(context.Context, *GitHubRequest) (*AppResponse, error)
-	AddAccount(context.Context, *AddGitHubRequest) (*AddedResponse, error)
+	Login(context.Context, *OAuthRequest) (*AppResponse, error)
+	AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGithubServiceServer()
 }
 
@@ -223,10 +223,10 @@ type AuthGithubServiceServer interface {
 type UnimplementedAuthGithubServiceServer struct {
 }
 
-func (UnimplementedAuthGithubServiceServer) Login(context.Context, *GitHubRequest) (*AppResponse, error) {
+func (UnimplementedAuthGithubServiceServer) Login(context.Context, *OAuthRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthGithubServiceServer) AddAccount(context.Context, *AddGitHubRequest) (*AddedResponse, error) {
+func (UnimplementedAuthGithubServiceServer) AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddAccount not implemented")
 }
 func (UnimplementedAuthGithubServiceServer) mustEmbedUnimplementedAuthGithubServiceServer() {}
@@ -243,7 +243,7 @@ func RegisterAuthGithubServiceServer(s grpc.ServiceRegistrar, srv AuthGithubServ
 }
 
 func _AuthGithubService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GitHubRequest)
+	in := new(OAuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -255,13 +255,13 @@ func _AuthGithubService_Login_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/logger.v1.AuthGithubService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthGithubServiceServer).Login(ctx, req.(*GitHubRequest))
+		return srv.(AuthGithubServiceServer).Login(ctx, req.(*OAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthGithubService_AddAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddGitHubRequest)
+	in := new(AddOauthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -273,7 +273,7 @@ func _AuthGithubService_AddAccount_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/logger.v1.AuthGithubService/AddAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthGithubServiceServer).AddAccount(ctx, req.(*AddGitHubRequest))
+		return srv.(AuthGithubServiceServer).AddAccount(ctx, req.(*AddOauthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -302,8 +302,8 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGoogleServiceClient interface {
-	Login(ctx context.Context, in *GoogleRequest, opts ...grpc.CallOption) (*AppResponse, error)
-	AddAccount(ctx context.Context, in *AddGoogleRequest, opts ...grpc.CallOption) (*AddedResponse, error)
+	Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error)
+	AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
 
 type authGoogleServiceClient struct {
@@ -314,7 +314,7 @@ func NewAuthGoogleServiceClient(cc grpc.ClientConnInterface) AuthGoogleServiceCl
 	return &authGoogleServiceClient{cc}
 }
 
-func (c *authGoogleServiceClient) Login(ctx context.Context, in *GoogleRequest, opts ...grpc.CallOption) (*AppResponse, error) {
+func (c *authGoogleServiceClient) Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error) {
 	out := new(AppResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.AuthGoogleService/Login", in, out, opts...)
 	if err != nil {
@@ -323,7 +323,7 @@ func (c *authGoogleServiceClient) Login(ctx context.Context, in *GoogleRequest, 
 	return out, nil
 }
 
-func (c *authGoogleServiceClient) AddAccount(ctx context.Context, in *AddGoogleRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
+func (c *authGoogleServiceClient) AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error) {
 	out := new(AddedResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.AuthGoogleService/AddAccount", in, out, opts...)
 	if err != nil {
@@ -336,8 +336,8 @@ func (c *authGoogleServiceClient) AddAccount(ctx context.Context, in *AddGoogleR
 // All implementations must embed UnimplementedAuthGoogleServiceServer
 // for forward compatibility
 type AuthGoogleServiceServer interface {
-	Login(context.Context, *GoogleRequest) (*AppResponse, error)
-	AddAccount(context.Context, *AddGoogleRequest) (*AddedResponse, error)
+	Login(context.Context, *OAuthRequest) (*AppResponse, error)
+	AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGoogleServiceServer()
 }
 
@@ -345,10 +345,10 @@ type AuthGoogleServiceServer interface {
 type UnimplementedAuthGoogleServiceServer struct {
 }
 
-func (UnimplementedAuthGoogleServiceServer) Login(context.Context, *GoogleRequest) (*AppResponse, error) {
+func (UnimplementedAuthGoogleServiceServer) Login(context.Context, *OAuthRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthGoogleServiceServer) AddAccount(context.Context, *AddGoogleRequest) (*AddedResponse, error) {
+func (UnimplementedAuthGoogleServiceServer) AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddAccount not implemented")
 }
 func (UnimplementedAuthGoogleServiceServer) mustEmbedUnimplementedAuthGoogleServiceServer() {}
@@ -365,7 +365,7 @@ func RegisterAuthGoogleServiceServer(s grpc.ServiceRegistrar, srv AuthGoogleServ
 }
 
 func _AuthGoogleService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GoogleRequest)
+	in := new(OAuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -377,13 +377,13 @@ func _AuthGoogleService_Login_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/logger.v1.AuthGoogleService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthGoogleServiceServer).Login(ctx, req.(*GoogleRequest))
+		return srv.(AuthGoogleServiceServer).Login(ctx, req.(*OAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthGoogleService_AddAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddGoogleRequest)
+	in := new(AddOauthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -395,7 +395,7 @@ func _AuthGoogleService_AddAccount_Handler(srv interface{}, ctx context.Context,
 		FullMethod: "/logger.v1.AuthGoogleService/AddAccount",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthGoogleServiceServer).AddAccount(ctx, req.(*AddGoogleRequest))
+		return srv.(AuthGoogleServiceServer).AddAccount(ctx, req.(*AddOauthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

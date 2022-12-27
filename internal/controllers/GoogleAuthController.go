@@ -31,10 +31,9 @@ func (c *GoogleAuthController) Init(gs api.AuthGoogleServiceClient) {
 	c.Config.Endpoint = google.Endpoint
 }
 
-var GoogleRedirectLogin = "/api/v1/auth/google/login"
 var GoogleRedirectToExchangeToken = "/api/v1/auth/google/token"
 
-func (c *GoogleAuthController) RedirectForAuth(ctx *gin.Context) {
+func (c *GoogleAuthController) RedirectToGoogle(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + "localhost" + GoogleRedirectToExchangeToken
 	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GoogleRedirectToExchangeToken, "localhost"))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
@@ -69,7 +68,7 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.GoogleService.Login(context.Background(), &api.GoogleRequest{Email: login, Data: body})
+	res, err := c.GoogleService.Login(context.Background(), &api.OAuthRequest{Username: login, Data: body})
 	if err != nil {
 		e := strings.Split(err.Error(), "=")
 		c.ERROR(ctx, http.StatusBadRequest, errors.New(e[2]))
@@ -98,9 +97,9 @@ func (c *GoogleAuthController) AddAccount(ctx *gin.Context) {
 		return
 	}
 
-	res, err := c.GoogleService.AddAccount(context.Background(), &api.AddGoogleRequest{
+	res, err := c.GoogleService.AddAccount(context.Background(), &api.AddOauthRequest{
 		UserUUID: uuid,
-		Request:  &api.GoogleRequest{Email: login, Data: body},
+		Request:  &api.OAuthRequest{Username: login, Data: body},
 	})
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)

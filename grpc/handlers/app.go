@@ -115,6 +115,10 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 		return nil, err
 	}
 
+	if userData.Email == "" || userData.Password == "" {
+		return nil, errors.New("email or password is required from db response")
+	}
+
 	if err := bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(req.Password)); err != nil {
 		return nil, err
 	}
