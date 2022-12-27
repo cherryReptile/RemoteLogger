@@ -23,27 +23,34 @@ func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 func (a *GoogleAuthService) Login(ctx context.Context, req *api.GoogleRequest) (*api.AppResponse, error) {
 	provider := "google"
 	user := new(pgmodels.User)
-	ap := new(pgmodels.Provider)
-	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
+	p := new(pgmodels.Provider)
+	pd := new(pgmodels.ProvidersData)
 
-	user.FindByLoginAndProvider(a.DB, req.Email, provider)
-	if user.ID == "" {
-		user.Login = req.Email
-		//if err := user.Create(a.DB, 1); err != nil {
-		//	return nil, err
-		//}
-	}
-
-	if err := ap.GetByProvider(a.DB, provider); err != nil {
+	if err := p.GetByProvider(a.DB, provider); err != nil {
 		return nil, err
 	}
 
-	pd.UserData = req.Data
-	pd.UserID = user.ID
-	pd.ProviderID = ap.ID
-	pd.FindByUserUUIDAndProviderID(a.DB, user.ID, ap.ID)
+	pd.FindByUsernameAndProvider(a.DB, req.Email, p.ID)
 	if pd.ID == 0 {
+		user.Login = req.Email
+		if err := user.Create(a.DB, p.ID); err != nil {
+			return nil, err
+		}
+	}
+
+	if user.ID == "" {
+		user.Find(a.DB, pd.UserID)
+		if user.ID == "" {
+			return nil, errors.New("user not found")
+		}
+	}
+
+	if pd.ID == 0 {
+		pd.UserData = req.Data
+		pd.UserID = user.ID
+		pd.ProviderID = p.ID
+		pd.Username = user.Login
 		if err := pd.Create(a.DB); err != nil {
 			return nil, err
 		}
@@ -68,30 +75,31 @@ func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddGoogleRe
 	user := new(pgmodels.User)
 	inter := new(pgmodels.Intermediate)
 	pd := new(pgmodels.ProvidersData)
-	ap := new(pgmodels.Provider)
+	p := new(pgmodels.Provider)
 
-	user.FindByLoginAndProvider(a.DB, req.Request.Email, provider)
-	if user.ID != "" {
-		return nil, errors.New("sorry this user authorized regardless of this account")
-	}
 	user.Find(a.DB, req.UserUUID)
-
-	if err := ap.GetByProvider(a.DB, provider); err != nil {
-		return nil, err
+	if user.ID == "" {
+		return nil, errors.New("user not found")
 	}
 
-	inter.Find(a.DB, req.UserUUID, ap.ID)
-	if inter.ID != 0 {
-		return nil, errors.New("sorry this account already been added")
+	p.GetByProvider(a.DB, provider)
+	if p.ID == 0 {
+		return nil, errors.New("unknown provider")
 	}
 
-	if err := inter.Create(a.DB, req.UserUUID, ap.ID); err != nil {
+	pd.FindByUsernameAndProvider(a.DB, req.Request.Email, p.ID)
+	if pd.ID != 0 {
+		return nil, errors.New("user already exists")
+	}
+
+	if err := inter.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
 	pd.UserData = req.Request.Data
 	pd.UserID = req.UserUUID
-	pd.ProviderID = ap.ID
+	pd.ProviderID = p.ID
+	pd.Username = req.Request.Email
 	if err := pd.Create(a.DB); err != nil {
 		return nil, err
 	}
