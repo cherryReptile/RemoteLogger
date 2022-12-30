@@ -30,11 +30,6 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	pd := new(pgmodels.ProvidersData)
 	token := new(pgmodels.AccessToken)
 
-	user.FindByLoginAndProvider(a.DB, req.Email, "app")
-	if user.ID != "" {
-		return nil, errors.New("this user already exists")
-	}
-
 	p.GetByProvider(a.DB, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown auth provider")
