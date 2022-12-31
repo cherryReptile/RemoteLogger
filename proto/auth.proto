@@ -33,6 +33,10 @@ service LogoutService {
   rpc Logout(TokenRequest) returns (LogoutResponse) {}
 }
 
+service ProfileService {
+  rpc Create(ProfileRequest) returns (ProfileResponse) {}
+}
+
 message AppRequest {
   string Email = 1;
   string Password = 2;
@@ -83,4 +87,17 @@ message User {
   string UUID = 1;
   string Login = 2;
   string CreatedAt = 5;
+}
+
+message ProfileRequest {
+  string FirstName = 1;
+  string LastName = 2;
+  string Other_Data = 3;
+  string UserUUID = 4;
+}
+
+message ProfileResponse {
+  string FirstName = 1;
+  string LastName = 2;
+  string Other_Data = 3;
 }
