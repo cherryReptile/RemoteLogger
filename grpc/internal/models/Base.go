@@ -1,4 +1,4 @@
-package pgmodels
+package models
 
 type BaseModel struct {
 }

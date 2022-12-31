@@ -1,4 +1,4 @@
-package handlers
+package auth
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
-	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
+	"github.com/pavel-one/GoStarter/grpc/internal/authtoken"
+	"github.com/pavel-one/GoStarter/grpc/internal/models"
 )
 
 type CheckAuthService struct {
@@ -22,9 +22,9 @@ func NewCheckAuthService(db *sqlx.DB) *CheckAuthService {
 }
 
 func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
-	user := new(pgmodels.User)
-	token := new(pgmodels.AccessToken)
-	claims, err := appauth.GetClaims(req.Token)
+	user := new(models.User)
+	token := new(models.AccessToken)
+	claims, err := authtoken.GetClaims(req.Token)
 	if err != nil {
 		if err.(*jwt.ValidationError).Errors == 16 {
 			token.GetByToken(c.DB, req.Token)

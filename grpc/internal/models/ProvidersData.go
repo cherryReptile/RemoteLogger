@@ -1,4 +1,4 @@
-package pgmodels
+package models
 
 import (
 	"encoding/json"

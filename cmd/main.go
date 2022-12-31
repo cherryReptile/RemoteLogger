@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	gbase "github.com/pavel-one/GoStarter/grpc/base"
 	"github.com/pavel-one/GoStarter/grpc/client"
-	"github.com/pavel-one/GoStarter/grpc/handlers"
+	"github.com/pavel-one/GoStarter/grpc/handlers/auth"
 	"github.com/pavel-one/GoStarter/grpc/server"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
@@ -23,12 +23,12 @@ func main() {
 	db := new(gbase.Database)
 	db.Init()
 	grpcServer := server.NewServer(server.Services{
-		App:       handlers.NewAppAuthService(db.Conn),
-		GitHub:    handlers.NewGitHubAuthService(db.Conn),
-		Google:    handlers.NewGoogleAuthService(db.Conn),
-		Telegram:  handlers.NewTelegramAuthService(db.Conn),
-		CheckAuth: handlers.NewCheckAuthService(db.Conn),
-		Logout:    handlers.NewLogoutAuthService(db.Conn),
+		App:       auth.NewAppAuthService(db.Conn),
+		GitHub:    auth.NewGitHubAuthService(db.Conn),
+		Google:    auth.NewGoogleAuthService(db.Conn),
+		Telegram:  auth.NewTelegramAuthService(db.Conn),
+		CheckAuth: auth.NewCheckAuthService(db.Conn),
+		Logout:    auth.NewLogoutAuthService(db.Conn),
 	})
 
 	conn, errConn := client.NewConn()

@@ -1,4 +1,4 @@
-package resources
+package auth
 
 type AppUserData struct {
 	Email    string `json:"email"`
