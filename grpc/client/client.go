@@ -14,6 +14,7 @@ type ServiceClients struct {
 	Telegram  api.AuthTelegramServiceClient
 	CheckAuth api.CheckAuthServiceClient
 	Logout    api.LogoutServiceClient
+	Profile   api.ProfileServiceClient
 }
 
 func (s *ServiceClients) Init(conn *grpc.ClientConn) {
@@ -24,6 +25,7 @@ func (s *ServiceClients) Init(conn *grpc.ClientConn) {
 	s.Telegram = api.NewAuthTelegramServiceClient(s.Conn)
 	s.CheckAuth = api.NewCheckAuthServiceClient(s.Conn)
 	s.Logout = api.NewLogoutServiceClient(s.Conn)
+	s.Profile = api.NewProfileServiceClient(s.Conn)
 }
 
 func NewConn() (*grpc.ClientConn, error) {

@@ -1,11 +1,11 @@
-package handlers
+package auth
 
 import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
-	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
+	"github.com/pavel-one/GoStarter/grpc/internal/authtoken"
+	"github.com/pavel-one/GoStarter/grpc/internal/models"
 )
 
 type BaseDB struct {
@@ -17,11 +17,11 @@ type BaseOAuthHandler struct {
 	Provider string
 }
 
-func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*pgmodels.User, *pgmodels.AccessToken, error) {
-	user := new(pgmodels.User)
-	token := new(pgmodels.AccessToken)
-	p := new(pgmodels.Provider)
-	pd := new(pgmodels.ProvidersData)
+func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*models.User, *models.AccessToken, error) {
+	user := new(models.User)
+	token := new(models.AccessToken)
+	p := new(models.Provider)
+	pd := new(models.ProvidersData)
 
 	if err := p.GetByProvider(h.DB, h.Provider); err != nil {
 		return nil, nil, err
@@ -52,7 +52,7 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*pgmodels.User, 
 		}
 	}
 
-	tokenStr, err := appauth.GenerateToken(user.ID, user.Login, h.Provider)
+	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, h.Provider)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -66,11 +66,11 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*pgmodels.User, 
 	return user, token, nil
 }
 
-func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*pgmodels.User, error) {
-	user := new(pgmodels.User)
-	up := new(pgmodels.UsersProviders)
-	pd := new(pgmodels.ProvidersData)
-	p := new(pgmodels.Provider)
+func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*models.User, error) {
+	user := new(models.User)
+	up := new(models.UsersProviders)
+	pd := new(models.ProvidersData)
+	p := new(models.Provider)
 
 	user.Find(h.DB, req.UserUUID)
 	if user.ID == "" {
@@ -102,7 +102,7 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*pgmodel
 	return user, nil
 }
 
-func ToAppResponse(user *pgmodels.User, token *pgmodels.AccessToken) *api.AppResponse {
+func ToAppResponse(user *models.User, token *models.AccessToken) *api.AppResponse {
 	res := api.AppResponse{Struct: &api.User{}, TokenStr: ""}
 	res.Struct.UUID = user.ID
 	res.Struct.Login = user.Login
@@ -112,7 +112,7 @@ func ToAppResponse(user *pgmodels.User, token *pgmodels.AccessToken) *api.AppRes
 	return &res
 }
 
-func ToAddedResponse(message string, user *pgmodels.User) *api.AddedResponse {
+func ToAddedResponse(message string, user *models.User) *api.AddedResponse {
 	return &api.AddedResponse{
 		Message: message,
 		Struct: &api.User{

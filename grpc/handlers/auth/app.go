@@ -1,4 +1,4 @@
-package handlers
+package auth
 
 import (
 	"context"
@@ -6,9 +6,8 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/internal/appauth"
-	"github.com/pavel-one/GoStarter/grpc/internal/pgmodels"
-	"github.com/pavel-one/GoStarter/grpc/internal/resources"
+	"github.com/pavel-one/GoStarter/grpc/internal/authtoken"
+	"github.com/pavel-one/GoStarter/grpc/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,10 +24,10 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	provider := "app"
-	user := new(pgmodels.User)
-	p := new(pgmodels.Provider)
-	pd := new(pgmodels.ProvidersData)
-	token := new(pgmodels.AccessToken)
+	user := new(models.User)
+	p := new(models.Provider)
+	pd := new(models.ProvidersData)
+	token := new(models.AccessToken)
 
 	p.GetByProvider(a.DB, provider)
 	if p.ID == 0 {
@@ -69,7 +68,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	tokenStr, err := appauth.GenerateToken(user.ID, user.Login, "app")
+	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, "app")
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +84,11 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 }
 
 func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
-	userData := new(resources.AppUserData)
-	user := new(pgmodels.User)
-	p := new(pgmodels.Provider)
-	pd := new(pgmodels.ProvidersData)
-	token := new(pgmodels.AccessToken)
+	userData := new(AppUserData)
+	user := new(models.User)
+	p := new(models.Provider)
+	pd := new(models.ProvidersData)
+	token := new(models.AccessToken)
 
 	p.GetByProvider(a.DB, "app")
 	if p.ID == 0 {
@@ -118,7 +117,7 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 		return nil, err
 	}
 
-	tokenStr, err := appauth.GenerateToken(user.ID, user.Login, "app")
+	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, "app")
 	if err != nil {
 		return nil, err
 	}
@@ -134,10 +133,10 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
-	user := new(pgmodels.User)
-	up := new(pgmodels.UsersProviders)
-	pd := new(pgmodels.ProvidersData)
-	p := new(pgmodels.Provider)
+	user := new(models.User)
+	up := new(models.UsersProviders)
+	pd := new(models.ProvidersData)
+	p := new(models.Provider)
 
 	user.Find(a.DB, req.UserUUID)
 	if user.ID == "" {

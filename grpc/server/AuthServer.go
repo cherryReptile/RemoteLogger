@@ -17,6 +17,7 @@ type Services struct {
 	Telegram  api.AuthTelegramServiceServer
 	CheckAuth api.CheckAuthServiceServer
 	Logout    api.LogoutServiceServer
+	Profile   api.ProfileServiceServer
 }
 
 type Logger struct {
@@ -71,6 +72,7 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterAuthTelegramServiceServer(s.srv, s.Services.Telegram)
 	api.RegisterCheckAuthServiceServer(s.srv, s.Services.CheckAuth)
 	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
+	api.RegisterProfileServiceServer(s.srv, s.Services.Profile)
 	logrus.Info("[DEBUG] Running gRPC server on port " + port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err
