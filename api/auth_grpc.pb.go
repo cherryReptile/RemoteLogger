@@ -683,6 +683,9 @@ var LogoutService_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProfileServiceClient interface {
 	Create(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	Update(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error)
+	Get(ctx context.Context, in *ProfileUUID, opts ...grpc.CallOption) (*ProfileResponse, error)
+	Delete(ctx context.Context, in *ProfileUUID, opts ...grpc.CallOption) (*ProfileDeleted, error)
 }
 
 type profileServiceClient struct {
@@ -702,11 +705,41 @@ func (c *profileServiceClient) Create(ctx context.Context, in *ProfileRequest, o
 	return out, nil
 }
 
+func (c *profileServiceClient) Update(ctx context.Context, in *ProfileRequest, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.ProfileService/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileServiceClient) Get(ctx context.Context, in *ProfileUUID, opts ...grpc.CallOption) (*ProfileResponse, error) {
+	out := new(ProfileResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.ProfileService/Get", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileServiceClient) Delete(ctx context.Context, in *ProfileUUID, opts ...grpc.CallOption) (*ProfileDeleted, error) {
+	out := new(ProfileDeleted)
+	err := c.cc.Invoke(ctx, "/logger.v1.ProfileService/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfileServiceServer is the server API for ProfileService service.
 // All implementations must embed UnimplementedProfileServiceServer
 // for forward compatibility
 type ProfileServiceServer interface {
 	Create(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	Update(context.Context, *ProfileRequest) (*ProfileResponse, error)
+	Get(context.Context, *ProfileUUID) (*ProfileResponse, error)
+	Delete(context.Context, *ProfileUUID) (*ProfileDeleted, error)
 	mustEmbedUnimplementedProfileServiceServer()
 }
 
@@ -716,6 +749,15 @@ type UnimplementedProfileServiceServer struct {
 
 func (UnimplementedProfileServiceServer) Create(context.Context, *ProfileRequest) (*ProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedProfileServiceServer) Update(context.Context, *ProfileRequest) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedProfileServiceServer) Get(context.Context, *ProfileUUID) (*ProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedProfileServiceServer) Delete(context.Context, *ProfileUUID) (*ProfileDeleted, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedProfileServiceServer) mustEmbedUnimplementedProfileServiceServer() {}
 
@@ -748,6 +790,60 @@ func _ProfileService_Create_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProfileService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.ProfileService/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).Update(ctx, req.(*ProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProfileService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileUUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.ProfileService/Get",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).Get(ctx, req.(*ProfileUUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProfileService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProfileUUID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.ProfileService/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServiceServer).Delete(ctx, req.(*ProfileUUID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProfileService_ServiceDesc is the grpc.ServiceDesc for ProfileService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -758,6 +854,18 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Create",
 			Handler:    _ProfileService_Create_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _ProfileService_Update_Handler,
+		},
+		{
+			MethodName: "Get",
+			Handler:    _ProfileService_Get_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _ProfileService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

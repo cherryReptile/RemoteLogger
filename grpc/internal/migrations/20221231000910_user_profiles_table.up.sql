@@ -1,10 +1,10 @@
 create table user_profiles
 (
     id         bigserial not null primary key,
-    first_name varchar   not null,
-    last_name  varchar   not null,
-    address    varchar   not null,
-    other_data json default null,
+    first_name varchar,
+    last_name  varchar,
+    address    varchar,
+    other_data json    default '{}',
     user_id    varchar references users (id) on delete cascade,
-    created_at timestamp without time zone
+    created_at timestamp without time zone not null
 )

@@ -35,6 +35,9 @@ service LogoutService {
 
 service ProfileService {
   rpc Create(ProfileRequest) returns (ProfileResponse) {}
+  rpc Update(ProfileRequest) returns (ProfileResponse) {}
+  rpc Get(ProfileUUID)    returns (ProfileResponse) {}
+  rpc Delete(ProfileUUID)  returns (ProfileDeleted) {}
 }
 
 message AppRequest {
@@ -92,12 +95,22 @@ message User {
 message ProfileRequest {
   string FirstName = 1;
   string LastName = 2;
-  string Other_Data = 3;
-  string UserUUID = 4;
+  bytes Other_Data = 3;
+  string Address = 4;
+  string UserUUID = 5;
+}
+
+message ProfileUUID {
+  string UserUUID = 1;
+}
+
+message ProfileDeleted {
+  string Message = 1;
 }
 
 message ProfileResponse {
   string FirstName = 1;
   string LastName = 2;
-  string Other_Data = 3;
+  string Address = 3;
+  map<string, string> Other_Data = 4;
 }
