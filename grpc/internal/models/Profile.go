@@ -3,8 +3,8 @@ package models
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/cherryReptile/WS-AUTH/internal/helpers"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/internal/helpers"
 	"time"
 )
 

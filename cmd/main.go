@@ -1,15 +1,15 @@
 package main
 
 import (
+	gbase "github.com/cherryReptile/WS-AUTH/grpc/base"
+	"github.com/cherryReptile/WS-AUTH/grpc/client"
+	"github.com/cherryReptile/WS-AUTH/grpc/handlers/auth"
+	"github.com/cherryReptile/WS-AUTH/grpc/handlers/profile"
+	"github.com/cherryReptile/WS-AUTH/grpc/server"
+	"github.com/cherryReptile/WS-AUTH/internal/base"
+	"github.com/cherryReptile/WS-AUTH/internal/controllers"
+	"github.com/cherryReptile/WS-AUTH/internal/middlewares"
 	"github.com/gin-gonic/gin"
-	gbase "github.com/pavel-one/GoStarter/grpc/base"
-	"github.com/pavel-one/GoStarter/grpc/client"
-	"github.com/pavel-one/GoStarter/grpc/handlers/auth"
-	"github.com/pavel-one/GoStarter/grpc/handlers/profile"
-	"github.com/pavel-one/GoStarter/grpc/server"
-	"github.com/pavel-one/GoStarter/internal/base"
-	"github.com/pavel-one/GoStarter/internal/controllers"
-	"github.com/pavel-one/GoStarter/internal/middlewares"
 	"log"
 	"os"
 )

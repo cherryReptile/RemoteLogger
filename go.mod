@@ -1,4 +1,4 @@
-module github.com/pavel-one/GoStarter
+module github.com/cherryReptile/WS-AUTH
 
 go 1.18
 

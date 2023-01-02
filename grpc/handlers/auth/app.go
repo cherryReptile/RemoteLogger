@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/cherryReptile/WS-AUTH/api"
+	"github.com/cherryReptile/WS-AUTH/grpc/internal/authtoken"
+	"github.com/cherryReptile/WS-AUTH/grpc/internal/models"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/grpc/internal/authtoken"
-	"github.com/pavel-one/GoStarter/grpc/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

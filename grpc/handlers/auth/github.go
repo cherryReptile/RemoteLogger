@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
+	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/jmoiron/sqlx"
-	"github.com/pavel-one/GoStarter/api"
 )
 
 type GitHubAuthService struct {

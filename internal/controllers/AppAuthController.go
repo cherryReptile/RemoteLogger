@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"context"
+	"github.com/cherryReptile/WS-AUTH/api"
+	"github.com/cherryReptile/WS-AUTH/internal/helpers"
+	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
-	"github.com/pavel-one/GoStarter/api"
-	"github.com/pavel-one/GoStarter/internal/helpers"
-	"github.com/pavel-one/GoStarter/internal/resources/requests"
 	"net/http"
 )
 

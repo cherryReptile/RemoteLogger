@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/pavel-one/GoStarter/api"
+	"github.com/cherryReptile/WS-AUTH/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
