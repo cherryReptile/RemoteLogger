@@ -5,6 +5,7 @@ import (
 	gbase "github.com/pavel-one/GoStarter/grpc/base"
 	"github.com/pavel-one/GoStarter/grpc/client"
 	"github.com/pavel-one/GoStarter/grpc/handlers/auth"
+	"github.com/pavel-one/GoStarter/grpc/handlers/profile"
 	"github.com/pavel-one/GoStarter/grpc/server"
 	"github.com/pavel-one/GoStarter/internal/base"
 	"github.com/pavel-one/GoStarter/internal/controllers"
@@ -29,6 +30,7 @@ func main() {
 		Telegram:  auth.NewTelegramAuthService(db.Conn),
 		CheckAuth: auth.NewCheckAuthService(db.Conn),
 		Logout:    auth.NewLogoutAuthService(db.Conn),
+		Profile:   profile.NewUserProfileService(db.Conn),
 	})
 
 	conn, errConn := client.NewConn()
@@ -83,6 +85,14 @@ func main() {
 	logoutC := new(controllers.LogoutController)
 	logoutC.Init(grpcClients.Logout)
 	home.GET("/logout", logoutC.Logout)
+
+	profileC := new(controllers.ProfileController)
+	profileC.Init(grpcClients.Profile)
+	profile := home.Group("/profile")
+	profile.POST("/create", profileC.Create)
+	profile.GET("/get", profileC.Get)
+	profile.PATCH("/update", profileC.Update)
+	profile.DELETE("/delete", profileC.Delete)
 
 	go app.Run("80", fatalChan)
 	go grpcServer.ListenAndServe("9000", gRPCFatal)
