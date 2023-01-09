@@ -153,6 +153,14 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("user already exists")
 	}
 
+	pds, err := pd.GetAllByProvider(a.DB, user.ID, p.ID)
+	if err != nil {
+		return nil, err
+	}
+	if len(pds) >= 1 {
+		return nil, errors.New("you already have account in app")
+	}
+
 	if err := up.Create(a.DB, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}

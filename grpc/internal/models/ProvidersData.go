@@ -41,6 +41,14 @@ func (p *ProvidersData) Create(db *sqlx.DB) error {
 	return nil
 }
 
+func (p *ProvidersData) GetAllByProvider(db *sqlx.DB, userUUID string, providerID uint) ([]ProvidersData, error) {
+	var ps []ProvidersData
+	if err := db.Select(&ps, "SELECT * FROM users_providers_data WHERE user_id=$1 AND provider_id=$2", userUUID, providerID); err != nil {
+		return nil, err
+	}
+
+	return ps, nil
+}
 func (p *ProvidersData) FindByUsernameAndProvider(db *sqlx.DB, username string, providerID uint) error {
 	if err := db.Get(p, "SELECT * FROM users_providers_data WHERE username=$1 AND provider_id=$2 LIMIT 1", username, providerID); err != nil {
 		return err
