@@ -1,6 +1,6 @@
 module github.com/cherryReptile/WS-AUTH
 
-go 1.18
+go 1.19
 
 require (
 	cloud.google.com/go/compute v1.13.0 // indirect
