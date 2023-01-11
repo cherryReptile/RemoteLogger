@@ -33,7 +33,7 @@ func main() {
 		Profile:   profile.NewUserProfileService(db.Conn),
 	})
 
-	conn, errConn := client.NewConn()
+	conn, errConn := client.NewConn(":9000")
 	if errConn != nil {
 		log.Printf("[FATAL] %v", errConn)
 		os.Exit(1)

@@ -28,8 +28,8 @@ func (s *ServiceClients) Init(conn *grpc.ClientConn) {
 	s.Profile = api.NewProfileServiceClient(s.Conn)
 }
 
-func NewConn() (*grpc.ClientConn, error) {
-	conn, err := grpc.Dial(":9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func NewConn(target string) (*grpc.ClientConn, error) {
+	conn, err := grpc.Dial(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		return nil, err
