@@ -10,8 +10,7 @@ import (
 	"github.com/cherryReptile/WS-AUTH/internal/controllers"
 	"github.com/cherryReptile/WS-AUTH/internal/middlewares"
 	"github.com/gin-gonic/gin"
-	"log"
-	"os"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -35,8 +34,7 @@ func main() {
 
 	conn, errConn := client.NewConn(":9000")
 	if errConn != nil {
-		log.Printf("[FATAL] %v", errConn)
-		os.Exit(1)
+		logrus.Fatalf("failed to create connection to gRPC with error:%v", errConn)
 	}
 	grpcClients := new(client.ServiceClients)
 	grpcClients.Init(conn)
@@ -100,13 +98,11 @@ func main() {
 	if errG != nil {
 		grpcServer.Close()
 		db.Close()
-		log.Printf("[FATAL] %v", errG)
+		logrus.Warning(errG)
 	}
 
 	err := <-fatalChan
 	if err != nil {
 		app.Close()
-		log.Printf("[FATAL] %v", err)
-		os.Exit(1)
 	}
 }

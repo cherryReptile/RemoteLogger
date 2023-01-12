@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 )
@@ -30,7 +30,7 @@ func (a *App) Run(port string, chErr chan error) {
 
 	defer a.Server.Close()
 
-	log.Printf("[DEBUG] Running server on port %s", port)
+	logrus.Printf("Running server on port %s", port)
 
 	if err := a.Server.ListenAndServe(); err != nil {
 		chErr <- errors.New(fmt.Sprintf("Error server: %s", err.Error()))
@@ -38,8 +38,8 @@ func (a *App) Run(port string, chErr chan error) {
 }
 
 func (a *App) Close() {
+	logrus.Printf("Close server on address %s", a.Server.Addr)
 	if err := a.Server.Close(); err != nil {
-		log.Fatalf("[FATAL] Unable to close server: %v", err)
-		return
+		logrus.Fatalf("Unable to close server: %v", err)
 	}
 }

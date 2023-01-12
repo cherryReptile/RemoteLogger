@@ -73,13 +73,13 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterCheckAuthServiceServer(s.srv, s.Services.CheckAuth)
 	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
 	api.RegisterProfileServiceServer(s.srv, s.Services.Profile)
-	logrus.Info("[DEBUG] Running gRPC server on port " + port)
+	logrus.Printf("Running gRPC server on port %s", port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err
 	}
 }
 
 func (s *Server) Close() {
-	logrus.Info("[DEBUG] grpc auth server close")
+	logrus.Info("gRPC auth server close")
 	s.srv.Stop()
 }
