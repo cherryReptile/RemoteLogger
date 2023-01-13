@@ -5,24 +5,34 @@ import (
 	"crypto/hmac"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
-	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
-type TelegramAuthController struct {
+type TelegramController struct {
 	BaseOAuthController
 	TelegramService api.AuthTelegramServiceClient
 }
 
-func (c *TelegramAuthController) Init(ts api.AuthTelegramServiceClient) {
+type TelegramUser struct {
+	ID        uint      `json:"id" binding:"required"`
+	FirstName string    `json:"first_name" binding:"required"`
+	LastName  string    `json:"last_name" binding:"required"`
+	Username  string    `json:"username" binding:"required"`
+	PhotoURL  string    `json:"photo_url" binding:"required"`
+	AuthDate  time.Time `json:"auth_date" binding:"required"`
+	Hash      string    `json:"hash" binding:"required"`
+}
+
+func (c *TelegramController) Init(ts api.AuthTelegramServiceClient) {
 	c.TelegramService = ts
 }
 
-func (c *TelegramAuthController) Login(ctx *gin.Context) {
-	reqUser := new(requests.TelegramUser)
+func (c *TelegramController) Login(ctx *gin.Context) {
+	reqUser := new(TelegramUser)
 	if err := ctx.ShouldBindJSON(reqUser); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -44,7 +54,7 @@ func (c *TelegramAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
-func (c *TelegramAuthController) CheckHash(dataCheckString string) bool {
+func (c *TelegramController) CheckHash(dataCheckString string) bool {
 	if hmac.Equal([]byte(dataCheckString), []byte(os.Getenv("TG_BOT_TOKEN"))) {
 		return true
 	}

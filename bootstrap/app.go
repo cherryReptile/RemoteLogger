@@ -1,7 +1,6 @@
-package base
+package bootstrap
 
 import (
-	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -11,16 +10,16 @@ import (
 
 //TODO: this look like proxy and in the future will be renamed
 
-type App struct {
+type GinApp struct {
 	Router *gin.Engine
 	Server *http.Server
 }
 
-func (a *App) Init() {
+func (a *GinApp) Init() {
 	a.Router = gin.New()
 }
 
-func (a *App) Run(port string, chErr chan error) {
+func (a *GinApp) Run(port string, chErr chan error) {
 	a.Server = &http.Server{
 		Handler:      a.Router,
 		Addr:         ":" + port,
@@ -33,11 +32,11 @@ func (a *App) Run(port string, chErr chan error) {
 	logrus.Printf("Running server on port %s", port)
 
 	if err := a.Server.ListenAndServe(); err != nil {
-		chErr <- errors.New(fmt.Sprintf("Error server: %s", err.Error()))
+		chErr <- fmt.Errorf("error server: %v", err)
 	}
 }
 
-func (a *App) Close() {
+func (a *GinApp) Close() {
 	logrus.Printf("Close server on address %s", a.Server.Addr)
 	if err := a.Server.Close(); err != nil {
 		logrus.Fatalf("Unable to close server: %v", err)

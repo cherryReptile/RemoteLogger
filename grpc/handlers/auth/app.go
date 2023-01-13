@@ -182,5 +182,5 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, err
 	}
 
-	return ToAddedResponse("App account added successfully", user), nil
+	return ToAddedResponse("Server account added successfully", user), nil
 }

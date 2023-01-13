@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/internal/helpers"
-	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -16,12 +15,19 @@ type ProfileController struct {
 	ProfileService api.ProfileServiceClient
 }
 
+type Profile struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	OtherData string `json:"other_data"`
+	Address   string `json:"address"`
+}
+
 func (c *ProfileController) Init(ps api.ProfileServiceClient) {
 	c.ProfileService = ps
 }
 
 func (c *ProfileController) Create(ctx *gin.Context) {
-	p := new(requests.Profile)
+	p := new(Profile)
 	if err := ctx.ShouldBindJSON(p); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -77,7 +83,7 @@ func (c *ProfileController) Get(ctx *gin.Context) {
 }
 
 func (c *ProfileController) Update(ctx *gin.Context) {
-	p := new(requests.Profile)
+	p := new(Profile)
 	if err := ctx.ShouldBindJSON(p); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -133,7 +139,7 @@ func (c *ProfileController) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": res.Message})
 }
 
-func (c *ProfileController) checkRequest(p *requests.Profile) error {
+func (c *ProfileController) checkRequest(p *Profile) error {
 	if p.FirstName == "" && p.LastName == "" && p.OtherData == "" && p.Address == "" {
 		return errors.New("all fields are required")
 	}

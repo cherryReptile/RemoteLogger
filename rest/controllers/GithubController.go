@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/internal/helpers"
-	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -15,15 +14,22 @@ import (
 	"os"
 )
 
-type GithubAuthController struct {
+type GithubController struct {
 	BaseOAuthController
 	GithubService api.AuthGithubServiceClient
 	Config        *oauth2.Config
 }
 
+type GithubUser struct {
+	ID        uint   `json:"id" binding:"required"`
+	Login     string `json:"login" binding:"required"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url" binding:"required"`
+}
+
 var GitRedirectToExchangeToken = "/api/v1/auth/github/token"
 
-func (c *GithubAuthController) Init(gs api.AuthGithubServiceClient) {
+func (c *GithubController) Init(gs api.AuthGithubServiceClient) {
 	c.GithubService = gs
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
@@ -31,13 +37,13 @@ func (c *GithubAuthController) Init(gs api.AuthGithubServiceClient) {
 	c.Config.Endpoint = github.Endpoint
 }
 
-func (c *GithubAuthController) RedirectToGoogle(ctx *gin.Context) {
+func (c *GithubController) RedirectToGoogle(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + os.Getenv("DOMAIN") + GitRedirectToExchangeToken
 	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GitRedirectToExchangeToken, os.Getenv("DOMAIN")))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
-func (c *GithubAuthController) GetAccessToken(ctx *gin.Context) {
+func (c *GithubController) GetAccessToken(ctx *gin.Context) {
 	code, err := c.checkOAuthStateCookie(ctx)
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
@@ -53,8 +59,8 @@ func (c *GithubAuthController) GetAccessToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"github_access_token": tok.AccessToken})
 }
 
-func (c *GithubAuthController) Login(ctx *gin.Context) {
-	t := new(requests.Token)
+func (c *GithubController) Login(ctx *gin.Context) {
+	t := new(Token)
 	if err := ctx.ShouldBindJSON(t); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -75,8 +81,8 @@ func (c *GithubAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
-func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
-	t := new(requests.Token)
+func (c *GithubController) AddAccount(ctx *gin.Context) {
+	t := new(Token)
 	if err := ctx.ShouldBindJSON(t); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -106,8 +112,8 @@ func (c *GithubAuthController) AddAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
 }
 
-func (c *GithubAuthController) getGitHubUserAndBody(token string) (string, []byte, error) {
-	user := new(requests.GithubUser)
+func (c *GithubController) getGitHubUserAndBody(token string) (string, []byte, error) {
+	user := new(GithubUser)
 	res, err := helpers.RequestToGithub(token)
 	if err != nil {
 		return "", nil, err

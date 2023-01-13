@@ -4,22 +4,26 @@ import (
 	"context"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/internal/helpers"
-	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type AppAuthController struct {
+type AppController struct {
 	BaseOAuthController
 	AppService api.AuthAppServiceClient
 }
 
-func (c *AppAuthController) Init(as api.AuthAppServiceClient) {
+type UserRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (c *AppController) Init(as api.AuthAppServiceClient) {
 	c.AppService = as
 }
 
-func (c *AppAuthController) Register(ctx *gin.Context) {
-	reqU := new(requests.UserRequest)
+func (c *AppController) Register(ctx *gin.Context) {
+	reqU := new(UserRequest)
 	if err := ctx.ShouldBindJSON(reqU); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -34,8 +38,8 @@ func (c *AppAuthController) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
-func (c *AppAuthController) Login(ctx *gin.Context) {
-	reqU := new(requests.UserRequest)
+func (c *AppController) Login(ctx *gin.Context) {
+	reqU := new(UserRequest)
 	if err := ctx.ShouldBindJSON(reqU); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -50,8 +54,8 @@ func (c *AppAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
-func (c *AppAuthController) AddAccount(ctx *gin.Context) {
-	reqU := new(requests.UserRequest)
+func (c *AppController) AddAccount(ctx *gin.Context) {
+	reqU := new(UserRequest)
 	if err := ctx.ShouldBindJSON(reqU); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return

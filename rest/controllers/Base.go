@@ -16,6 +16,10 @@ type BaseOAuthController struct {
 	BaseController
 }
 
+type Token struct {
+	Token string `json:"token" binding:"required"`
+}
+
 func (c *BaseController) ERROR(ctx *gin.Context, code int, err error) {
 	e := strings.Split(err.Error(), "=")
 	if len(e) != 1 {

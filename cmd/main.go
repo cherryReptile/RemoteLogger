@@ -1,14 +1,11 @@
 package main
 
 import (
-	gbase "github.com/cherryReptile/WS-AUTH/grpc/base"
+	"github.com/cherryReptile/WS-AUTH/bootstrap"
 	"github.com/cherryReptile/WS-AUTH/grpc/client"
-	"github.com/cherryReptile/WS-AUTH/grpc/handlers/auth"
-	"github.com/cherryReptile/WS-AUTH/grpc/handlers/profile"
-	"github.com/cherryReptile/WS-AUTH/grpc/server"
-	"github.com/cherryReptile/WS-AUTH/internal/base"
-	"github.com/cherryReptile/WS-AUTH/internal/controllers"
-	"github.com/cherryReptile/WS-AUTH/internal/middlewares"
+	"github.com/cherryReptile/WS-AUTH/rest/controllers"
+	"github.com/cherryReptile/WS-AUTH/rest/middlewares"
+	"github.com/cherryReptile/WS-AUTH/rest/router"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -17,20 +14,11 @@ func main() {
 	fatalChan := make(chan error, 1)
 	gRPCFatal := make(chan error, 1)
 
-	app := new(base.App)
+	app := new(bootstrap.GinApp)
 	app.Init()
 
-	db := new(gbase.Database)
-	db.Init()
-	grpcServer := server.NewServer(server.Services{
-		App:       auth.NewAppAuthService(db.Conn),
-		GitHub:    auth.NewGitHubAuthService(db.Conn),
-		Google:    auth.NewGoogleAuthService(db.Conn),
-		Telegram:  auth.NewTelegramAuthService(db.Conn),
-		CheckAuth: auth.NewCheckAuthService(db.Conn),
-		Logout:    auth.NewLogoutAuthService(db.Conn),
-		Profile:   profile.NewUserProfileService(db.Conn),
-	})
+	grpcApp := new(bootstrap.RPCApp)
+	grpcApp.Init()
 
 	conn, errConn := client.NewConn(":9000")
 	if errConn != nil {
@@ -40,64 +28,47 @@ func main() {
 	grpcClients.Init(conn)
 
 	app.Router.Use(gin.Logger())
+	df := app.Router.Group("/")
 
-	githubController := new(controllers.GithubAuthController)
-	githubController.Init(grpcClients.GitHub)
+	ghc := new(controllers.GithubController)
+	ghc.Init(grpcClients.GitHub)
+	router.NewGitHubRouter(df, ghc)
 
-	authGit := app.Router.Group("/github")
-	authGit.GET("/", githubController.RedirectToGoogle)
-	authGit.GET("/token", githubController.GetAccessToken)
-	authGit.POST("/login", githubController.Login)
+	ac := new(controllers.AppController)
+	ac.Init(grpcClients.App)
+	router.NewAppRouter(df, ac)
 
-	appController := new(controllers.AppAuthController)
-	appController.Init(grpcClients.App)
+	gc := new(controllers.GoogleController)
+	gc.Init(grpcClients.Google)
+	router.NewGoogleRouter(df, gc)
 
-	authApp := app.Router.Group("/app")
-	authApp.POST("/register", appController.Register)
-	authApp.POST("/login", appController.Login)
-
-	googleController := new(controllers.GoogleAuthController)
-	googleController.Init(grpcClients.Google)
-	authGo := app.Router.Group("/google")
-	authGo.GET("/", googleController.RedirectToGoogle)
-	authGo.GET("/token", googleController.GetAccessToken)
-	authGo.POST("/login", googleController.Login)
-
-	tgAuthC := new(controllers.TelegramAuthController)
-	tgAuthC.Init(grpcClients.Telegram)
-	authTg := app.Router.Group("/telegram")
-	authTg.GET("/login")
-
-	homeC := new(controllers.HomeController)
-	home := app.Router.Group("/home")
-	home.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken(grpcClients.CheckAuth))
+	hc := new(controllers.HomeController)
+	h := app.Router.Group("/home")
+	h.Use(middlewares.CheckAuthHeader()).Use(middlewares.CheckUserAndToken(grpcClients.CheckAuth))
 
 	//example route for demonstrate how it will look in main app
-	home.GET("/test", homeC.Test)
-	accounts := home.Group("/account")
-	accounts.POST("/github", githubController.AddAccount)
-	accounts.POST("/google", googleController.AddAccount)
-	accounts.POST("/app", appController.AddAccount)
+	h.GET("/test", hc.Test)
 
-	logoutC := new(controllers.LogoutController)
-	logoutC.Init(grpcClients.Logout)
-	home.GET("/logout", logoutC.Logout)
+	acc := h.Group("/account")
+	acc.POST("/github", ghc.AddAccount)
+	acc.POST("/google", gc.AddAccount)
+	acc.POST("/app", ac.AddAccount)
 
-	profileC := new(controllers.ProfileController)
-	profileC.Init(grpcClients.Profile)
-	profile := home.Group("/profile")
-	profile.POST("/create", profileC.Create)
-	profile.GET("/get", profileC.Get)
-	profile.PATCH("/update", profileC.Update)
-	profile.DELETE("/delete", profileC.Delete)
+	lc := new(controllers.LogoutController)
+	lc.Init(grpcClients.Logout)
+	h.GET("/logout", lc.Logout)
+
+	pc := new(controllers.ProfileController)
+	pc.Init(grpcClients.Profile)
+	router.NewProfileRouter(h, pc)
 
 	go app.Run("2000", fatalChan)
-	go grpcServer.ListenAndServe("9000", gRPCFatal)
+	go grpcApp.Server.ListenAndServe("9000", gRPCFatal)
 
 	errG := <-gRPCFatal
 	if errG != nil {
-		grpcServer.Close()
-		db.Close()
+		grpcApp.Server.Close()
+		grpcApp.DB.Close()
 		logrus.Warning(errG)
 	}
 

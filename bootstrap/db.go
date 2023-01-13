@@ -1,15 +1,13 @@
-package base
+package bootstrap
 
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"log"
+	"github.com/sirupsen/logrus"
 	"os"
 )
-
-//that database only for grpc handlers aka grpc server
 
 type Database struct {
 	Conn *sqlx.DB
@@ -22,7 +20,7 @@ func (d *Database) Init() {
 func (d *Database) ConnectToDb() *sqlx.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("[FATAL] Not loading environment: %v", err)
+		logrus.Fatalf("Not loading environment: %v", err)
 	}
 
 	db, err := sqlx.Connect("postgres", fmt.Sprintf(
@@ -35,7 +33,7 @@ func (d *Database) ConnectToDb() *sqlx.DB {
 	))
 
 	if err != nil {
-		log.Fatalf("[FATAL] Unable to connect to database: %v", err)
+		logrus.Fatalf("Unable to connect to database: %v", err)
 	}
 
 	return db
@@ -43,7 +41,7 @@ func (d *Database) ConnectToDb() *sqlx.DB {
 
 func (d *Database) Close() {
 	if err := d.Conn.Close(); err != nil {
-		log.Fatalf("[FATAL] Unable to close database: %v", err)
+		logrus.Fatalf("Unable to close database: %v", err)
 		return
 	}
 }

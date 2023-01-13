@@ -6,7 +6,6 @@ import (
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/internal/helpers"
-	"github.com/cherryReptile/WS-AUTH/internal/resources/requests"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -16,13 +15,20 @@ import (
 	"strings"
 )
 
-type GoogleAuthController struct {
+type GoogleController struct {
 	BaseOAuthController
 	GoogleService api.AuthGoogleServiceClient
 	Config        *oauth2.Config
 }
 
-func (c *GoogleAuthController) Init(gs api.AuthGoogleServiceClient) {
+type GoogleUser struct {
+	ID       string `json:"id" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Verified bool   `json:"verified_email" binding:"required"`
+	Picture  string `json:"picture" binding:"required"`
+}
+
+func (c *GoogleController) Init(gs api.AuthGoogleServiceClient) {
 	c.GoogleService = gs
 	c.Config = &oauth2.Config{}
 	c.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
@@ -33,13 +39,13 @@ func (c *GoogleAuthController) Init(gs api.AuthGoogleServiceClient) {
 
 var GoogleRedirectToExchangeToken = "/api/v1/auth/google/token"
 
-func (c *GoogleAuthController) RedirectToGoogle(ctx *gin.Context) {
+func (c *GoogleController) RedirectToGoogle(ctx *gin.Context) {
 	c.Config.RedirectURL = "http://" + "localhost" + GoogleRedirectToExchangeToken
 	u := c.Config.AuthCodeURL(c.setOAuthStateCookie(ctx, GoogleRedirectToExchangeToken, "localhost"))
 	ctx.Redirect(http.StatusTemporaryRedirect, u)
 }
 
-func (c *GoogleAuthController) GetAccessToken(ctx *gin.Context) {
+func (c *GoogleController) GetAccessToken(ctx *gin.Context) {
 	code, err := c.checkOAuthStateCookie(ctx)
 	if err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
@@ -55,8 +61,8 @@ func (c *GoogleAuthController) GetAccessToken(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"google_access_token": tok.AccessToken})
 }
 
-func (c *GoogleAuthController) Login(ctx *gin.Context) {
-	t := new(requests.Token)
+func (c *GoogleController) Login(ctx *gin.Context) {
+	t := new(Token)
 	if err := ctx.ShouldBindJSON(t); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -78,8 +84,8 @@ func (c *GoogleAuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"user": res.Struct, "token": res.TokenStr})
 }
 
-func (c *GoogleAuthController) AddAccount(ctx *gin.Context) {
-	t := new(requests.Token)
+func (c *GoogleController) AddAccount(ctx *gin.Context) {
+	t := new(Token)
 	if err := ctx.ShouldBindJSON(t); err != nil {
 		c.ERROR(ctx, http.StatusBadRequest, err)
 		return
@@ -109,8 +115,8 @@ func (c *GoogleAuthController) AddAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": res.Message, "user": res.Struct})
 }
 
-func (c *GoogleAuthController) getGoogleUserAndBody(token string) (string, []byte, error) {
-	user := new(requests.GoogleUser)
+func (c *GoogleController) getGoogleUserAndBody(token string) (string, []byte, error) {
+	user := new(GoogleUser)
 	res, err := helpers.RequestToGoogle(token)
 	if err != nil {
 		return "", nil, err
