@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"github.com/cherryReptile/WS-AUTH/api"
+	"github.com/cherryReptile/WS-AUTH/repository"
+	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,6 +15,11 @@ type GoogleAuthService struct {
 
 func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 	gs := new(GoogleAuthService)
+	gs.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
+	gs.providerUsecase = usecase.NewProviderUsecase(repository.NewProviderRepository(db))
+	gs.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
+	gs.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
+	gs.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
 	gs.DB = db
 	gs.Provider = "google"
 	return gs

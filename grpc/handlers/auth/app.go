@@ -5,36 +5,45 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
+	"github.com/cherryReptile/WS-AUTH/domain"
 	"github.com/cherryReptile/WS-AUTH/grpc/internal/authtoken"
-	"github.com/cherryReptile/WS-AUTH/grpc/internal/models"
+	"github.com/cherryReptile/WS-AUTH/repository"
+	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AppAuthService struct {
 	api.UnimplementedAuthAppServiceServer
+	BaseHandler
 	BaseDB
 }
 
 func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 	as := new(AppAuthService)
+	as.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
+	as.providerUsecase = usecase.NewProviderUsecase(repository.NewProviderRepository(db))
+	as.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
+	as.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
+	as.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
 	as.DB = db
 	return as
 }
 
 func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	provider := "app"
-	user := new(models.User)
-	p := new(models.Provider)
-	pd := new(models.ProvidersData)
-	token := new(models.AccessToken)
+	user := new(domain.User)
+	p := new(domain.Provider)
+	pd := new(domain.ProvidersData)
+	up := new(domain.UsersProviders)
+	token := new(domain.AuthToken)
 
-	p.GetByProvider(a.DB, provider)
+	a.providerUsecase.GetByProvider(p, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown auth provider")
 	}
 
-	pd.FindByUsernameAndProvider(a.DB, req.Email, p.ID)
+	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
 	if pd.ID != 0 {
 		return nil, errors.New("this user already exists")
 	}
@@ -46,12 +55,16 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	user.Login = req.Email
 
-	err = user.Create(a.DB, p.ID)
+	err = a.userUsecase.Create(user)
 	if err != nil {
 		return nil, err
 	}
 
 	if user.ID == "" {
+		return nil, err
+	}
+
+	if err = a.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -64,7 +77,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	pd.UserID = user.ID
 	pd.ProviderID = p.ID
 	pd.Username = user.Login
-	if err = pd.Create(a.DB); err != nil {
+	if err = a.providersDataUsecase.Create(pd); err != nil {
 		return nil, err
 	}
 
@@ -76,7 +89,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	token.Token = tokenStr
 	token.UserUUID = user.ID
 
-	if err = token.Create(a.DB); err != nil {
+	if err = a.tokenUsecase.Create(token); err != nil {
 		return nil, err
 	}
 
@@ -85,22 +98,22 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	userData := new(AppUserData)
-	user := new(models.User)
-	p := new(models.Provider)
-	pd := new(models.ProvidersData)
-	token := new(models.AccessToken)
+	user := new(domain.User)
+	p := new(domain.Provider)
+	pd := new(domain.ProvidersData)
+	token := new(domain.AuthToken)
 
-	p.GetByProvider(a.DB, "app")
+	a.providerUsecase.GetByProvider(p, "app")
 	if p.ID == 0 {
 		return nil, errors.New("unknown provider")
 	}
 
-	pd.FindByUsernameAndProvider(a.DB, req.Email, p.ID)
+	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
 	if pd.ID == 0 {
 		return nil, errors.New("user not found")
 	}
 
-	user.Find(a.DB, pd.UserID)
+	a.userUsecase.Find(user, pd.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
@@ -124,7 +137,7 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 	token.Token = tokenStr
 	token.UserUUID = user.ID
-	if err = token.Create(a.DB); err != nil {
+	if err = a.tokenUsecase.Create(token); err != nil {
 		return nil, err
 	}
 
@@ -133,27 +146,27 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
-	user := new(models.User)
-	up := new(models.UsersProviders)
-	pd := new(models.ProvidersData)
-	p := new(models.Provider)
+	user := new(domain.User)
+	up := new(domain.UsersProviders)
+	pd := new(domain.ProvidersData)
+	p := new(domain.Provider)
 
-	user.Find(a.DB, req.UserUUID)
+	a.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("invalid user's uuid")
 	}
 
-	p.GetByProvider(a.DB, provider)
+	a.providerUsecase.GetByProvider(p, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown provider")
 	}
 
-	pd.FindByUsernameAndProvider(a.DB, req.Request.Email, p.ID)
+	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Request.Email, p.ID)
 	if pd.ID != 0 {
 		return nil, errors.New("user already exists")
 	}
 
-	pds, err := pd.GetAllByProvider(a.DB, user.ID, p.ID)
+	pds, err := a.providersDataUsecase.GetAllByProvider(user.ID, p.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +174,7 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("you already have account in app")
 	}
 
-	if err := up.Create(a.DB, req.UserUUID, p.ID); err != nil {
+	if err = a.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -178,7 +191,7 @@ func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	pd.UserID = req.UserUUID
 	pd.ProviderID = p.ID
 	pd.Username = req.Request.Email
-	if err = pd.Create(a.DB); err != nil {
+	if err = a.providersDataUsecase.Create(pd); err != nil {
 		return nil, err
 	}
 

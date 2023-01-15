@@ -4,25 +4,29 @@ import (
 	"context"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
-	"github.com/cherryReptile/WS-AUTH/grpc/internal/models"
+	"github.com/cherryReptile/WS-AUTH/domain"
+	"github.com/cherryReptile/WS-AUTH/repository"
+	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
 )
 
 type LogoutService struct {
 	api.UnimplementedLogoutServiceServer
+	tokenUsecase domain.AuthTokenUsecase
 	BaseDB
 }
 
 func NewLogoutAuthService(db *sqlx.DB) *LogoutService {
 	ls := new(LogoutService)
+	ls.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	ls.DB = db
 	return ls
 }
 
 func (l *LogoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
-	token := new(models.AccessToken)
+	token := new(domain.AuthToken)
 
-	if err := token.GetByToken(l.DB, req.Token); err != nil {
+	if err := l.tokenUsecase.GetByToken(token, req.Token); err != nil {
 		return nil, err
 	}
 
@@ -30,7 +34,7 @@ func (l *LogoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api
 		return nil, errors.New("token not found")
 	}
 
-	if err := token.Delete(l.DB); err != nil {
+	if err := l.tokenUsecase.Delete(token); err != nil {
 		return nil, err
 	}
 
