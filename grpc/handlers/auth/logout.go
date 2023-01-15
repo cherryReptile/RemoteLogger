@@ -13,7 +13,7 @@ import (
 type LogoutService struct {
 	api.UnimplementedLogoutServiceServer
 	tokenUsecase domain.AuthTokenUsecase
-	BaseDB
+	DB           *sqlx.DB
 }
 
 func NewLogoutAuthService(db *sqlx.DB) *LogoutService {

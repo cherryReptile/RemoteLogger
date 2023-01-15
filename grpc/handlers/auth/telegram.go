@@ -8,7 +8,7 @@ import (
 
 type TelegramAuthService struct {
 	api.UnimplementedAuthTelegramServiceServer
-	BaseDB
+	DB *sqlx.DB
 }
 
 func NewTelegramAuthService(db *sqlx.DB) *TelegramAuthService {

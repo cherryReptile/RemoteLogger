@@ -16,7 +16,7 @@ type CheckAuthService struct {
 	api.UnimplementedCheckAuthServiceServer
 	userUsecase  domain.UserUsecase
 	tokenUsecase domain.AuthTokenUsecase
-	BaseDB
+	DB           *sqlx.DB
 }
 
 func NewCheckAuthService(db *sqlx.DB) *CheckAuthService {

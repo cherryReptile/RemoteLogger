@@ -16,7 +16,7 @@ import (
 type AppAuthService struct {
 	api.UnimplementedAuthAppServiceServer
 	BaseHandler
-	BaseDB
+	DB *sqlx.DB
 }
 
 func NewAppAuthService(db *sqlx.DB) *AppAuthService {

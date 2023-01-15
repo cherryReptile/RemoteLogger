@@ -5,38 +5,44 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
-	"github.com/cherryReptile/WS-AUTH/grpc/internal/models"
+	"github.com/cherryReptile/WS-AUTH/domain"
+	"github.com/cherryReptile/WS-AUTH/repository"
+	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
 )
 
 type UserProfileService struct {
 	api.UnimplementedProfileServiceServer
-	DB *sqlx.DB
+	userUsecase    domain.UserUsecase
+	profileUsecase domain.ProfileUsecase
+	DB             *sqlx.DB
 }
 
 func NewUserProfileService(db *sqlx.DB) *UserProfileService {
 	ps := new(UserProfileService)
+	ps.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
+	ps.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	ps.DB = db
 	return ps
 }
 
 func (u *UserProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
-	user := new(models.User)
-	p := new(models.Profile)
+	user := new(domain.User)
+	p := new(domain.Profile)
 
-	user.Find(u.DB, req.UserUUID)
+	u.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	p.FindByUserUUID(u.DB, user.ID)
+	u.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID != 0 {
 		return nil, errors.New("profile already exists")
 	}
 
 	setRaws(p, req)
 	p.UserID = req.UserUUID
-	if err := p.Create(u.DB); err != nil {
+	if err := u.profileUsecase.Create(p); err != nil {
 		return nil, err
 	}
 
@@ -54,15 +60,15 @@ func (u *UserProfileService) Create(ctx context.Context, req *api.ProfileRequest
 }
 
 func (u *UserProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
-	user := new(models.User)
-	p := new(models.Profile)
-	user.Find(u.DB, req.UserUUID)
+	user := new(domain.User)
+	p := new(domain.Profile)
+	u.userUsecase.Find(user, req.UserUUID)
 
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	p.FindByUserUUID(u.DB, user.ID)
+	u.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
@@ -76,26 +82,26 @@ func (u *UserProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*ap
 }
 
 func (u *UserProfileService) Update(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
-	user := new(models.User)
-	p := new(models.Profile)
+	user := new(domain.User)
+	p := new(domain.Profile)
 
-	user.Find(u.DB, req.UserUUID)
+	u.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	p.FindByUserUUID(u.DB, user.ID)
+	u.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
 
 	setRaws(p, req)
 
-	if err := p.Update(u.DB); err != nil {
+	if err := u.profileUsecase.Update(p); err != nil {
 		return nil, err
 	}
 
-	p.FindByUserUUID(u.DB, user.ID)
+	u.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("failed to get user's profile after update")
 	}
@@ -109,27 +115,27 @@ func (u *UserProfileService) Update(ctx context.Context, req *api.ProfileRequest
 }
 
 func (u *UserProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
-	user := new(models.User)
-	p := new(models.Profile)
+	user := new(domain.User)
+	p := new(domain.Profile)
 
-	user.Find(u.DB, req.UserUUID)
+	u.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	p.FindByUserUUID(u.DB, user.ID)
+	u.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
 
-	if err := p.Delete(u.DB); err != nil {
+	if err := u.profileUsecase.Delete(p); err != nil {
 		return nil, err
 	}
 
 	return &api.ProfileDeleted{Message: "Profile deleted successfully"}, nil
 }
 
-func setRaws(p *models.Profile, req *api.ProfileRequest) {
+func setRaws(p *domain.Profile, req *api.ProfileRequest) {
 	switch {
 	case req.FirstName != "":
 		p.FirstName.String = req.FirstName
@@ -148,7 +154,7 @@ func setRaws(p *models.Profile, req *api.ProfileRequest) {
 	}
 }
 
-func toResponse(p *models.Profile, data map[string]string) *api.ProfileResponse {
+func toResponse(p *domain.Profile, data map[string]string) *api.ProfileResponse {
 	return &api.ProfileResponse{
 		FirstName:  p.FirstName.String,
 		LastName:   p.LastName.String,

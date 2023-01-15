@@ -15,3 +15,17 @@ type Profile struct {
 	UserID    string          `json:"user_id" db:"user_id"`
 	CreatedAt time.Time       `json:"created_at" db:"created_at"`
 }
+
+type ProfileRepo interface {
+	Create(profile *Profile) error
+	FindByUserUUID(profile *Profile, userUUID string) error
+	Update(profile *Profile) error
+	Delete(profile *Profile) error
+}
+
+type ProfileUsecase interface {
+	Create(profile *Profile) error
+	FindByUserUUID(profile *Profile, userUUID string) error
+	Update(profile *Profile) error
+	Delete(profile *Profile) error
+}

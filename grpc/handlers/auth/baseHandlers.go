@@ -8,10 +8,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type BaseDB struct {
-	DB *sqlx.DB
-}
-
 type BaseHandler struct {
 	userUsecase           domain.UserUsecase
 	providerUsecase       domain.ProviderUsecase
@@ -21,7 +17,7 @@ type BaseHandler struct {
 }
 
 type BaseOAuthHandler struct {
-	BaseDB
+	DB *sqlx.DB
 	BaseHandler
 	Provider string
 }
@@ -113,24 +109,4 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 	}
 
 	return user, nil
-}
-
-func ToAppResponse(user *domain.User, token *domain.AuthToken) *api.AppResponse {
-	res := api.AppResponse{Struct: &api.User{}, TokenStr: ""}
-	res.Struct.UUID = user.ID
-	res.Struct.Login = user.Login
-	res.Struct.CreatedAt = user.CreatedAt.String()
-	res.TokenStr = token.Token
-
-	return &res
-}
-
-func ToAddedResponse(message string, user *domain.User) *api.AddedResponse {
-	return &api.AddedResponse{
-		Message: message,
-		Struct: &api.User{
-			UUID:      user.ID,
-			Login:     user.Login,
-			CreatedAt: user.CreatedAt.String(),
-		}}
 }
