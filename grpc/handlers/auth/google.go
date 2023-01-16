@@ -8,13 +8,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type GoogleAuthService struct {
+type googleAuthService struct {
 	api.UnimplementedAuthGoogleServiceServer
 	BaseOAuthHandler
 }
 
-func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
-	gs := new(GoogleAuthService)
+func NewGoogleAuthService(db *sqlx.DB) api.AuthGoogleServiceServer {
+	gs := new(googleAuthService)
 	gs.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	gs.providerUsecase = usecase.NewProviderUsecase(repository.NewProviderRepository(db))
 	gs.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
@@ -25,7 +25,7 @@ func NewGoogleAuthService(db *sqlx.DB) *GoogleAuthService {
 	return gs
 }
 
-func (a *GoogleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
+func (a *googleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
 	user, token, err := a.LoginDefault(req)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (a *GoogleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*
 	return ToAppResponse(user, token), nil
 }
 
-func (a *GoogleAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
+func (a *googleAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
 	user, err := a.AddAccountDefault(req)
 	if err != nil {
 		return nil, err

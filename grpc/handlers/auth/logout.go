@@ -10,20 +10,20 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type LogoutService struct {
+type logoutService struct {
 	api.UnimplementedLogoutServiceServer
 	tokenUsecase domain.AuthTokenUsecase
 	DB           *sqlx.DB
 }
 
-func NewLogoutAuthService(db *sqlx.DB) *LogoutService {
-	ls := new(LogoutService)
+func NewLogoutAuthService(db *sqlx.DB) api.LogoutServiceServer {
+	ls := new(logoutService)
 	ls.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	ls.DB = db
 	return ls
 }
 
-func (l *LogoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
+func (l *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
 	token := new(domain.AuthToken)
 
 	if err := l.tokenUsecase.GetByToken(token, req.Token); err != nil {

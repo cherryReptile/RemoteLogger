@@ -13,14 +13,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type AppAuthService struct {
+type appAuthService struct {
 	api.UnimplementedAuthAppServiceServer
 	BaseHandler
 	DB *sqlx.DB
 }
 
-func NewAppAuthService(db *sqlx.DB) *AppAuthService {
-	as := new(AppAuthService)
+func NewAppAuthService(db *sqlx.DB) api.AuthAppServiceServer {
+	as := new(appAuthService)
 	as.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	as.providerUsecase = usecase.NewProviderUsecase(repository.NewProviderRepository(db))
 	as.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
@@ -30,7 +30,7 @@ func NewAppAuthService(db *sqlx.DB) *AppAuthService {
 	return as
 }
 
-func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	provider := "app"
 	user := new(domain.User)
 	p := new(domain.Provider)
@@ -96,7 +96,7 @@ func (a *AppAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	return ToAppResponse(user, token), nil
 }
 
-func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (a *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	userData := new(AppUserData)
 	user := new(domain.User)
 	p := new(domain.Provider)
@@ -144,7 +144,7 @@ func (a *AppAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 	return ToAppResponse(user, token), nil
 }
 
-func (a *AppAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
+func (a *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
 	user := new(domain.User)
 	up := new(domain.UsersProviders)

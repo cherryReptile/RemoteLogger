@@ -8,13 +8,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type GitHubAuthService struct {
+type gitHubAuthService struct {
 	api.UnimplementedAuthGithubServiceServer
 	BaseOAuthHandler
 }
 
-func NewGitHubAuthService(db *sqlx.DB) *GitHubAuthService {
-	gs := new(GitHubAuthService)
+func NewGitHubAuthService(db *sqlx.DB) api.AuthGithubServiceServer {
+	gs := new(gitHubAuthService)
 	gs.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	gs.providerUsecase = usecase.NewProviderUsecase(repository.NewProviderRepository(db))
 	gs.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
@@ -25,7 +25,7 @@ func NewGitHubAuthService(db *sqlx.DB) *GitHubAuthService {
 	return gs
 }
 
-func (a *GitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
+func (a *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
 	user, token, err := a.LoginDefault(req)
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func (a *GitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*
 	return nil, nil
 }
 
-func (a *GitHubAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
+func (a *gitHubAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
 	user, err := a.AddAccountDefault(req)
 	if err != nil {
 		return nil, err
