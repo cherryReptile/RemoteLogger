@@ -12,27 +12,32 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type CheckAuthService struct {
+type checkAuthService struct {
 	api.UnimplementedCheckAuthServiceServer
 	userUsecase  domain.UserUsecase
 	tokenUsecase domain.AuthTokenUsecase
 	DB           *sqlx.DB
 }
 
-func NewCheckAuthService(db *sqlx.DB) *CheckAuthService {
-	cas := new(CheckAuthService)
+func NewCheckAuthService(db *sqlx.DB) api.CheckAuthServiceServer {
+	cas := new(checkAuthService)
 	cas.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	cas.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	cas.DB = db
 	return cas
 }
 
-func (c *CheckAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
+func (c *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
 	user := new(domain.User)
 	token := new(domain.AuthToken)
 	claims, err := authtoken.GetClaims(req.Token)
 	if err != nil {
-		if err.(*jwt.ValidationError).Errors == 16 {
+		err, ok := err.(*jwt.ValidationError)
+		if !ok {
+			return nil, err
+		}
+
+		if err.Errors == 16 {
 			c.tokenUsecase.GetByToken(token, req.Token)
 			if token.ID == 0 {
 				return nil, err
