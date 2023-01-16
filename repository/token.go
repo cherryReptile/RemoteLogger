@@ -17,10 +17,10 @@ func NewTokenRepository(db *sqlx.DB) domain.AuthTokenRepo {
 	}
 }
 
-func (t *tokenRepository) Create(token *domain.AuthToken) error {
+func (r *tokenRepository) Create(token *domain.AuthToken) error {
 	token.CreatedAt = time.Now()
 
-	_, err := t.db.NamedExec(`INSERT INTO access_tokens (token, user_id, created_at) 
+	_, err := r.db.NamedExec(`INSERT INTO access_tokens (token, user_id, created_at) 
 								VALUES (:token, :user_id, :created_at)`, token)
 
 	if err != nil {
@@ -28,22 +28,22 @@ func (t *tokenRepository) Create(token *domain.AuthToken) error {
 	}
 
 	// update model
-	if err = t.db.Get(token, "SELECT * FROM access_tokens ORDER BY id DESC LIMIT 1"); err != nil {
+	if err = r.db.Get(token, "SELECT * FROM access_tokens ORDER BY id DESC LIMIT 1"); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (t *tokenRepository) GetByToken(token *domain.AuthToken, tokenStr string) error {
-	if err := t.db.Get(token, "SELECT * FROM access_tokens WHERE token=$1 ORDER BY id DESC LIMIT 1", tokenStr); err != nil {
+func (r *tokenRepository) GetByToken(token *domain.AuthToken, tokenStr string) error {
+	if err := r.db.Get(token, "SELECT * FROM access_tokens WHERE token=$1 ORDER BY id DESC LIMIT 1", tokenStr); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (t *tokenRepository) Delete(token *domain.AuthToken) error {
-	_, err := t.db.NamedExec("DELETE FROM access_tokens WHERE id=:id", token)
+func (r *tokenRepository) Delete(token *domain.AuthToken) error {
+	_, err := r.db.NamedExec("DELETE FROM access_tokens WHERE id=:id", token)
 	return err
 }

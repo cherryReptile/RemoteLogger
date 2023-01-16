@@ -15,8 +15,8 @@ func NewProviderRepository(db *sqlx.DB) domain.ProviderRepo {
 	}
 }
 
-func (p *providerRepository) GetByProvider(provider *domain.Provider, name string) error {
-	if err := p.db.Get(provider, "SELECT * FROM providers WHERE provider=$1 LIMIT 1", name); err != nil {
+func (r *providerRepository) GetByProvider(provider *domain.Provider, name string) error {
+	if err := r.db.Get(provider, "SELECT * FROM providers WHERE provider=$1 LIMIT 1", name); err != nil {
 		return err
 	}
 

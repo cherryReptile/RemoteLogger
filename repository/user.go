@@ -17,11 +17,11 @@ func NewUserRepository(db *sqlx.DB) domain.UserRepo {
 	}
 }
 
-func (u *userRepository) Create(user *domain.User) error {
+func (r *userRepository) Create(user *domain.User) error {
 	user.ID = uuid.NewString()
 	user.CreatedAt = time.Now()
 
-	_, err := u.db.NamedExec(`INSERT INTO users (id, login, created_at) 
+	_, err := r.db.NamedExec(`INSERT INTO users (id, login, created_at) 
 								VALUES (:id, :login, :created_at)`, user)
 
 	if err != nil {
@@ -30,22 +30,22 @@ func (u *userRepository) Create(user *domain.User) error {
 	}
 
 	// update model
-	if err = u.db.Get(user, "SELECT * FROM users WHERE id=$1 LIMIT 1", user.ID); err != nil {
+	if err = r.db.Get(user, "SELECT * FROM users WHERE id=$1 LIMIT 1", user.ID); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (u *userRepository) Find(user *domain.User, uuid string) error {
-	if err := u.db.Get(user, "SELECT * FROM users WHERE id=$1", uuid); err != nil {
+func (r *userRepository) Find(user *domain.User, uuid string) error {
+	if err := r.db.Get(user, "SELECT * FROM users WHERE id=$1", uuid); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *userRepository) FindByLoginAndProvider(user *domain.User, login, provider string) error {
-	if err := u.db.Get(user,
+func (r *userRepository) FindByLoginAndProvider(user *domain.User, login, provider string) error {
+	if err := r.db.Get(user,
 		`select users.id, login, users.created_at 
 	from users
     	left join users_providers up on up.user_id = users.id
@@ -56,9 +56,9 @@ func (u *userRepository) FindByLoginAndProvider(user *domain.User, login, provid
 	return nil
 }
 
-func (u *userRepository) GetTokenByStr(user *domain.User, tokenStr string) (*domain.AuthToken, error) {
+func (r *userRepository) GetTokenByStr(user *domain.User, tokenStr string) (*domain.AuthToken, error) {
 	t := domain.AuthToken{}
-	err := u.db.Get(&t, "SELECT * FROM access_tokens WHERE user_id=$1 AND token=$2 ORDER BY id DESC", user.ID, tokenStr)
+	err := r.db.Get(&t, "SELECT * FROM access_tokens WHERE user_id=$1 AND token=$2 ORDER BY id DESC", user.ID, tokenStr)
 	if err != nil {
 		return nil, err
 	}
