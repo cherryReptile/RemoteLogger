@@ -4,7 +4,7 @@ version: '3'
 
 services:
   auth:
-    image: orendat/ws-auth:v1.1.1
+    image: orendat/ws-auth:latest
     depends_on:
       - db
     environment:

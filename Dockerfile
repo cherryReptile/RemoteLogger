@@ -10,7 +10,6 @@ RUN git clone -b master --single-branch https://github.com/cherryReptile/WS-AUTH
 
 WORKDIR /tmp/build
 RUN go build -o /app/main ./cmd
-RUN ls -la
 RUN cp -R migrations /app/migrations
 RUN rm -rf /tmp/build
 WORKDIR /app
