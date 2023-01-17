@@ -11,10 +11,12 @@ RUN git clone -b master --single-branch https://github.com/cherryReptile/WS-AUTH
 WORKDIR /tmp/build
 RUN go build -o /app/main ./cmd
 RUN cp -R migrations /app/migrations
-RUN cp ./bash/entrypoint.sh /entrypoint.sh
+RUN cp ./bash/entrypoint.sh /docker-entrypoint.sh
 RUN rm -rf /tmp/build
 WORKDIR /app
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+RUN ["chown", "root:root", "/docker-entrypoint.sh"]
+RUN ["chmod", "+x", "/docker-entrypoint.sh"]
 
 CMD ["./main"]
