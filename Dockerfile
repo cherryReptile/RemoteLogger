@@ -12,4 +12,5 @@ WORKDIR /tmp/build
 RUN go build -o /app/main ./cmd
 RUN rm -rf /tmp/build
 WORKDIR /app
-RUN ls -la
+
+CMD ["./app/main"]
