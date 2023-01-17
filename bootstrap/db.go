@@ -20,7 +20,7 @@ func (d *Database) Init() {
 func (d *Database) ConnectToDb() *sqlx.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
-		logrus.Fatalf("Not loading environment: %v", err)
+		logrus.Info("Not loading environment, uses system env: %v", err)
 	}
 
 	db, err := sqlx.Connect("postgres", fmt.Sprintf(
