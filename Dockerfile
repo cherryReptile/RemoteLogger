@@ -13,4 +13,4 @@ RUN go build -o /app/main ./cmd
 RUN rm -rf /tmp/build
 WORKDIR /app
 
-CMD ["./app/main"]
+CMD ["./main"]
