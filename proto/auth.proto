@@ -95,7 +95,7 @@ message User {
 message ProfileRequest {
   string FirstName = 1;
   string LastName = 2;
-  bytes Other_Data = 3;
+  map <string, string> Other_Data = 3;
   string Address = 4;
   string UserUUID = 5;
 }

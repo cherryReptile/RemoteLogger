@@ -26,28 +26,34 @@ func NewUserProfileService(db *sqlx.DB) api.ProfileServiceServer {
 	return ps
 }
 
-func (u *userProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
+func (s *userProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
-	u.userUsecase.Find(user, req.UserUUID)
+	od, err := json.Marshal(req.Other_Data)
+	if err != nil {
+		return nil, err
+	}
+
+	s.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	u.profileUsecase.FindByUserUUID(p, user.ID)
+	s.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID != 0 {
 		return nil, errors.New("profile already exists")
 	}
 
 	setRaws(p, req)
+	p.OtherData = od
 	p.UserID = req.UserUUID
-	if err := u.profileUsecase.Create(p); err != nil {
+	if err = s.profileUsecase.Create(p); err != nil {
 		return nil, err
 	}
 
 	var data map[string]string
-	if err := json.Unmarshal(p.OtherData, &data); err != nil {
+	if err = json.Unmarshal(p.OtherData, &data); err != nil {
 		return nil, err
 	}
 
@@ -59,16 +65,16 @@ func (u *userProfileService) Create(ctx context.Context, req *api.ProfileRequest
 	}, nil
 }
 
-func (u *userProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
+func (s *userProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
-	u.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserUUID)
 
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	u.profileUsecase.FindByUserUUID(p, user.ID)
+	s.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
@@ -81,27 +87,35 @@ func (u *userProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*ap
 	return toResponse(p, data), nil
 }
 
-func (u *userProfileService) Update(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
+func (s *userProfileService) Update(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
-	u.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	u.profileUsecase.FindByUserUUID(p, user.ID)
+	s.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
 
 	setRaws(p, req)
 
-	if err := u.profileUsecase.Update(p); err != nil {
+	if req.Other_Data != nil {
+		od, err := json.Marshal(req.Other_Data)
+		if err != nil {
+			return nil, err
+		}
+		p.OtherData = od
+	}
+
+	if err := s.profileUsecase.Update(p); err != nil {
 		return nil, err
 	}
 
-	u.profileUsecase.FindByUserUUID(p, user.ID)
+	s.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("failed to get user's profile after update")
 	}
@@ -114,21 +128,21 @@ func (u *userProfileService) Update(ctx context.Context, req *api.ProfileRequest
 	return toResponse(p, data), nil
 }
 
-func (u *userProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
+func (s *userProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
-	u.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
 
-	u.profileUsecase.FindByUserUUID(p, user.ID)
+	s.profileUsecase.FindByUserUUID(p, user.ID)
 	if p.ID == 0 {
 		return nil, errors.New("profile not found")
 	}
 
-	if err := u.profileUsecase.Delete(p); err != nil {
+	if err := s.profileUsecase.Delete(p); err != nil {
 		return nil, err
 	}
 
@@ -144,9 +158,6 @@ func setRaws(p *domain.Profile, req *api.ProfileRequest) {
 	case req.LastName != "":
 		p.LastName.String = req.LastName
 		p.LastName.Valid = true
-		fallthrough
-	case req.Other_Data != nil:
-		p.OtherData = req.Other_Data
 		fallthrough
 	case req.Address != "":
 		p.Address.String = req.Address
