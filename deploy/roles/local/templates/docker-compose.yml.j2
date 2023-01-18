@@ -29,7 +29,7 @@ services:
             DOMAIN: ${DOMAIN}
             JWT_KEY: ${JWT_KEY}
     ports:
-      - "2345:2345"
+      - "9000:9000"
     volumes:
       - ./:/usr/src/app
       - /etc/passwd:/etc/passwd
