@@ -3,7 +3,6 @@ package bootstrap
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -18,11 +17,6 @@ func (d *Database) Init() {
 }
 
 func (d *Database) ConnectToDb() *sqlx.DB {
-	err := godotenv.Load(".env")
-	if err != nil {
-		logrus.Info("Not loading environment, uses system env: %v", err)
-	}
-
 	db, err := sqlx.Connect("postgres", fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		os.Getenv("DB_HOST"),

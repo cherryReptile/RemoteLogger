@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/domain"
-	"github.com/cherryReptile/WS-AUTH/grpc/internal/authtoken"
+	"github.com/cherryReptile/WS-AUTH/internal/authtoken"
 	"github.com/jmoiron/sqlx"
 )
 

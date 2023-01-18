@@ -11,22 +11,22 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserProfileService struct {
+type userProfileService struct {
 	api.UnimplementedProfileServiceServer
 	userUsecase    domain.UserUsecase
 	profileUsecase domain.ProfileUsecase
 	DB             *sqlx.DB
 }
 
-func NewUserProfileService(db *sqlx.DB) *UserProfileService {
-	ps := new(UserProfileService)
+func NewUserProfileService(db *sqlx.DB) api.ProfileServiceServer {
+	ps := new(userProfileService)
 	ps.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	ps.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	ps.DB = db
 	return ps
 }
 
-func (u *UserProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
+func (u *userProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
@@ -59,7 +59,7 @@ func (u *UserProfileService) Create(ctx context.Context, req *api.ProfileRequest
 	}, nil
 }
 
-func (u *UserProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
+func (u *userProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 	u.userUsecase.Find(user, req.UserUUID)
@@ -81,7 +81,7 @@ func (u *UserProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*ap
 	return toResponse(p, data), nil
 }
 
-func (u *UserProfileService) Update(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
+func (u *userProfileService) Update(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
@@ -114,7 +114,7 @@ func (u *UserProfileService) Update(ctx context.Context, req *api.ProfileRequest
 	return toResponse(p, data), nil
 }
 
-func (u *UserProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
+func (u *userProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
