@@ -30,7 +30,7 @@ func NewAppAuthService(db *sqlx.DB) api.AuthAppServiceServer {
 	return as
 }
 
-func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	provider := "app"
 	user := new(domain.User)
 	p := new(domain.Provider)
@@ -38,12 +38,12 @@ func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	up := new(domain.UsersProviders)
 	token := new(domain.AuthToken)
 
-	a.providerUsecase.GetByProvider(p, provider)
+	s.providerUsecase.GetByProvider(p, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown auth provider")
 	}
 
-	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
+	s.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
 	if pd.ID != 0 {
 		return nil, errors.New("this user already exists")
 	}
@@ -55,7 +55,7 @@ func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	user.Login = req.Email
 
-	err = a.userUsecase.Create(user)
+	err = s.userUsecase.Create(user)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	if err = a.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
+	if err = s.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -77,7 +77,7 @@ func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	pd.UserID = user.ID
 	pd.ProviderID = p.ID
 	pd.Username = user.Login
-	if err = a.providersDataUsecase.Create(pd); err != nil {
+	if err = s.providersDataUsecase.Create(pd); err != nil {
 		return nil, err
 	}
 
@@ -89,31 +89,31 @@ func (a *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	token.Token = tokenStr
 	token.UserUUID = user.ID
 
-	if err = a.tokenUsecase.Create(token); err != nil {
+	if err = s.tokenUsecase.Create(token); err != nil {
 		return nil, err
 	}
 
 	return ToAppResponse(user, token), nil
 }
 
-func (a *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
+func (s *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	userData := new(AppUserData)
 	user := new(domain.User)
 	p := new(domain.Provider)
 	pd := new(domain.ProvidersData)
 	token := new(domain.AuthToken)
 
-	a.providerUsecase.GetByProvider(p, "app")
+	s.providerUsecase.GetByProvider(p, "app")
 	if p.ID == 0 {
 		return nil, errors.New("unknown provider")
 	}
 
-	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
+	s.providersDataUsecase.FindByUsernameAndProvider(pd, req.Email, p.ID)
 	if pd.ID == 0 {
 		return nil, errors.New("user not found")
 	}
 
-	a.userUsecase.Find(user, pd.UserID)
+	s.userUsecase.Find(user, pd.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
@@ -137,36 +137,36 @@ func (a *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 
 	token.Token = tokenStr
 	token.UserUUID = user.ID
-	if err = a.tokenUsecase.Create(token); err != nil {
+	if err = s.tokenUsecase.Create(token); err != nil {
 		return nil, err
 	}
 
 	return ToAppResponse(user, token), nil
 }
 
-func (a *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
+func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest) (*api.AddedResponse, error) {
 	provider := "app"
 	user := new(domain.User)
 	up := new(domain.UsersProviders)
 	pd := new(domain.ProvidersData)
 	p := new(domain.Provider)
 
-	a.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
 		return nil, errors.New("invalid user's uuid")
 	}
 
-	a.providerUsecase.GetByProvider(p, provider)
+	s.providerUsecase.GetByProvider(p, provider)
 	if p.ID == 0 {
 		return nil, errors.New("unknown provider")
 	}
 
-	a.providersDataUsecase.FindByUsernameAndProvider(pd, req.Request.Email, p.ID)
+	s.providersDataUsecase.FindByUsernameAndProvider(pd, req.Request.Email, p.ID)
 	if pd.ID != 0 {
 		return nil, errors.New("user already exists")
 	}
 
-	pds, err := a.providersDataUsecase.GetAllByProvider(user.ID, p.ID)
+	pds, err := s.providersDataUsecase.GetAllByProvider(user.ID, p.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +174,7 @@ func (a *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("you already have account in app")
 	}
 
-	if err = a.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
+	if err = s.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -191,7 +191,7 @@ func (a *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	pd.UserID = req.UserUUID
 	pd.ProviderID = p.ID
 	pd.Username = req.Request.Email
-	if err = a.providersDataUsecase.Create(pd); err != nil {
+	if err = s.providersDataUsecase.Create(pd); err != nil {
 		return nil, err
 	}
 

@@ -23,10 +23,10 @@ func NewLogoutAuthService(db *sqlx.DB) api.LogoutServiceServer {
 	return ls
 }
 
-func (l *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
+func (s *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
 	token := new(domain.AuthToken)
 
-	if err := l.tokenUsecase.GetByToken(token, req.Token); err != nil {
+	if err := s.tokenUsecase.GetByToken(token, req.Token); err != nil {
 		return nil, err
 	}
 
@@ -34,7 +34,7 @@ func (l *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api
 		return nil, errors.New("token not found")
 	}
 
-	if err := l.tokenUsecase.Delete(token); err != nil {
+	if err := s.tokenUsecase.Delete(token); err != nil {
 		return nil, err
 	}
 

@@ -25,8 +25,8 @@ func NewGitHubAuthService(db *sqlx.DB) api.AuthGithubServiceServer {
 	return gs
 }
 
-func (a *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
-	user, token, err := a.LoginDefault(req)
+func (s *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
+	user, token, err := s.LoginDefault(req)
 	if err != nil {
 		return nil, err
 	}
@@ -34,8 +34,8 @@ func (a *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*
 	return nil, nil
 }
 
-func (a *gitHubAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
-	user, err := a.AddAccountDefault(req)
+func (s *gitHubAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
+	user, err := s.AddAccountDefault(req)
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,7 @@ func NewCheckAuthService(db *sqlx.DB) api.CheckAuthServiceServer {
 	return cas
 }
 
-func (c *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
+func (s *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
 	user := new(domain.User)
 	token := new(domain.AuthToken)
 	claims, err := authtoken.GetClaims(req.Token)
@@ -38,21 +38,21 @@ func (c *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest)
 		}
 
 		if err.Errors == 16 {
-			c.tokenUsecase.GetByToken(token, req.Token)
+			s.tokenUsecase.GetByToken(token, req.Token)
 			if token.ID == 0 {
 				return nil, err
 			}
 
-			c.tokenUsecase.Delete(token)
+			s.tokenUsecase.Delete(token)
 		}
 		return nil, err
 	}
 
-	if err = c.userUsecase.FindByLoginAndProvider(user, claims.Unique, claims.Service); err != nil {
+	if err = s.userUsecase.FindByLoginAndProvider(user, claims.Unique, claims.Service); err != nil {
 		return nil, errors.New("user not found")
 	}
 
-	token, err = c.userUsecase.GetTokenByStr(user, req.Token)
+	token, err = s.userUsecase.GetTokenByStr(user, req.Token)
 	if err != nil {
 		return nil, errors.New("token not found")
 	}

@@ -25,16 +25,16 @@ func NewGoogleAuthService(db *sqlx.DB) api.AuthGoogleServiceServer {
 	return gs
 }
 
-func (a *googleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
-	user, token, err := a.LoginDefault(req)
+func (s *googleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {
+	user, token, err := s.LoginDefault(req)
 	if err != nil {
 		return nil, err
 	}
 	return ToAppResponse(user, token), nil
 }
 
-func (a *googleAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
-	user, err := a.AddAccountDefault(req)
+func (s *googleAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {
+	user, err := s.AddAccountDefault(req)
 	if err != nil {
 		return nil, err
 	}
