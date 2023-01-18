@@ -1,6 +1,7 @@
 FROM golang:1.19-alpine AS build
 
 RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+RUN go install github.com/vektra/mockery/v2@latest
 
 RUN apk add git --no-cache
 

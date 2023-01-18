@@ -9,10 +9,25 @@ services:
       - "80:80"
     command: [nginx-debug, '-g', 'daemon off;']
   app:
-    image: orendat/go:latest
+    build:
+        context: .
+        dockerfile: Dockerfile
     user: "{{USER}}:{{GROUP}}"
     environment:
-      - GOCACHE=/usr/src/app/tmp/cache
+            GOCACHE: /usr/src/app/tmp/cache
+            DB_HOST: ${DB_HOST}
+            DB_PORT: ${DB_PORT}
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+            DB_NAME: ${DB_PASSWORD}
+            GIN_MODE: release
+            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+            GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+            GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+            TG_BOT_TOKEN: ${TG_BOT_TOKEN}
+            DOMAIN: ${DOMAIN}
+            JWT_KEY: ${JWT_KEY}
     ports:
       - "2345:2345"
     volumes:
@@ -20,7 +35,6 @@ services:
       - /etc/passwd:/etc/passwd
       - /etc/shadow:/etc/shadow
       - ~/go/pkg:/go/pkg # для синхронизиации пакетов с IDE
-    command: ["air"]
   db:
       image: postgres:alpine
       restart: unless-stopped
