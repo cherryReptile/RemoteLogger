@@ -1,17 +1,10 @@
 version: '3'
 
 services:
-  nginx:
-    image: nginx:stable-alpine
-    volumes:
-      - ./docker/nginx/templates:/etc/nginx/templates
-    ports:
-      - "80:80"
-    command: [nginx-debug, '-g', 'daemon off;']
   app:
     build:
         context: .
-        dockerfile: Dockerfile
+        dockerfile: docker/Dockerfile
     user: "{{USER}}:{{GROUP}}"
     environment:
             GOCACHE: /usr/src/app/tmp/cache
@@ -20,7 +13,6 @@ services:
             DB_USER: ${DB_USER}
             DB_PASSWORD: ${DB_PASSWORD}
             DB_NAME: ${DB_PASSWORD}
-            GIN_MODE: release
             GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
             GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
             GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
@@ -35,6 +27,7 @@ services:
       - /etc/passwd:/etc/passwd
       - /etc/shadow:/etc/shadow
       - ~/go/pkg:/go/pkg # для синхронизиации пакетов с IDE
+    command: ["air"]
   db:
       image: postgres:alpine
       restart: unless-stopped
