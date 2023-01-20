@@ -9,6 +9,7 @@ import (
 	"github.com/cherryReptile/WS-AUTH/internal/authtoken"
 	"github.com/cherryReptile/WS-AUTH/repository"
 	"github.com/cherryReptile/WS-AUTH/usecase"
+	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -32,11 +33,20 @@ func NewAppAuthService(db *sqlx.DB) api.AuthAppServiceServer {
 
 func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
 	provider := "app"
+	var e struct {
+		Email string `validate:"required,email"`
+	}
+	validate := validator.New()
 	user := new(domain.User)
 	p := new(domain.Provider)
 	pd := new(domain.ProvidersData)
 	up := new(domain.UsersProviders)
 	token := new(domain.AuthToken)
+
+	e.Email = req.Email
+	if err := validate.Struct(e); err != nil {
+		return nil, err
+	}
 
 	s.providerUsecase.GetByProvider(p, provider)
 	if p.ID == 0 {
