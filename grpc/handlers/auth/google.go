@@ -6,6 +6,9 @@ import (
 	"github.com/cherryReptile/WS-AUTH/repository"
 	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"os"
 )
 
 type googleAuthService struct {
@@ -21,8 +24,18 @@ func NewGoogleAuthService(db *sqlx.DB) api.AuthGoogleServiceServer {
 	gs.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
 	gs.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
 	gs.DB = db
+	gs.Config = &oauth2.Config{}
+	gs.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
+	gs.Config.ClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
+	gs.Config.Scopes = []string{"https://www.googleapis.com/auth/userinfo.email"}
+	gs.Config.Endpoint = google.Endpoint
+	gs.Config.RedirectURL = "http://localhost/api/v1/auth/google/token"
 	gs.Provider = "google"
 	return gs
+}
+
+func (s googleAuthService) GetToken(ctx context.Context, req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
+	return s.GetTokenDefault(req)
 }
 
 func (s *googleAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {

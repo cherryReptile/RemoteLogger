@@ -6,6 +6,9 @@ import (
 	"github.com/cherryReptile/WS-AUTH/repository"
 	"github.com/cherryReptile/WS-AUTH/usecase"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
+	"os"
 )
 
 type gitHubAuthService struct {
@@ -21,8 +24,16 @@ func NewGitHubAuthService(db *sqlx.DB) api.AuthGithubServiceServer {
 	gs.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
 	gs.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
 	gs.DB = db
+	gs.Config = &oauth2.Config{}
+	gs.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")
+	gs.Config.ClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
+	gs.Config.Endpoint = github.Endpoint
 	gs.Provider = "github"
 	return gs
+}
+
+func (s *gitHubAuthService) GetToken(ctx context.Context, req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
+	return s.GetTokenDefault(req)
 }
 
 func (s *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*api.AppResponse, error) {

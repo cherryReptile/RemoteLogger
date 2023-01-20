@@ -1,11 +1,15 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/domain"
 	"github.com/cherryReptile/WS-AUTH/internal/authtoken"
+	"github.com/cherryReptile/WS-AUTH/internal/github"
+	"github.com/cherryReptile/WS-AUTH/internal/google"
 	"github.com/jmoiron/sqlx"
+	"golang.org/x/oauth2"
 )
 
 type BaseHandler struct {
@@ -17,29 +21,52 @@ type BaseHandler struct {
 }
 
 type BaseOAuthHandler struct {
-	DB *sqlx.DB
+	DB     *sqlx.DB
+	Config *oauth2.Config
 	BaseHandler
 	Provider string
 }
 
+func (h *BaseOAuthHandler) GetTokenDefault(req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
+	tok, err := h.Config.Exchange(context.Background(), req.Code)
+	if err != nil {
+		return nil, err
+	}
+	return &api.OAuthTokenResponse{AccessToken: tok.AccessToken}, nil
+}
+
 func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *domain.AuthToken, error) {
+	var login string
+	var body []byte
+	var err error
 	user := new(domain.User)
 	token := new(domain.AuthToken)
 	p := new(domain.Provider)
 	up := new(domain.UsersProviders)
 	pd := new(domain.ProvidersData)
 
-	if err := h.providerUsecase.GetByProvider(p, h.Provider); err != nil {
+	if h.Provider == "github" {
+		login, body, err = github.GetGitHubUserAndBody(req.AccessToken)
+	}
+	if h.Provider == "google" {
+		login, body, err = google.GetGoogleUserAndBody(req.AccessToken)
+	}
+
+	if err != nil {
 		return nil, nil, err
 	}
 
-	h.providersDataUsecase.FindByUsernameAndProvider(pd, req.Username, p.ID)
+	if err = h.providerUsecase.GetByProvider(p, h.Provider); err != nil {
+		return nil, nil, err
+	}
+
+	h.providersDataUsecase.FindByUsernameAndProvider(pd, login, p.ID)
 	if pd.ID == 0 {
-		user.Login = req.Username
-		if err := h.userUsecase.Create(user); err != nil {
+		user.Login = login
+		if err = h.userUsecase.Create(user); err != nil {
 			return nil, nil, err
 		}
-		if err := h.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
+		if err = h.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -52,11 +79,11 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 	}
 
 	if pd.ID == 0 {
-		pd.UserData = req.Data
+		pd.UserData = body
 		pd.UserID = user.ID
 		pd.ProviderID = p.ID
 		pd.Username = user.Login
-		if err := h.providersDataUsecase.Create(pd); err != nil {
+		if err = h.providersDataUsecase.Create(pd); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -76,10 +103,24 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 }
 
 func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.User, error) {
+	var login string
+	var body []byte
+	var err error
 	user := new(domain.User)
 	up := new(domain.UsersProviders)
 	pd := new(domain.ProvidersData)
 	p := new(domain.Provider)
+
+	if h.Provider == "github" {
+		login, body, err = github.GetGitHubUserAndBody(req.Request.AccessToken)
+	}
+	if h.Provider == "google" {
+		login, body, err = google.GetGoogleUserAndBody(req.Request.AccessToken)
+	}
+
+	if err != nil {
+		return nil, err
+	}
 
 	h.userUsecase.Find(user, req.UserUUID)
 	if user.ID == "" {
@@ -91,20 +132,20 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 		return nil, errors.New("unknown provider")
 	}
 
-	h.providersDataUsecase.FindByUsernameAndProvider(pd, req.Request.Username, p.ID)
+	h.providersDataUsecase.FindByUsernameAndProvider(pd, login, p.ID)
 	if pd.ID != 0 {
 		return nil, errors.New("user already exists")
 	}
 
-	if err := h.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
+	if err = h.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
 		return nil, err
 	}
 
-	pd.UserData = req.Request.Data
+	pd.UserData = body
 	pd.UserID = req.UserUUID
 	pd.ProviderID = p.ID
-	pd.Username = req.Request.Username
-	if err := h.providersDataUsecase.Create(pd); err != nil {
+	pd.Username = login
+	if err = h.providersDataUsecase.Create(pd); err != nil {
 		return nil, err
 	}
 

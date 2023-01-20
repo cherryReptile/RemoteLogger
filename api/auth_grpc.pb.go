@@ -180,6 +180,7 @@ var AuthAppService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGithubServiceClient interface {
+	GetToken(ctx context.Context, in *OAuthCodeRequest, opts ...grpc.CallOption) (*OAuthTokenResponse, error)
 	Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error)
 	AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
@@ -190,6 +191,15 @@ type authGithubServiceClient struct {
 
 func NewAuthGithubServiceClient(cc grpc.ClientConnInterface) AuthGithubServiceClient {
 	return &authGithubServiceClient{cc}
+}
+
+func (c *authGithubServiceClient) GetToken(ctx context.Context, in *OAuthCodeRequest, opts ...grpc.CallOption) (*OAuthTokenResponse, error) {
+	out := new(OAuthTokenResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.AuthGithubService/GetToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *authGithubServiceClient) Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error) {
@@ -214,6 +224,7 @@ func (c *authGithubServiceClient) AddAccount(ctx context.Context, in *AddOauthRe
 // All implementations must embed UnimplementedAuthGithubServiceServer
 // for forward compatibility
 type AuthGithubServiceServer interface {
+	GetToken(context.Context, *OAuthCodeRequest) (*OAuthTokenResponse, error)
 	Login(context.Context, *OAuthRequest) (*AppResponse, error)
 	AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGithubServiceServer()
@@ -223,6 +234,9 @@ type AuthGithubServiceServer interface {
 type UnimplementedAuthGithubServiceServer struct {
 }
 
+func (UnimplementedAuthGithubServiceServer) GetToken(context.Context, *OAuthCodeRequest) (*OAuthTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetToken not implemented")
+}
 func (UnimplementedAuthGithubServiceServer) Login(context.Context, *OAuthRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
@@ -240,6 +254,24 @@ type UnsafeAuthGithubServiceServer interface {
 
 func RegisterAuthGithubServiceServer(s grpc.ServiceRegistrar, srv AuthGithubServiceServer) {
 	s.RegisterService(&AuthGithubService_ServiceDesc, srv)
+}
+
+func _AuthGithubService_GetToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OAuthCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGithubServiceServer).GetToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.AuthGithubService/GetToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGithubServiceServer).GetToken(ctx, req.(*OAuthCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthGithubService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -286,6 +318,10 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AuthGithubServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "GetToken",
+			Handler:    _AuthGithubService_GetToken_Handler,
+		},
+		{
 			MethodName: "Login",
 			Handler:    _AuthGithubService_Login_Handler,
 		},
@@ -302,6 +338,7 @@ var AuthGithubService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthGoogleServiceClient interface {
+	GetToken(ctx context.Context, in *OAuthCodeRequest, opts ...grpc.CallOption) (*OAuthTokenResponse, error)
 	Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error)
 	AddAccount(ctx context.Context, in *AddOauthRequest, opts ...grpc.CallOption) (*AddedResponse, error)
 }
@@ -312,6 +349,15 @@ type authGoogleServiceClient struct {
 
 func NewAuthGoogleServiceClient(cc grpc.ClientConnInterface) AuthGoogleServiceClient {
 	return &authGoogleServiceClient{cc}
+}
+
+func (c *authGoogleServiceClient) GetToken(ctx context.Context, in *OAuthCodeRequest, opts ...grpc.CallOption) (*OAuthTokenResponse, error) {
+	out := new(OAuthTokenResponse)
+	err := c.cc.Invoke(ctx, "/logger.v1.AuthGoogleService/GetToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *authGoogleServiceClient) Login(ctx context.Context, in *OAuthRequest, opts ...grpc.CallOption) (*AppResponse, error) {
@@ -336,6 +382,7 @@ func (c *authGoogleServiceClient) AddAccount(ctx context.Context, in *AddOauthRe
 // All implementations must embed UnimplementedAuthGoogleServiceServer
 // for forward compatibility
 type AuthGoogleServiceServer interface {
+	GetToken(context.Context, *OAuthCodeRequest) (*OAuthTokenResponse, error)
 	Login(context.Context, *OAuthRequest) (*AppResponse, error)
 	AddAccount(context.Context, *AddOauthRequest) (*AddedResponse, error)
 	mustEmbedUnimplementedAuthGoogleServiceServer()
@@ -345,6 +392,9 @@ type AuthGoogleServiceServer interface {
 type UnimplementedAuthGoogleServiceServer struct {
 }
 
+func (UnimplementedAuthGoogleServiceServer) GetToken(context.Context, *OAuthCodeRequest) (*OAuthTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetToken not implemented")
+}
 func (UnimplementedAuthGoogleServiceServer) Login(context.Context, *OAuthRequest) (*AppResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
@@ -362,6 +412,24 @@ type UnsafeAuthGoogleServiceServer interface {
 
 func RegisterAuthGoogleServiceServer(s grpc.ServiceRegistrar, srv AuthGoogleServiceServer) {
 	s.RegisterService(&AuthGoogleService_ServiceDesc, srv)
+}
+
+func _AuthGoogleService_GetToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OAuthCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthGoogleServiceServer).GetToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/logger.v1.AuthGoogleService/GetToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthGoogleServiceServer).GetToken(ctx, req.(*OAuthCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _AuthGoogleService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -407,6 +475,10 @@ var AuthGoogleService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "logger.v1.AuthGoogleService",
 	HandlerType: (*AuthGoogleServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetToken",
+			Handler:    _AuthGoogleService_GetToken_Handler,
+		},
 		{
 			MethodName: "Login",
 			Handler:    _AuthGoogleService_Login_Handler,

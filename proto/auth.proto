@@ -12,11 +12,13 @@ service AuthAppService {
 }
 
 service AuthGithubService {
+  rpc GetToken(OAuthCodeRequest) returns(OAuthTokenResponse) {}
   rpc Login(OAuthRequest) returns (AppResponse) {}
   rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthGoogleService {
+  rpc GetToken(OAuthCodeRequest) returns(OAuthTokenResponse) {}
   rpc Login(OAuthRequest) returns (AppResponse) {}
   rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
@@ -50,9 +52,12 @@ message AddAppRequest {
   string UserUUID = 2;
 }
 
+message OAuthCodeRequest {
+  string Code = 1;
+}
+
 message OAuthRequest {
-  string Username = 1;
-  bytes Data = 2;
+  string AccessToken = 1;
 }
 
 message AddOauthRequest {
@@ -62,6 +67,10 @@ message AddOauthRequest {
 
 message TelegramRequest {
   string Username = 1;
+}
+
+message OAuthTokenResponse {
+  string AccessToken = 1;
 }
 
 message AppResponse {
