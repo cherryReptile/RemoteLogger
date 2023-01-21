@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/domain"
@@ -12,24 +13,28 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type checkAuthService struct {
-	api.UnimplementedCheckAuthServiceServer
-	userUsecase  domain.UserUsecase
-	tokenUsecase domain.AuthTokenUsecase
-	DB           *sqlx.DB
+type getUserService struct {
+	api.UnimplementedGetUserServiceServer
+	userUsecase    domain.UserUsecase
+	tokenUsecase   domain.AuthTokenUsecase
+	profileUsecase domain.ProfileUsecase
+	DB             *sqlx.DB
 }
 
-func NewCheckAuthService(db *sqlx.DB) api.CheckAuthServiceServer {
-	cas := new(checkAuthService)
+func NewGetUserService(db *sqlx.DB) api.GetUserServiceServer {
+	cas := new(getUserService)
 	cas.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	cas.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
+	cas.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	cas.DB = db
 	return cas
 }
 
-func (s *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest) (*api.CheckAuthResponse, error) {
+func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*api.UserClientResponse, error) {
+	var od map[string]string
 	user := new(domain.User)
 	token := new(domain.AuthToken)
+	profile := new(domain.Profile)
 	claims, err := authtoken.GetClaims(req.Token)
 	if err != nil {
 		err, ok := err.(*jwt.ValidationError)
@@ -60,5 +65,25 @@ func (s *checkAuthService) CheckAuth(ctx context.Context, req *api.TokenRequest)
 		return nil, err
 	}
 
-	return &api.CheckAuthResponse{UserUUID: user.ID}, nil
+	if err = s.profileUsecase.FindByUserUUID(profile, user.ID); err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(profile.OtherData, &od); err != nil {
+		return nil, err
+	}
+
+	return &api.UserClientResponse{
+		User: &api.User{
+			ID:        user.ID,
+			Login:     user.Login,
+			CreatedAt: user.CreatedAt.String(),
+		},
+		Profile: &api.ProfileResponse{
+			FirstName:  profile.FirstName.String,
+			LastName:   profile.LastName.String,
+			Address:    profile.Address.String,
+			Other_Data: od,
+		},
+	}, nil
 }

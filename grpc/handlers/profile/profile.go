@@ -35,7 +35,7 @@ func (s *userProfileService) Create(ctx context.Context, req *api.ProfileRequest
 		return nil, err
 	}
 
-	s.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
@@ -47,7 +47,7 @@ func (s *userProfileService) Create(ctx context.Context, req *api.ProfileRequest
 
 	setRaws(p, req)
 	p.OtherData = od
-	p.UserID = req.UserUUID
+	p.UserID = req.UserID
 	if err = s.profileUsecase.Create(p); err != nil {
 		return nil, err
 	}
@@ -65,10 +65,10 @@ func (s *userProfileService) Create(ctx context.Context, req *api.ProfileRequest
 	}, nil
 }
 
-func (s *userProfileService) Get(ctx context.Context, req *api.ProfileUUID) (*api.ProfileResponse, error) {
+func (s *userProfileService) Get(ctx context.Context, req *api.ProfileUserID) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
-	s.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserID)
 
 	if user.ID == "" {
 		return nil, errors.New("user not found")
@@ -91,7 +91,7 @@ func (s *userProfileService) Update(ctx context.Context, req *api.ProfileRequest
 	user := new(domain.User)
 	p := new(domain.Profile)
 
-	s.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
@@ -128,11 +128,11 @@ func (s *userProfileService) Update(ctx context.Context, req *api.ProfileRequest
 	return toResponse(p, data), nil
 }
 
-func (s *userProfileService) Delete(ctx context.Context, req *api.ProfileUUID) (*api.ProfileDeleted, error) {
+func (s *userProfileService) Delete(ctx context.Context, req *api.ProfileUserID) (*api.ProfileDeleted, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)
 
-	s.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}

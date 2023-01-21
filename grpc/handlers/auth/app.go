@@ -161,7 +161,7 @@ func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	pd := new(domain.ProvidersData)
 	p := new(domain.Provider)
 
-	s.userUsecase.Find(user, req.UserUUID)
+	s.userUsecase.Find(user, req.UserID)
 	if user.ID == "" {
 		return nil, errors.New("invalid user's uuid")
 	}
@@ -184,7 +184,7 @@ func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("you already have account in app")
 	}
 
-	if err = s.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
+	if err = s.usersProvidersUsecase.Create(up, req.UserID, p.ID); err != nil {
 		return nil, err
 	}
 
@@ -198,7 +198,7 @@ func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	}
 
 	pd.UserData = json
-	pd.UserID = req.UserUUID
+	pd.UserID = req.UserID
 	pd.ProviderID = p.ID
 	pd.Username = req.Request.Email
 	if err = s.providersDataUsecase.Create(pd); err != nil {

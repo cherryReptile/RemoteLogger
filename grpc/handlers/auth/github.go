@@ -42,7 +42,6 @@ func (s *gitHubAuthService) Login(ctx context.Context, req *api.OAuthRequest) (*
 		return nil, err
 	}
 	return ToAppResponse(user, token), nil
-	return nil, nil
 }
 
 func (s *gitHubAuthService) AddAccount(ctx context.Context, req *api.AddOauthRequest) (*api.AddedResponse, error) {

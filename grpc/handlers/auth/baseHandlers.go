@@ -36,9 +36,11 @@ func (h *BaseOAuthHandler) GetTokenDefault(req *api.OAuthCodeRequest) (*api.OAut
 }
 
 func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *domain.AuthToken, error) {
-	var login string
-	var body []byte
-	var err error
+	var (
+		login string
+		body  []byte
+		err   error
+	)
 	user := new(domain.User)
 	token := new(domain.AuthToken)
 	p := new(domain.Provider)
@@ -122,7 +124,7 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 		return nil, err
 	}
 
-	h.userUsecase.Find(user, req.UserUUID)
+	h.userUsecase.Find(user, req.UserID)
 	if user.ID == "" {
 		return nil, errors.New("user not found")
 	}
@@ -137,12 +139,12 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 		return nil, errors.New("user already exists")
 	}
 
-	if err = h.usersProvidersUsecase.Create(up, req.UserUUID, p.ID); err != nil {
+	if err = h.usersProvidersUsecase.Create(up, req.UserID, p.ID); err != nil {
 		return nil, err
 	}
 
 	pd.UserData = body
-	pd.UserID = req.UserUUID
+	pd.UserID = req.UserID
 	pd.ProviderID = p.ID
 	pd.Username = login
 	if err = h.providersDataUsecase.Create(pd); err != nil {

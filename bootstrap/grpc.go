@@ -15,12 +15,12 @@ func (a *RPCApp) Init() {
 	a.DB = new(Database)
 	a.DB.Init()
 	a.Server = server.NewServer(server.Services{
-		App:       auth.NewAppAuthService(a.DB.Conn),
-		GitHub:    auth.NewGitHubAuthService(a.DB.Conn),
-		Google:    auth.NewGoogleAuthService(a.DB.Conn),
-		Telegram:  auth.NewTelegramAuthService(a.DB.Conn),
-		CheckAuth: auth.NewCheckAuthService(a.DB.Conn),
-		Logout:    auth.NewLogoutAuthService(a.DB.Conn),
-		Profile:   profile.NewUserProfileService(a.DB.Conn),
+		App:      auth.NewAppAuthService(a.DB.Conn),
+		GitHub:   auth.NewGitHubAuthService(a.DB.Conn),
+		Google:   auth.NewGoogleAuthService(a.DB.Conn),
+		Telegram: auth.NewTelegramAuthService(a.DB.Conn),
+		GetUser:  auth.NewGetUserService(a.DB.Conn),
+		JWTToken: auth.NewJWTTokenService(a.DB.Conn),
+		Profile:  profile.NewUserProfileService(a.DB.Conn),
 	})
 }
