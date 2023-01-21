@@ -27,19 +27,19 @@ service AuthTelegramService {
   rpc Login(TelegramRequest) returns (AppResponse) {}
 }
 
-service CheckAuthService {
-  rpc CheckAuth(TokenRequest) returns (CheckAuthResponse) {}
+service GetUserService {
+  rpc GetUser(TokenRequest) returns (UserClientResponse) {}
 }
 
-service LogoutService {
-  rpc Logout(TokenRequest) returns (LogoutResponse) {}
+service JWTTokenService {
+  rpc Drop(TokenRequest) returns (DroppedTokenResponse) {}
 }
 
 service ProfileService {
   rpc Create(ProfileRequest) returns (ProfileResponse) {}
   rpc Update(ProfileRequest) returns (ProfileResponse) {}
-  rpc Get(ProfileUUID)    returns (ProfileResponse) {}
-  rpc Delete(ProfileUUID)  returns (ProfileDeleted) {}
+  rpc Get(ProfileUserID)    returns (ProfileResponse) {}
+  rpc Delete(ProfileUserID)  returns (ProfileDeleted) {}
 }
 
 message AppRequest {
@@ -49,7 +49,7 @@ message AppRequest {
 
 message AddAppRequest {
   AppRequest Request = 1;
-  string UserUUID = 2;
+  string UserID = 2;
 }
 
 message OAuthCodeRequest {
@@ -62,7 +62,7 @@ message OAuthRequest {
 
 message AddOauthRequest {
   OAuthRequest Request = 1;
-  string UserUUID = 2;
+  string UserID = 2;
 }
 
 message TelegramRequest {
@@ -87,16 +87,17 @@ message TokenRequest {
   string Token = 1;
 }
 
-message LogoutResponse {
+message DroppedTokenResponse {
   string Message = 1;
 }
 
-message CheckAuthResponse {
-  string UserUUID = 1;
+message UserClientResponse {
+  User User = 1;
+  ProfileResponse Profile = 2;
 }
 
 message User {
-  string UUID = 1;
+  string ID = 1;
   string Login = 2;
   string CreatedAt = 5;
 }
@@ -106,11 +107,11 @@ message ProfileRequest {
   string LastName = 2;
   map <string, string> Other_Data = 3;
   string Address = 4;
-  string UserUUID = 5;
+  string UserID = 5;
 }
 
-message ProfileUUID {
-  string UserUUID = 1;
+message ProfileUserID {
+  string UserID = 1;
 }
 
 message ProfileDeleted {
