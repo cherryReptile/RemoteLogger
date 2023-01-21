@@ -91,7 +91,7 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, "app")
+	tokenStr, err := authtoken.GenerateToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (s *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.A
 		return nil, err
 	}
 
-	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, "app")
+	tokenStr, err := authtoken.GenerateToken(user.ID)
 	if err != nil {
 		return nil, err
 	}

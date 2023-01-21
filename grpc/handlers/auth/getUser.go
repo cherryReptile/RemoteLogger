@@ -15,28 +15,33 @@ import (
 
 type getUserService struct {
 	api.UnimplementedGetUserServiceServer
-	userUsecase    domain.UserUsecase
-	tokenUsecase   domain.AuthTokenUsecase
-	profileUsecase domain.ProfileUsecase
-	DB             *sqlx.DB
+	//userUsecase           domain.UserUsecase
+	clientUserUsecase domain.ClientUserUsecase
+	tokenUsecase      domain.AuthTokenUsecase
+	//profileUsecase        domain.ProfileUsecase
+	DB *sqlx.DB
 }
 
 func NewGetUserService(db *sqlx.DB) api.GetUserServiceServer {
 	cas := new(getUserService)
-	cas.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
 	cas.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
-	cas.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
+	//cas.userUsecase = usecase.NewUserUsecase(repository.NewUserRepository(db))
+	cas.clientUserUsecase = usecase.NewUserAndProfileUsecase(repository.NewUserAndProfileRepository(db))
+	//cas.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	cas.DB = db
 	return cas
 }
 
 func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*api.UserClientResponse, error) {
 	var od map[string]string
-	user := new(domain.User)
-	token := new(domain.AuthToken)
-	profile := new(domain.Profile)
+	clientUser := new(domain.ClientUser)
+	clientUser.User = domain.User{}
+	clientUser.Profile = domain.Profile{}
+	clientUser.AuthToken = domain.AuthToken{}
+	//profile := new(domain.Profile)
 	claims, err := authtoken.GetClaims(req.Token)
 	if err != nil {
+		token := new(domain.AuthToken)
 		err, ok := err.(*jwt.ValidationError)
 		if !ok {
 			return nil, err
@@ -53,36 +58,43 @@ func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*a
 		return nil, err
 	}
 
-	if err = s.userUsecase.FindByLoginAndProvider(user, claims.Unique, claims.Service); err != nil {
-		return nil, errors.New("user not found")
+	//if err = s.userUsecase.FindByLoginAndProvider(user, claims.Unique, claims.Service); err != nil {
+	//	return nil, errors.New("user not found")
+	//}
+	s.clientUserUsecase.GetAuthClientUser(clientUser, claims.UserID, req.Token)
+	//s.userUsecase.GetUserWithProfile(clientUser, claims.UserID)
+	if clientUser.User.ID == "" {
+		return nil, errors.New("failed to get user")
 	}
 
-	token, err = s.userUsecase.GetTokenByStr(user, req.Token)
-	if err != nil {
-		return nil, errors.New("token not found")
-	}
-	if token.ID == 0 {
-		return nil, err
-	}
-
-	if err = s.profileUsecase.FindByUserUUID(profile, user.ID); err != nil {
-		return nil, err
+	//token, err = s.userUsecase.GetTokenByStr(&clientUser.User, req.Token)
+	//if err != nil {
+	//	return nil, errors.New("token not found")
+	//}
+	if clientUser.AuthToken.Token == "" {
+		return nil, errors.New("failed to get token")
 	}
 
-	if err = json.Unmarshal(profile.OtherData, &od); err != nil {
-		return nil, err
+	//if err = s.profileUsecase.FindByUserUUID(profile, user.ID); err != nil {
+	//	return nil, err
+	//}
+
+	if clientUser.Profile.OtherData != nil {
+		if err = json.Unmarshal(clientUser.Profile.OtherData, &od); err != nil {
+			return nil, err
+		}
 	}
 
 	return &api.UserClientResponse{
 		User: &api.User{
-			ID:        user.ID,
-			Login:     user.Login,
-			CreatedAt: user.CreatedAt.String(),
+			ID:        clientUser.User.ID,
+			Login:     clientUser.User.Login,
+			CreatedAt: clientUser.User.CreatedAt.String(),
 		},
 		Profile: &api.ProfileResponse{
-			FirstName:  profile.FirstName.String,
-			LastName:   profile.LastName.String,
-			Address:    profile.Address.String,
+			FirstName:  clientUser.Profile.FirstName.String,
+			LastName:   clientUser.Profile.LastName.String,
+			Address:    clientUser.Profile.Address.String,
 			Other_Data: od,
 		},
 	}, nil

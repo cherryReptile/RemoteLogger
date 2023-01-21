@@ -90,7 +90,7 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 		}
 	}
 
-	tokenStr, err := authtoken.GenerateToken(user.ID, user.Login, h.Provider)
+	tokenStr, err := authtoken.GenerateToken(user.ID)
 	if err != nil {
 		return nil, nil, err
 	}
