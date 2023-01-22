@@ -10,23 +10,23 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type logoutService struct {
-	api.UnimplementedLogoutServiceServer
+type JWTTokenService struct {
+	api.UnimplementedJWTTokenServiceServer
 	tokenUsecase domain.AuthTokenUsecase
 	DB           *sqlx.DB
 }
 
-func NewLogoutAuthService(db *sqlx.DB) api.LogoutServiceServer {
-	ls := new(logoutService)
+func NewJWTTokenService(db *sqlx.DB) api.JWTTokenServiceServer {
+	ls := new(JWTTokenService)
 	ls.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	ls.DB = db
 	return ls
 }
 
-func (s *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api.LogoutResponse, error) {
+func (s *JWTTokenService) Drop(ctx context.Context, req *api.JWTTokenRequest) (*api.DroppedTokenResponse, error) {
 	token := new(domain.AuthToken)
 
-	if err := s.tokenUsecase.GetByToken(token, req.Token); err != nil {
+	if err := s.tokenUsecase.GetByToken(token, req.JWTToken); err != nil {
 		return nil, err
 	}
 
@@ -38,5 +38,5 @@ func (s *logoutService) Logout(ctx context.Context, req *api.TokenRequest) (*api
 		return nil, err
 	}
 
-	return &api.LogoutResponse{Message: "logout successfully"}, nil
+	return &api.DroppedTokenResponse{Message: "token has been dropped successfully"}, nil
 }

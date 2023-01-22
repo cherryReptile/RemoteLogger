@@ -28,11 +28,11 @@ service AuthTelegramService {
 }
 
 service GetUserService {
-  rpc GetUser(TokenRequest) returns (UserClientResponse) {}
+  rpc GetUser(JWTTokenRequest) returns (UserClientResponse) {}
 }
 
 service JWTTokenService {
-  rpc Drop(TokenRequest) returns (DroppedTokenResponse) {}
+  rpc Drop(JWTTokenRequest) returns (DroppedTokenResponse) {}
 }
 
 service ProfileService {
@@ -75,7 +75,7 @@ message OAuthTokenResponse {
 
 message AppResponse {
   User Struct = 1;
-  string TokenStr = 2;
+  string JWTToken = 2;
 }
 
 message AddedResponse {
@@ -83,8 +83,8 @@ message AddedResponse {
   string Message = 2;
 }
 
-message TokenRequest {
-  string Token = 1;
+message JWTTokenRequest {
+  string JWTToken = 1;
 }
 
 message DroppedTokenResponse {
@@ -94,6 +94,7 @@ message DroppedTokenResponse {
 message UserClientResponse {
   User User = 1;
   ProfileResponse Profile = 2;
+  string JWTToken = 3;
 }
 
 message User {

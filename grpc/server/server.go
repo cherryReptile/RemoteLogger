@@ -11,13 +11,13 @@ import (
 )
 
 type Services struct {
-	App       api.AuthAppServiceServer
-	GitHub    api.AuthGithubServiceServer
-	Google    api.AuthGoogleServiceServer
-	Telegram  api.AuthTelegramServiceServer
-	CheckAuth api.CheckAuthServiceServer
-	Logout    api.LogoutServiceServer
-	Profile   api.ProfileServiceServer
+	App      api.AuthAppServiceServer
+	GitHub   api.AuthGithubServiceServer
+	Google   api.AuthGoogleServiceServer
+	Telegram api.AuthTelegramServiceServer
+	GetUser  api.GetUserServiceServer
+	JWTToken api.JWTTokenServiceServer
+	Profile  api.ProfileServiceServer
 }
 
 type Logger struct {
@@ -70,8 +70,8 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterAuthGithubServiceServer(s.srv, s.Services.GitHub)
 	api.RegisterAuthGoogleServiceServer(s.srv, s.Services.Google)
 	api.RegisterAuthTelegramServiceServer(s.srv, s.Services.Telegram)
-	api.RegisterCheckAuthServiceServer(s.srv, s.Services.CheckAuth)
-	api.RegisterLogoutServiceServer(s.srv, s.Services.Logout)
+	api.RegisterGetUserServiceServer(s.srv, s.Services.GetUser)
+	api.RegisterJWTTokenServiceServer(s.srv, s.Services.JWTToken)
 	api.RegisterProfileServiceServer(s.srv, s.Services.Profile)
 	logrus.Printf("Running gRPC server on port %s", port)
 	if err = s.srv.Serve(l); err != nil {

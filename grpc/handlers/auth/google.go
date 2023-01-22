@@ -23,6 +23,7 @@ func NewGoogleAuthService(db *sqlx.DB) api.AuthGoogleServiceServer {
 	gs.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	gs.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
 	gs.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
+	gs.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	gs.DB = db
 	gs.Config = &oauth2.Config{}
 	gs.Config.ClientID = os.Getenv("GOOGLE_CLIENT_ID")
