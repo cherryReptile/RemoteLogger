@@ -582,7 +582,7 @@ var AuthTelegramService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GetUserServiceClient interface {
-	GetUser(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*UserClientResponse, error)
+	GetUser(ctx context.Context, in *JWTTokenRequest, opts ...grpc.CallOption) (*UserClientResponse, error)
 }
 
 type getUserServiceClient struct {
@@ -593,7 +593,7 @@ func NewGetUserServiceClient(cc grpc.ClientConnInterface) GetUserServiceClient {
 	return &getUserServiceClient{cc}
 }
 
-func (c *getUserServiceClient) GetUser(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*UserClientResponse, error) {
+func (c *getUserServiceClient) GetUser(ctx context.Context, in *JWTTokenRequest, opts ...grpc.CallOption) (*UserClientResponse, error) {
 	out := new(UserClientResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.GetUserService/GetUser", in, out, opts...)
 	if err != nil {
@@ -606,7 +606,7 @@ func (c *getUserServiceClient) GetUser(ctx context.Context, in *TokenRequest, op
 // All implementations must embed UnimplementedGetUserServiceServer
 // for forward compatibility
 type GetUserServiceServer interface {
-	GetUser(context.Context, *TokenRequest) (*UserClientResponse, error)
+	GetUser(context.Context, *JWTTokenRequest) (*UserClientResponse, error)
 	mustEmbedUnimplementedGetUserServiceServer()
 }
 
@@ -614,7 +614,7 @@ type GetUserServiceServer interface {
 type UnimplementedGetUserServiceServer struct {
 }
 
-func (UnimplementedGetUserServiceServer) GetUser(context.Context, *TokenRequest) (*UserClientResponse, error) {
+func (UnimplementedGetUserServiceServer) GetUser(context.Context, *JWTTokenRequest) (*UserClientResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
 func (UnimplementedGetUserServiceServer) mustEmbedUnimplementedGetUserServiceServer() {}
@@ -631,7 +631,7 @@ func RegisterGetUserServiceServer(s grpc.ServiceRegistrar, srv GetUserServiceSer
 }
 
 func _GetUserService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenRequest)
+	in := new(JWTTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -643,7 +643,7 @@ func _GetUserService_GetUser_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/logger.v1.GetUserService/GetUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GetUserServiceServer).GetUser(ctx, req.(*TokenRequest))
+		return srv.(GetUserServiceServer).GetUser(ctx, req.(*JWTTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -668,7 +668,7 @@ var GetUserService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type JWTTokenServiceClient interface {
-	Drop(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*DroppedTokenResponse, error)
+	Drop(ctx context.Context, in *JWTTokenRequest, opts ...grpc.CallOption) (*DroppedTokenResponse, error)
 }
 
 type jWTTokenServiceClient struct {
@@ -679,7 +679,7 @@ func NewJWTTokenServiceClient(cc grpc.ClientConnInterface) JWTTokenServiceClient
 	return &jWTTokenServiceClient{cc}
 }
 
-func (c *jWTTokenServiceClient) Drop(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*DroppedTokenResponse, error) {
+func (c *jWTTokenServiceClient) Drop(ctx context.Context, in *JWTTokenRequest, opts ...grpc.CallOption) (*DroppedTokenResponse, error) {
 	out := new(DroppedTokenResponse)
 	err := c.cc.Invoke(ctx, "/logger.v1.JWTTokenService/Drop", in, out, opts...)
 	if err != nil {
@@ -692,7 +692,7 @@ func (c *jWTTokenServiceClient) Drop(ctx context.Context, in *TokenRequest, opts
 // All implementations must embed UnimplementedJWTTokenServiceServer
 // for forward compatibility
 type JWTTokenServiceServer interface {
-	Drop(context.Context, *TokenRequest) (*DroppedTokenResponse, error)
+	Drop(context.Context, *JWTTokenRequest) (*DroppedTokenResponse, error)
 	mustEmbedUnimplementedJWTTokenServiceServer()
 }
 
@@ -700,7 +700,7 @@ type JWTTokenServiceServer interface {
 type UnimplementedJWTTokenServiceServer struct {
 }
 
-func (UnimplementedJWTTokenServiceServer) Drop(context.Context, *TokenRequest) (*DroppedTokenResponse, error) {
+func (UnimplementedJWTTokenServiceServer) Drop(context.Context, *JWTTokenRequest) (*DroppedTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Drop not implemented")
 }
 func (UnimplementedJWTTokenServiceServer) mustEmbedUnimplementedJWTTokenServiceServer() {}
@@ -717,7 +717,7 @@ func RegisterJWTTokenServiceServer(s grpc.ServiceRegistrar, srv JWTTokenServiceS
 }
 
 func _JWTTokenService_Drop_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TokenRequest)
+	in := new(JWTTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -729,7 +729,7 @@ func _JWTTokenService_Drop_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/logger.v1.JWTTokenService/Drop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(JWTTokenServiceServer).Drop(ctx, req.(*TokenRequest))
+		return srv.(JWTTokenServiceServer).Drop(ctx, req.(*JWTTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

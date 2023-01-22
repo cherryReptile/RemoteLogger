@@ -23,10 +23,10 @@ func NewJWTTokenService(db *sqlx.DB) api.JWTTokenServiceServer {
 	return ls
 }
 
-func (s *JWTTokenService) Drop(ctx context.Context, req *api.TokenRequest) (*api.DroppedTokenResponse, error) {
+func (s *JWTTokenService) Drop(ctx context.Context, req *api.JWTTokenRequest) (*api.DroppedTokenResponse, error) {
 	token := new(domain.AuthToken)
 
-	if err := s.tokenUsecase.GetByToken(token, req.Token); err != nil {
+	if err := s.tokenUsecase.GetByToken(token, req.JWTToken); err != nil {
 		return nil, err
 	}
 

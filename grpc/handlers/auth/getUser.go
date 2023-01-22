@@ -32,14 +32,14 @@ func NewGetUserService(db *sqlx.DB) api.GetUserServiceServer {
 	return cas
 }
 
-func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*api.UserClientResponse, error) {
+func (s *getUserService) GetUser(ctx context.Context, req *api.JWTTokenRequest) (*api.UserClientResponse, error) {
 	var od map[string]string
 	clientUser := new(domain.ClientUser)
 	clientUser.User = domain.User{}
 	clientUser.Profile = domain.Profile{}
 	clientUser.AuthToken = domain.AuthToken{}
 	//profile := new(domain.Profile)
-	claims, err := authtoken.GetClaims(req.Token)
+	claims, err := authtoken.GetClaims(req.JWTToken)
 	if err != nil {
 		token := new(domain.AuthToken)
 		err, ok := err.(*jwt.ValidationError)
@@ -48,7 +48,7 @@ func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*a
 		}
 
 		if err.Errors == 16 {
-			s.tokenUsecase.GetByToken(token, req.Token)
+			s.tokenUsecase.GetByToken(token, req.JWTToken)
 			if token.ID == 0 {
 				return nil, err
 			}
@@ -61,7 +61,7 @@ func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*a
 	//if err = s.userUsecase.FindByLoginAndProvider(user, claims.Unique, claims.Service); err != nil {
 	//	return nil, errors.New("user not found")
 	//}
-	s.clientUserUsecase.GetAuthClientUser(clientUser, claims.UserID, req.Token)
+	s.clientUserUsecase.GetAuthClientUser(clientUser, claims.UserID, req.JWTToken)
 	//s.userUsecase.GetUserWithProfile(clientUser, claims.UserID)
 	if clientUser.User.ID == "" {
 		return nil, errors.New("failed to get user")
@@ -97,5 +97,6 @@ func (s *getUserService) GetUser(ctx context.Context, req *api.TokenRequest) (*a
 			Address:    clientUser.Profile.Address.String,
 			Other_Data: od,
 		},
+		JWTToken: clientUser.AuthToken.Token,
 	}, nil
 }
