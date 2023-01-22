@@ -23,6 +23,7 @@ func NewGitHubAuthService(db *sqlx.DB) api.AuthGithubServiceServer {
 	gs.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	gs.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
 	gs.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
+	gs.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	gs.DB = db
 	gs.Config = &oauth2.Config{}
 	gs.Config.ClientID = os.Getenv("GITHUB_CLIENT_ID")

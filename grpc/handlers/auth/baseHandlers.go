@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
 	"errors"
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/domain"
@@ -18,6 +20,7 @@ type BaseHandler struct {
 	tokenUsecase          domain.AuthTokenUsecase
 	providersDataUsecase  domain.ProvidersDataUsecase
 	usersProvidersUsecase domain.UsersProvidersUsecase
+	profileUsecase        domain.ProfileUsecase
 }
 
 type BaseOAuthHandler struct {
@@ -25,6 +28,19 @@ type BaseOAuthHandler struct {
 	Config *oauth2.Config
 	BaseHandler
 	Provider string
+}
+
+func (h *BaseHandler) SetProfile(profile *domain.Profile, userID string) error {
+	profile.FirstName = sql.NullString{Valid: true, String: ""}
+	profile.LastName = sql.NullString{Valid: true, String: ""}
+	profile.Address = sql.NullString{Valid: true, String: ""}
+	profile.UserID = userID
+	od, err := json.Marshal(map[string]string{"": ""})
+	if err != nil {
+		return err
+	}
+	profile.OtherData = od
+	return nil
 }
 
 func (h *BaseOAuthHandler) GetTokenDefault(req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
@@ -64,8 +80,15 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 
 	h.providersDataUsecase.FindByUsernameAndProvider(pd, login, p.ID)
 	if pd.ID == 0 {
+		profile := new(domain.Profile)
 		user.Login = login
 		if err = h.userUsecase.Create(user); err != nil {
+			return nil, nil, err
+		}
+		if err = h.SetProfile(profile, user.ID); err != nil {
+			return nil, nil, err
+		}
+		if err = h.profileUsecase.Create(profile); err != nil {
 			return nil, nil, err
 		}
 		if err = h.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {

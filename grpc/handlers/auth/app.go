@@ -27,6 +27,7 @@ func NewAppAuthService(db *sqlx.DB) api.AuthAppServiceServer {
 	as.tokenUsecase = usecase.NewTokenUsecase(repository.NewTokenRepository(db))
 	as.providersDataUsecase = usecase.NewProvidersDataUsecase(repository.NewProvidersDataRepo(db))
 	as.usersProvidersUsecase = usecase.NewUsersProvidersUsecase(repository.NewUsersProvidersRepository(db))
+	as.profileUsecase = usecase.NewProfileUsecase(repository.NewProfileRepository(db))
 	as.DB = db
 	return as
 }
@@ -38,6 +39,7 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	}
 	validate := validator.New()
 	user := new(domain.User)
+	profile := new(domain.Profile)
 	p := new(domain.Provider)
 	pd := new(domain.ProvidersData)
 	up := new(domain.UsersProviders)
@@ -78,12 +80,12 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	json, err := json.Marshal(map[string]string{"email": req.Email, "password": string(hashP)})
+	jsonBody, err := json.Marshal(map[string]string{"email": req.Email, "password": string(hashP)})
 	if err != nil {
 		return nil, err
 	}
 
-	pd.UserData = json
+	pd.UserData = jsonBody
 	pd.UserID = user.ID
 	pd.ProviderID = p.ID
 	pd.Username = user.Login
@@ -100,6 +102,14 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	token.UserUUID = user.ID
 
 	if err = s.tokenUsecase.Create(token); err != nil {
+		return nil, err
+	}
+
+	if err = s.SetProfile(profile, user.ID); err != nil {
+		return nil, err
+	}
+
+	if err = s.profileUsecase.Create(profile); err != nil {
 		return nil, err
 	}
 
