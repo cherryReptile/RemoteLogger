@@ -35,7 +35,12 @@ func NewGoogleAuthService(db *sqlx.DB) api.AuthGoogleServiceServer {
 	return gs
 }
 
-func (s googleAuthService) GetToken(ctx context.Context, req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
+func (s *googleAuthService) GetOAuthUrl(ctx context.Context, req *api.Empty) (*api.OAuthUrlResponse, error) {
+	return &api.OAuthUrlResponse{
+		Url: s.Config.AuthCodeURL("state", oauth2.AccessTypeOnline),
+	}, nil
+}
+func (s *googleAuthService) GetToken(ctx context.Context, req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
 	return s.GetTokenDefault(req)
 }
 

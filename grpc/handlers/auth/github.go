@@ -33,6 +33,12 @@ func NewGitHubAuthService(db *sqlx.DB) api.AuthGithubServiceServer {
 	return gs
 }
 
+func (s *gitHubAuthService) GetOAuthUrl(ctx context.Context, req *api.Empty) (*api.OAuthUrlResponse, error) {
+	return &api.OAuthUrlResponse{
+		Url: s.Config.AuthCodeURL("state", oauth2.AccessTypeOnline),
+	}, nil
+}
+
 func (s *gitHubAuthService) GetToken(ctx context.Context, req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
 	return s.GetTokenDefault(req)
 }

@@ -12,12 +12,14 @@ service AuthAppService {
 }
 
 service AuthGithubService {
+  rpc GetOAuthUrl(Empty) returns(OAuthUrlResponse) {}
   rpc GetToken(OAuthCodeRequest) returns(OAuthTokenResponse) {}
   rpc Login(OAuthRequest) returns (AppResponse) {}
   rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
 service AuthGoogleService {
+  rpc GetOAuthUrl(Empty) returns(OAuthUrlResponse) {}
   rpc GetToken(OAuthCodeRequest) returns(OAuthTokenResponse) {}
   rpc Login(OAuthRequest) returns (AppResponse) {}
   rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
@@ -41,6 +43,8 @@ service ProfileService {
   rpc Get(ProfileUserID)    returns (ProfileResponse) {}
   rpc Delete(ProfileUserID)  returns (ProfileDeleted) {}
 }
+
+message Empty {}
 
 message AppRequest {
   string Email = 1;
@@ -95,6 +99,10 @@ message UserClientResponse {
   User User = 1;
   ProfileResponse Profile = 2;
   string JWTToken = 3;
+}
+
+message OAuthUrlResponse {
+  string Url = 1;
 }
 
 message User {
