@@ -44,6 +44,10 @@ service ProfileService {
   rpc Delete(ProfileUserID)  returns (ProfileDeleted) {}
 }
 
+service UserInfoService {
+  rpc GetAll(GetUsersRequest) returns (stream UserClientResponse) {}
+}
+
 message Empty {}
 
 message AppRequest {
@@ -132,4 +136,9 @@ message ProfileResponse {
   string LastName = 2;
   string Address = 3;
   map<string, string> Other_Data = 4;
+}
+
+message GetUsersRequest {
+  string OrderBy = 1;
+  string Field = 2;
 }

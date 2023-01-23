@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/cherryReptile/WS-AUTH/domain"
+	"github.com/jmoiron/sqlx"
 )
 
 type clientUserUsecase struct {
@@ -20,4 +21,8 @@ func (u *clientUserUsecase) GetUserWithProfile(clientUser *domain.ClientUser, us
 
 func (u *clientUserUsecase) GetAuthClientUser(clientUser *domain.ClientUser, userID, token string) error {
 	return u.clientUserRepo.GetAuthClientUser(clientUser, userID, token)
+}
+
+func (u *clientUserUsecase) GetAllWithOrderBy(field, orderBy string) (*sqlx.Rows, error) {
+	return u.clientUserRepo.GetAllWithOrderBy(field, orderBy)
 }

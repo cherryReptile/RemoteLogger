@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"github.com/cherryReptile/WS-AUTH/grpc/handlers/auth"
 	"github.com/cherryReptile/WS-AUTH/grpc/handlers/profile"
+	"github.com/cherryReptile/WS-AUTH/grpc/handlers/userInfo"
 	"github.com/cherryReptile/WS-AUTH/grpc/server"
 )
 
@@ -22,5 +23,6 @@ func (a *RPCApp) Init() {
 		GetUser:  auth.NewGetUserService(a.DB.Conn),
 		JWTToken: auth.NewJWTTokenService(a.DB.Conn),
 		Profile:  profile.NewUserProfileService(a.DB.Conn),
+		UserInfo: userInfo.NewUserInfoService(a.DB.Conn),
 	})
 }

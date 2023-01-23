@@ -18,6 +18,7 @@ type Services struct {
 	GetUser  api.GetUserServiceServer
 	JWTToken api.JWTTokenServiceServer
 	Profile  api.ProfileServiceServer
+	UserInfo api.UserInfoServiceServer
 }
 
 type Logger struct {
@@ -51,6 +52,9 @@ func NewServer(services Services) *Server {
 		grpc_middleware.WithUnaryServerChain(
 			grpc_logrus.UnaryServerInterceptor(logrusEntry, logrusOpts...),
 		),
+		grpc_middleware.WithStreamServerChain(
+			grpc_logrus.StreamServerInterceptor(logrusEntry, logrusOpts...),
+		),
 	}
 
 	return &Server{
@@ -73,6 +77,7 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterGetUserServiceServer(s.srv, s.Services.GetUser)
 	api.RegisterJWTTokenServiceServer(s.srv, s.Services.JWTToken)
 	api.RegisterProfileServiceServer(s.srv, s.Services.Profile)
+	api.RegisterUserInfoServiceServer(s.srv, s.Services.UserInfo)
 	logrus.Printf("Running gRPC server on port %s", port)
 	if err = s.srv.Serve(l); err != nil {
 		errCh <- err

@@ -1015,3 +1015,116 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/auth.proto",
 }
+
+// UserInfoServiceClient is the client API for UserInfoService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type UserInfoServiceClient interface {
+	GetAll(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllClient, error)
+}
+
+type userInfoServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewUserInfoServiceClient(cc grpc.ClientConnInterface) UserInfoServiceClient {
+	return &userInfoServiceClient{cc}
+}
+
+func (c *userInfoServiceClient) GetAll(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserInfoService_ServiceDesc.Streams[0], "/logger.v1.UserInfoService/GetAll", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userInfoServiceGetAllClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type UserInfoService_GetAllClient interface {
+	Recv() (*UserClientResponse, error)
+	grpc.ClientStream
+}
+
+type userInfoServiceGetAllClient struct {
+	grpc.ClientStream
+}
+
+func (x *userInfoServiceGetAllClient) Recv() (*UserClientResponse, error) {
+	m := new(UserClientResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// UserInfoServiceServer is the server API for UserInfoService service.
+// All implementations must embed UnimplementedUserInfoServiceServer
+// for forward compatibility
+type UserInfoServiceServer interface {
+	GetAll(*GetUsersRequest, UserInfoService_GetAllServer) error
+	mustEmbedUnimplementedUserInfoServiceServer()
+}
+
+// UnimplementedUserInfoServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedUserInfoServiceServer struct {
+}
+
+func (UnimplementedUserInfoServiceServer) GetAll(*GetUsersRequest, UserInfoService_GetAllServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedUserInfoServiceServer) mustEmbedUnimplementedUserInfoServiceServer() {}
+
+// UnsafeUserInfoServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to UserInfoServiceServer will
+// result in compilation errors.
+type UnsafeUserInfoServiceServer interface {
+	mustEmbedUnimplementedUserInfoServiceServer()
+}
+
+func RegisterUserInfoServiceServer(s grpc.ServiceRegistrar, srv UserInfoServiceServer) {
+	s.RegisterService(&UserInfoService_ServiceDesc, srv)
+}
+
+func _UserInfoService_GetAll_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetUsersRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(UserInfoServiceServer).GetAll(m, &userInfoServiceGetAllServer{stream})
+}
+
+type UserInfoService_GetAllServer interface {
+	Send(*UserClientResponse) error
+	grpc.ServerStream
+}
+
+type userInfoServiceGetAllServer struct {
+	grpc.ServerStream
+}
+
+func (x *userInfoServiceGetAllServer) Send(m *UserClientResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+// UserInfoService_ServiceDesc is the grpc.ServiceDesc for UserInfoService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var UserInfoService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "logger.v1.UserInfoService",
+	HandlerType: (*UserInfoServiceServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetAll",
+			Handler:       _UserInfoService_GetAll_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "proto/auth.proto",
+}

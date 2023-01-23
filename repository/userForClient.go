@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/cherryReptile/WS-AUTH/domain"
 	"github.com/jmoiron/sqlx"
 )
@@ -36,4 +37,22 @@ func (r *clientUserRepository) GetAuthClientUser(clientUser *domain.ClientUser, 
 		return err
 	}
 	return nil
+}
+
+func (r *clientUserRepository) GetAllWithOrderBy(field, orderBy string) (*sqlx.Rows, error) {
+	query := fmt.Sprintf(`select 
+    users.id id, 
+    users.login as login, 
+    users.created_at as created_at, 
+    up.first_name as first_name, 
+    up.last_name as last_name, 
+    up.address as address,
+	up.other_data 
+	from users
+    	left join user_profiles up on up.user_id = users.id order by %s %s`, field, orderBy)
+	rows, err := r.db.Queryx(query)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
