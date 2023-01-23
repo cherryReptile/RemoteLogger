@@ -1020,7 +1020,7 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserInfoServiceClient interface {
-	GetAll(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllClient, error)
+	GetAllUsersWithSort(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortClient, error)
 }
 
 type userInfoServiceClient struct {
@@ -1031,12 +1031,12 @@ func NewUserInfoServiceClient(cc grpc.ClientConnInterface) UserInfoServiceClient
 	return &userInfoServiceClient{cc}
 }
 
-func (c *userInfoServiceClient) GetAll(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllClient, error) {
-	stream, err := c.cc.NewStream(ctx, &UserInfoService_ServiceDesc.Streams[0], "/logger.v1.UserInfoService/GetAll", opts...)
+func (c *userInfoServiceClient) GetAllUsersWithSort(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserInfoService_ServiceDesc.Streams[0], "/logger.v1.UserInfoService/GetAllUsersWithSort", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &userInfoServiceGetAllClient{stream}
+	x := &userInfoServiceGetAllUsersWithSortClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -1046,16 +1046,16 @@ func (c *userInfoServiceClient) GetAll(ctx context.Context, in *GetUsersRequest,
 	return x, nil
 }
 
-type UserInfoService_GetAllClient interface {
+type UserInfoService_GetAllUsersWithSortClient interface {
 	Recv() (*UserClientResponse, error)
 	grpc.ClientStream
 }
 
-type userInfoServiceGetAllClient struct {
+type userInfoServiceGetAllUsersWithSortClient struct {
 	grpc.ClientStream
 }
 
-func (x *userInfoServiceGetAllClient) Recv() (*UserClientResponse, error) {
+func (x *userInfoServiceGetAllUsersWithSortClient) Recv() (*UserClientResponse, error) {
 	m := new(UserClientResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1067,7 +1067,7 @@ func (x *userInfoServiceGetAllClient) Recv() (*UserClientResponse, error) {
 // All implementations must embed UnimplementedUserInfoServiceServer
 // for forward compatibility
 type UserInfoServiceServer interface {
-	GetAll(*GetUsersRequest, UserInfoService_GetAllServer) error
+	GetAllUsersWithSort(*GetUsersRequest, UserInfoService_GetAllUsersWithSortServer) error
 	mustEmbedUnimplementedUserInfoServiceServer()
 }
 
@@ -1075,8 +1075,8 @@ type UserInfoServiceServer interface {
 type UnimplementedUserInfoServiceServer struct {
 }
 
-func (UnimplementedUserInfoServiceServer) GetAll(*GetUsersRequest, UserInfoService_GetAllServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+func (UnimplementedUserInfoServiceServer) GetAllUsersWithSort(*GetUsersRequest, UserInfoService_GetAllUsersWithSortServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllUsersWithSort not implemented")
 }
 func (UnimplementedUserInfoServiceServer) mustEmbedUnimplementedUserInfoServiceServer() {}
 
@@ -1091,24 +1091,24 @@ func RegisterUserInfoServiceServer(s grpc.ServiceRegistrar, srv UserInfoServiceS
 	s.RegisterService(&UserInfoService_ServiceDesc, srv)
 }
 
-func _UserInfoService_GetAll_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _UserInfoService_GetAllUsersWithSort_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(GetUsersRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(UserInfoServiceServer).GetAll(m, &userInfoServiceGetAllServer{stream})
+	return srv.(UserInfoServiceServer).GetAllUsersWithSort(m, &userInfoServiceGetAllUsersWithSortServer{stream})
 }
 
-type UserInfoService_GetAllServer interface {
+type UserInfoService_GetAllUsersWithSortServer interface {
 	Send(*UserClientResponse) error
 	grpc.ServerStream
 }
 
-type userInfoServiceGetAllServer struct {
+type userInfoServiceGetAllUsersWithSortServer struct {
 	grpc.ServerStream
 }
 
-func (x *userInfoServiceGetAllServer) Send(m *UserClientResponse) error {
+func (x *userInfoServiceGetAllUsersWithSortServer) Send(m *UserClientResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1121,8 +1121,8 @@ var UserInfoService_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetAll",
-			Handler:       _UserInfoService_GetAll_Handler,
+			StreamName:    "GetAllUsersWithSort",
+			Handler:       _UserInfoService_GetAllUsersWithSort_Handler,
 			ServerStreams: true,
 		},
 	},

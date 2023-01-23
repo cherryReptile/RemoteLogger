@@ -45,7 +45,7 @@ service ProfileService {
 }
 
 service UserInfoService {
-  rpc GetAll(GetUsersRequest) returns (stream UserClientResponse) {}
+  rpc GetAllUsersWithSort(GetUsersRequest) returns (stream UserClientResponse) {}
 }
 
 message Empty {}
@@ -82,12 +82,12 @@ message OAuthTokenResponse {
 }
 
 message AppResponse {
-  User Struct = 1;
+  User User = 1;
   string JWTToken = 2;
 }
 
 message AddedResponse {
-  User  Struct = 1;
+  User  User = 1;
   string Message = 2;
 }
 

@@ -23,7 +23,7 @@ func NewUserInfoService(db *sqlx.DB) api.UserInfoServiceServer {
 	return us
 }
 
-func (s *userInfoService) GetAll(req *api.GetUsersRequest, stream api.UserInfoService_GetAllServer) error {
+func (s *userInfoService) GetAllUsersWithSort(req *api.GetUsersRequest, stream api.UserInfoService_GetAllUsersWithSortServer) error {
 	switch req.OrderBy {
 	case "desc":
 	case "asc":

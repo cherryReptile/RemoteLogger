@@ -6,10 +6,10 @@ import (
 )
 
 func ToAppResponse(user *domain.User, token *domain.AuthToken) *api.AppResponse {
-	res := api.AppResponse{Struct: &api.User{}, JWTToken: ""}
-	res.Struct.ID = user.ID
-	res.Struct.Login = user.Login
-	res.Struct.CreatedAt = user.CreatedAt.String()
+	res := api.AppResponse{User: &api.User{}, JWTToken: ""}
+	res.User.ID = user.ID
+	res.User.Login = user.Login
+	res.User.CreatedAt = user.CreatedAt.String()
 	res.JWTToken = token.Token
 
 	return &res
@@ -18,7 +18,7 @@ func ToAppResponse(user *domain.User, token *domain.AuthToken) *api.AppResponse 
 func ToAddedResponse(message string, user *domain.User) *api.AddedResponse {
 	return &api.AddedResponse{
 		Message: message,
-		Struct: &api.User{
+		User: &api.User{
 			ID:        user.ID,
 			Login:     user.Login,
 			CreatedAt: user.CreatedAt.String(),

@@ -12,34 +12,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-//type BaseHandler struct {
-//	userUsecase           domain.UserUsecase
-//	providerUsecase       domain.ProviderUsecase
-//	tokenUsecase          domain.AuthTokenUsecase
-//	providersDataUsecase  domain.ProvidersDataUsecase
-//	usersProvidersUsecase domain.UsersProvidersUsecase
-//	profileUsecase        domain.ProfileUsecase
-//}
-
 type BaseOAuthHandler struct {
 	DB     *sqlx.DB
 	Config *oauth2.Config
 	BaseHandler
 	Provider string
 }
-
-//func (h *BaseHandler) SetProfile(profile *domain.Profile, userID string) error {
-//	profile.FirstName = sql.NullString{Valid: true, String: ""}
-//	profile.LastName = sql.NullString{Valid: true, String: ""}
-//	profile.Address = sql.NullString{Valid: true, String: ""}
-//	profile.UserID = userID
-//	od, err := json.Marshal(map[string]string{"": ""})
-//	if err != nil {
-//		return err
-//	}
-//	profile.OtherData = od
-//	return nil
-//}
 
 func (h *BaseOAuthHandler) GetTokenDefault(req *api.OAuthCodeRequest) (*api.OAuthTokenResponse, error) {
 	tok, err := h.Config.Exchange(context.Background(), req.Code)
