@@ -30,7 +30,14 @@ func (s *userInfoService) GetAllUsersWithSort(req *api.GetUsersRequest, stream a
 	default:
 		return errors.New("unknown param for sort")
 	}
-	if req.Field == "other_data" {
+	switch req.Field {
+	case "id":
+	case "login":
+	case "created_at":
+	case "first_name":
+	case "last_name":
+	case "address":
+	default:
 		return errors.New("unsupportable field for sorting")
 	}
 
