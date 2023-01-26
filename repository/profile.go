@@ -51,7 +51,7 @@ func (r *profileRepository) FindByUserUUID(profile *domain.Profile, userUUID str
 }
 
 func (r *profileRepository) Update(profile *domain.Profile) error {
-	_, err := r.db.Exec("UPDATE user_profiles SET first_name=$1, last_name=$2, other_data=$3, address=$4", profile.FirstName, profile.LastName, profile.OtherData, profile.Address)
+	_, err := r.db.Exec("UPDATE user_profiles SET first_name=$1, last_name=$2, other_data=$3, address=$4 WHERE user_id=$5", profile.FirstName, profile.LastName, profile.OtherData, profile.Address, profile.UserID)
 	if err != nil {
 		return err
 	}
