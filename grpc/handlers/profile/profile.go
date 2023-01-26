@@ -26,45 +26,6 @@ func NewUserProfileService(db *sqlx.DB) api.ProfileServiceServer {
 	return ps
 }
 
-func (s *userProfileService) Create(ctx context.Context, req *api.ProfileRequest) (*api.ProfileResponse, error) {
-	user := new(domain.User)
-	p := new(domain.Profile)
-
-	od, err := json.Marshal(req.Other_Data)
-	if err != nil {
-		return nil, err
-	}
-
-	s.userUsecase.Find(user, req.UserID)
-	if user.ID == "" {
-		return nil, errors.New("user not found")
-	}
-
-	s.profileUsecase.FindByUserUUID(p, user.ID)
-	if p.ID != 0 {
-		return nil, errors.New("profile already exists")
-	}
-
-	setRaws(p, req)
-	p.OtherData = od
-	p.UserID = req.UserID
-	if err = s.profileUsecase.Create(p); err != nil {
-		return nil, err
-	}
-
-	var data map[string]string
-	if err = json.Unmarshal(p.OtherData, &data); err != nil {
-		return nil, err
-	}
-
-	return &api.ProfileResponse{
-		FirstName:  p.FirstName.String,
-		LastName:   p.LastName.String,
-		Address:    p.Address.String,
-		Other_Data: data,
-	}, nil
-}
-
 func (s *userProfileService) Get(ctx context.Context, req *api.ProfileUserID) (*api.ProfileResponse, error) {
 	user := new(domain.User)
 	p := new(domain.Profile)

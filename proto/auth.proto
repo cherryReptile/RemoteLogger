@@ -38,7 +38,6 @@ service JWTTokenService {
 }
 
 service ProfileService {
-  rpc Create(ProfileRequest) returns (ProfileResponse) {}
   rpc Update(ProfileRequest) returns (ProfileResponse) {}
   rpc Get(ProfileUserID)    returns (ProfileResponse) {}
   rpc Delete(ProfileUserID)  returns (ProfileDeleted) {}
