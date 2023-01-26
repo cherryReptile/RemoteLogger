@@ -1020,7 +1020,7 @@ var ProfileService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserInfoServiceClient interface {
-	GetAllUsersWithSort(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortClient, error)
+	GetAllUsersWithSortAndFilter(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortAndFilterClient, error)
 }
 
 type userInfoServiceClient struct {
@@ -1031,12 +1031,12 @@ func NewUserInfoServiceClient(cc grpc.ClientConnInterface) UserInfoServiceClient
 	return &userInfoServiceClient{cc}
 }
 
-func (c *userInfoServiceClient) GetAllUsersWithSort(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortClient, error) {
-	stream, err := c.cc.NewStream(ctx, &UserInfoService_ServiceDesc.Streams[0], "/logger.v1.UserInfoService/GetAllUsersWithSort", opts...)
+func (c *userInfoServiceClient) GetAllUsersWithSortAndFilter(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (UserInfoService_GetAllUsersWithSortAndFilterClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserInfoService_ServiceDesc.Streams[0], "/logger.v1.UserInfoService/GetAllUsersWithSortAndFilter", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &userInfoServiceGetAllUsersWithSortClient{stream}
+	x := &userInfoServiceGetAllUsersWithSortAndFilterClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -1046,16 +1046,16 @@ func (c *userInfoServiceClient) GetAllUsersWithSort(ctx context.Context, in *Get
 	return x, nil
 }
 
-type UserInfoService_GetAllUsersWithSortClient interface {
+type UserInfoService_GetAllUsersWithSortAndFilterClient interface {
 	Recv() (*UserClientResponse, error)
 	grpc.ClientStream
 }
 
-type userInfoServiceGetAllUsersWithSortClient struct {
+type userInfoServiceGetAllUsersWithSortAndFilterClient struct {
 	grpc.ClientStream
 }
 
-func (x *userInfoServiceGetAllUsersWithSortClient) Recv() (*UserClientResponse, error) {
+func (x *userInfoServiceGetAllUsersWithSortAndFilterClient) Recv() (*UserClientResponse, error) {
 	m := new(UserClientResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -1067,7 +1067,7 @@ func (x *userInfoServiceGetAllUsersWithSortClient) Recv() (*UserClientResponse, 
 // All implementations must embed UnimplementedUserInfoServiceServer
 // for forward compatibility
 type UserInfoServiceServer interface {
-	GetAllUsersWithSort(*GetUsersRequest, UserInfoService_GetAllUsersWithSortServer) error
+	GetAllUsersWithSortAndFilter(*GetUsersRequest, UserInfoService_GetAllUsersWithSortAndFilterServer) error
 	mustEmbedUnimplementedUserInfoServiceServer()
 }
 
@@ -1075,8 +1075,8 @@ type UserInfoServiceServer interface {
 type UnimplementedUserInfoServiceServer struct {
 }
 
-func (UnimplementedUserInfoServiceServer) GetAllUsersWithSort(*GetUsersRequest, UserInfoService_GetAllUsersWithSortServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetAllUsersWithSort not implemented")
+func (UnimplementedUserInfoServiceServer) GetAllUsersWithSortAndFilter(*GetUsersRequest, UserInfoService_GetAllUsersWithSortAndFilterServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllUsersWithSortAndFilter not implemented")
 }
 func (UnimplementedUserInfoServiceServer) mustEmbedUnimplementedUserInfoServiceServer() {}
 
@@ -1091,24 +1091,24 @@ func RegisterUserInfoServiceServer(s grpc.ServiceRegistrar, srv UserInfoServiceS
 	s.RegisterService(&UserInfoService_ServiceDesc, srv)
 }
 
-func _UserInfoService_GetAllUsersWithSort_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _UserInfoService_GetAllUsersWithSortAndFilter_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(GetUsersRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(UserInfoServiceServer).GetAllUsersWithSort(m, &userInfoServiceGetAllUsersWithSortServer{stream})
+	return srv.(UserInfoServiceServer).GetAllUsersWithSortAndFilter(m, &userInfoServiceGetAllUsersWithSortAndFilterServer{stream})
 }
 
-type UserInfoService_GetAllUsersWithSortServer interface {
+type UserInfoService_GetAllUsersWithSortAndFilterServer interface {
 	Send(*UserClientResponse) error
 	grpc.ServerStream
 }
 
-type userInfoServiceGetAllUsersWithSortServer struct {
+type userInfoServiceGetAllUsersWithSortAndFilterServer struct {
 	grpc.ServerStream
 }
 
-func (x *userInfoServiceGetAllUsersWithSortServer) Send(m *UserClientResponse) error {
+func (x *userInfoServiceGetAllUsersWithSortAndFilterServer) Send(m *UserClientResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -1121,8 +1121,8 @@ var UserInfoService_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetAllUsersWithSort",
-			Handler:       _UserInfoService_GetAllUsersWithSort_Handler,
+			StreamName:    "GetAllUsersWithSortAndFilter",
+			Handler:       _UserInfoService_GetAllUsersWithSortAndFilter_Handler,
 			ServerStreams: true,
 		},
 	},

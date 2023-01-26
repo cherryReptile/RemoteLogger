@@ -23,7 +23,9 @@ func NewUserInfoService(db *sqlx.DB) api.UserInfoServiceServer {
 	return us
 }
 
-func (s *userInfoService) GetAllUsersWithSort(req *api.GetUsersRequest, stream api.UserInfoService_GetAllUsersWithSortServer) error {
+func (s *userInfoService) GetAllUsersWithSortAndFilter(req *api.GetUsersRequest, stream api.UserInfoService_GetAllUsersWithSortAndFilterServer) error {
+	var err error
+	var rows *sqlx.Rows
 	switch req.OrderBy {
 	case "desc":
 	case "asc":
@@ -41,11 +43,16 @@ func (s *userInfoService) GetAllUsersWithSort(req *api.GetUsersRequest, stream a
 		return errors.New("unsupportable field for sorting")
 	}
 
-	rows, err := s.clientUserUsecase.GetAllWithOrderBy(req.Field, req.OrderBy)
+	if req.FieldsAndValuesFilter == nil {
+		rows, err = s.clientUserUsecase.GetAllWithOrderBy(req.Field, req.OrderBy)
+	} else if len(req.FieldsAndValuesFilter) > 0 {
+		rows, err = s.clientUserUsecase.GetAllWithOrderByAndFilter(req.FieldsAndValuesFilter, req.Field, req.OrderBy)
+	}
 	if err != nil {
 		return err
 	}
 
+	i := 0
 	for rows.Next() {
 		var od map[string]string
 		clientUser := new(domain.ClientUser)
@@ -76,6 +83,12 @@ func (s *userInfoService) GetAllUsersWithSort(req *api.GetUsersRequest, stream a
 		}); err != nil {
 			return err
 		}
+		i++
 	}
+
+	if i == 0 {
+		return errors.New("rows not found for this query")
+	}
+
 	return nil
 }

@@ -26,3 +26,7 @@ func (u *clientUserUsecase) GetAuthClientUser(clientUser *domain.ClientUser, use
 func (u *clientUserUsecase) GetAllWithOrderBy(field, orderBy string) (*sqlx.Rows, error) {
 	return u.clientUserRepo.GetAllWithOrderBy(field, orderBy)
 }
+
+func (u *clientUserUsecase) GetAllWithOrderByAndFilter(filter map[string]string, field, orderBy string) (*sqlx.Rows, error) {
+	return u.clientUserRepo.GetAllWithOrderByAndFilter(filter, field, orderBy)
+}

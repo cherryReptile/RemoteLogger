@@ -45,7 +45,8 @@ service ProfileService {
 }
 
 service UserInfoService {
-  rpc GetAllUsersWithSort(GetUsersRequest) returns (stream UserClientResponse) {}
+  rpc GetAllUsersWithSortAndFilter(GetUsersRequest) returns (stream UserClientResponse) {}
+//  rpc GetUsersWithFilter(GetUsersWithFilterRequest) returns (stream UserClientResponse) {}
 }
 
 message Empty {}
@@ -141,4 +142,5 @@ message ProfileResponse {
 message GetUsersRequest {
   string OrderBy = 1;
   string Field = 2;
+  map<string, string> FieldsAndValuesFilter = 3;
 }

@@ -40,7 +40,17 @@ func (r *clientUserRepository) GetAuthClientUser(clientUser *domain.ClientUser, 
 }
 
 func (r *clientUserRepository) GetAllWithOrderBy(field, orderBy string) (*sqlx.Rows, error) {
-	query := fmt.Sprintf(`select 
+	//query := fmt.Sprintf(`select
+	//users.id id,
+	//users.login as login,
+	//users.created_at as created_at,
+	//up.first_name as first_name,
+	//up.last_name as last_name,
+	//up.address as address,
+	//up.other_data
+	//from users
+	//	left join user_profiles up on up.user_id = users.id order by %s %s`, field, orderBy)
+	rows, err := r.db.Queryx(`select 
     users.id id, 
     users.login as login, 
     users.created_at as created_at, 
@@ -49,7 +59,53 @@ func (r *clientUserRepository) GetAllWithOrderBy(field, orderBy string) (*sqlx.R
     up.address as address,
 	up.other_data 
 	from users
-    	left join user_profiles up on up.user_id = users.id order by %s %s`, field, orderBy)
+    	left join user_profiles up on up.user_id = users.id order by $1 $2`, field, orderBy)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+func (r *clientUserRepository) GetAllWithOrderByAndFilter(filter map[string]string, field, orderBy string) (*sqlx.Rows, error) {
+	query := `select 
+    users.id id, 
+    users.login as login, 
+    users.created_at as created_at, 
+    up.first_name as first_name, 
+    up.last_name as last_name, 
+    up.address as address,
+	up.other_data 
+	from users
+    	left join user_profiles up on up.user_id = users.id where`
+
+	i := 0
+	for k, v := range filter {
+		if i == 0 {
+			if v == "null" {
+				query = fmt.Sprintf("%s %s=%s", query, k, v)
+				continue
+			}
+			if v == "notnull" {
+				query = fmt.Sprintf("%s %s %s", query, k, v)
+				continue
+			}
+			query = fmt.Sprintf("%s %s='%s'", query, k, v)
+		}
+		if i > 0 {
+			if v == "null" {
+				query = fmt.Sprintf("%s and %s=%s", query, k, v)
+				continue
+			}
+			if v == "notnull" {
+				query = fmt.Sprintf("%s and %s %s", query, k, v)
+				continue
+			}
+			query = fmt.Sprintf("%s and %s='%s'", query, k, v)
+		}
+		i++
+	}
+
+	query = fmt.Sprintf("%s order by %s %s", query, field, orderBy)
 	rows, err := r.db.Queryx(query)
 	if err != nil {
 		return nil, err
