@@ -81,26 +81,18 @@ func (r *clientUserRepository) GetAllWithOrderByAndFilter(filter map[string]stri
 	i := 0
 	for k, v := range filter {
 		if i == 0 {
-			if v == "null" {
-				query = fmt.Sprintf("%s %s=%s", query, k, v)
-				continue
-			}
-			if v == "notnull" {
+			if v == "notnull" || v == "isnull" {
 				query = fmt.Sprintf("%s %s %s", query, k, v)
 				continue
 			}
-			query = fmt.Sprintf("%s %s='%s'", query, k, v)
+			query = fmt.Sprintf("%s %s ilike '%s%s%s'", query, k, "%", v, "%")
 		}
 		if i > 0 {
-			if v == "null" {
-				query = fmt.Sprintf("%s and %s=%s", query, k, v)
-				continue
-			}
-			if v == "notnull" {
+			if v == "notnull" || v == "isnull" {
 				query = fmt.Sprintf("%s and %s %s", query, k, v)
 				continue
 			}
-			query = fmt.Sprintf("%s and %s='%s'", query, k, v)
+			query = fmt.Sprintf("%s and %s ilike '%s%s%s'", query, k, "%", v, "%")
 		}
 		i++
 	}
