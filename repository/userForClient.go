@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"github.com/cherryReptile/WS-AUTH/domain"
 	"github.com/jmoiron/sqlx"
@@ -71,6 +72,16 @@ func (r *clientUserRepository) GetAllWithOrderByAndFilter(filter map[string]stri
 
 	i := 0
 	for k, v := range filter {
+		switch k {
+		case "id":
+		case "login":
+		case "created_at":
+		case "first_name":
+		case "last_name":
+		case "address":
+		default:
+			return nil, errors.New("this field don't support search")
+		}
 		if i == 0 {
 			if v == "notnull" || v == "isnull" {
 				query = fmt.Sprintf("%s %s %s", query, k, v)
