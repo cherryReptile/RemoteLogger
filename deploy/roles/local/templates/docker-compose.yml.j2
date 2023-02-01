@@ -6,20 +6,8 @@ services:
         context: .
         dockerfile: docker/Dockerfile
     user: "{{USER}}:{{GROUP}}"
-    environment:
-            GOCACHE: /usr/src/app/tmp/cache
-            DB_HOST: ${DB_HOST}
-            DB_PORT: ${DB_PORT}
-            DB_USER: ${DB_USER}
-            DB_PASSWORD: ${DB_PASSWORD}
-            DB_NAME: ${DB_PASSWORD}
-            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-            GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
-            GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
-            TG_BOT_TOKEN: ${TG_BOT_TOKEN}
-            DOMAIN: ${DOMAIN}
-            JWT_KEY: ${JWT_KEY}
+    env_file:
+      - .env
     ports:
       - "9000:9000"
     volumes:
