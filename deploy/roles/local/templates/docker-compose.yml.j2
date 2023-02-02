@@ -6,10 +6,13 @@ services:
         context: .
         dockerfile: docker/Dockerfile
     user: "{{USER}}:{{GROUP}}"
+    environment:
+      - GOCACHE=/usr/src/app/tmp/cache
     env_file:
       - .env
     ports:
       - "9000:9000"
+      - "2345:2345"
     volumes:
       - ./:/usr/src/app
       - /etc/passwd:/etc/passwd
