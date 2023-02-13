@@ -43,10 +43,10 @@ func (s *userInfoService) GetAllUsersWithSortAndFilter(req *api.GetUsersRequest,
 		return errors.New("unsupportable field for sorting")
 	}
 
-	if req.FieldsAndValuesFilter == nil {
+	if req.Filter == nil {
 		rows, err = s.clientUserUsecase.GetAllWithOrderBy(req.Field, req.OrderBy)
-	} else if len(req.FieldsAndValuesFilter) > 0 {
-		rows, err = s.clientUserUsecase.GetAllWithOrderByAndFilter(req.FieldsAndValuesFilter, req.Field, req.OrderBy)
+	} else if len(req.Filter) > 0 {
+		rows, err = s.clientUserUsecase.GetAllWithOrderByAndFilter(req.Filter, req.Field, req.OrderBy)
 	}
 	if err != nil {
 		return err

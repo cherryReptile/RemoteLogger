@@ -141,5 +141,5 @@ message ProfileResponse {
 message GetUsersRequest {
   string OrderBy = 1;
   string Field = 2;
-  map<string, string> FieldsAndValuesFilter = 3;
+  map<string, string> Filter = 3;
 }

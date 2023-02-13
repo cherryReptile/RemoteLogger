@@ -83,20 +83,10 @@ func (r *clientUserRepository) GetAllWithOrderByAndFilter(filter map[string]stri
 			return nil, errors.New("this field don't support search: " + k)
 		}
 		if i == 0 {
-			if v == "notnull" || v == "isnull" {
-				query = fmt.Sprintf("%s %s %s", query, k, v)
-			}
-			if v != "notnull" && v != "isnull" {
-				query = fmt.Sprintf("%s %s ilike '%s%s%s'", query, k, "%", v, "%")
-			}
+			query = fmt.Sprintf("%s %s ilike '%s%s%s'", query, k, "%", v, "%")
 		}
 		if i > 0 {
-			if v == "notnull" || v == "isnull" {
-				query = fmt.Sprintf("%s and %s %s", query, k, v)
-			}
-			if v != "notnull" && v != "isnull" {
-				query = fmt.Sprintf("%s and %s ilike '%s%s%s'", query, k, "%", v, "%")
-			}
+			query = fmt.Sprintf("%s and %s ilike '%s%s%s'", query, k, "%", v, "%")
 		}
 		i++
 	}
