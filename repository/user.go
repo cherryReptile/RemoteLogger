@@ -17,24 +17,31 @@ func NewUserRepository(db *sqlx.DB) domain.UserRepo {
 	}
 }
 
-func (r *userRepository) Create(user *domain.User) error {
+func (r *userRepository) Create(user *domain.User, tx *sqlx.Tx) error {
+	var err error
+	create := `INSERT INTO users (id, login, created_at) 
+								VALUES (:id, :login, :created_at)`
+	get := "SELECT * FROM users WHERE id=$1 LIMIT 1"
 	user.ID = uuid.NewString()
 	user.CreatedAt = time.Now()
 
-	_, err := r.db.NamedExec(`INSERT INTO users (id, login, created_at) 
-								VALUES (:id, :login, :created_at)`, user)
+	if tx != nil {
+		_, err = tx.NamedExec(create, user)
+
+		if err != nil {
+			return err
+		}
+
+		return tx.Get(user, get, user.ID)
+	}
+
+	_, err = r.db.NamedExec(create, user)
 
 	if err != nil {
-		//return errors.New("failed to create user " + err.Error())
 		return err
 	}
 
-	// update model
-	if err = r.db.Get(user, "SELECT * FROM users WHERE id=$1 LIMIT 1", user.ID); err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.Get(user, get, user.ID)
 }
 
 func (r *userRepository) Find(user *domain.User, uuid string) error {

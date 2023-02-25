@@ -67,7 +67,12 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 
 	user.Login = req.Email
 
-	err = s.userUsecase.Create(user)
+	tx, err := s.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.userUsecase.Create(user, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +81,7 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 		return nil, err
 	}
 
-	if err = s.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
+	if err = s.usersProvidersUsecase.Create(up, user.ID, p.ID, tx); err != nil {
 		return nil, err
 	}
 
@@ -89,7 +94,19 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	pd.UserID = user.ID
 	pd.ProviderID = p.ID
 	pd.Username = user.Login
-	if err = s.providersDataUsecase.Create(pd); err != nil {
+	if err = s.providersDataUsecase.Create(pd, tx); err != nil {
+		return nil, err
+	}
+
+	if err = s.SetProfile(profile, user.ID); err != nil {
+		return nil, err
+	}
+
+	if err = s.profileUsecase.Create(profile, tx); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 
@@ -102,14 +119,6 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 	token.UserUUID = user.ID
 
 	if err = s.tokenUsecase.Create(token); err != nil {
-		return nil, err
-	}
-
-	if err = s.SetProfile(profile, user.ID); err != nil {
-		return nil, err
-	}
-
-	if err = s.profileUsecase.Create(profile); err != nil {
 		return nil, err
 	}
 
@@ -194,7 +203,12 @@ func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 		return nil, errors.New("you already have account in app")
 	}
 
-	if err = s.usersProvidersUsecase.Create(up, req.UserID, p.ID); err != nil {
+	tx, err := s.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = s.usersProvidersUsecase.Create(up, req.UserID, p.ID, tx); err != nil {
 		return nil, err
 	}
 
@@ -202,16 +216,20 @@ func (s *appAuthService) AddAccount(ctx context.Context, req *api.AddAppRequest)
 	if err != nil {
 		return nil, err
 	}
-	json, err := json.Marshal(map[string]string{"email": req.Request.Email, "password": string(hashP)})
+	jsonData, err := json.Marshal(map[string]string{"email": req.Request.Email, "password": string(hashP)})
 	if err != nil {
 		return nil, err
 	}
 
-	pd.UserData = json
+	pd.UserData = jsonData
 	pd.UserID = req.UserID
 	pd.ProviderID = p.ID
 	pd.Username = req.Request.Email
-	if err = s.providersDataUsecase.Create(pd); err != nil {
+	if err = s.providersDataUsecase.Create(pd, tx); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 

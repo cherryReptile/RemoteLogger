@@ -17,7 +17,11 @@ func NewProvidersDataRepo(db *sqlx.DB) domain.ProvidersDataRepo {
 	}
 }
 
-func (r *providersDataRepo) Create(pd *domain.ProvidersData) error {
+func (r *providersDataRepo) Create(pd *domain.ProvidersData, tx *sqlx.Tx) error {
+	var err error
+	create := `INSERT INTO users_providers_data (user_data, user_id, provider_id, username, created_at) 
+								VALUES (:user_data, :user_id, :provider_id, :username, :created_at)`
+	get := "SELECT * FROM users_providers_data ORDER BY id DESC LIMIT 1"
 	pd.CreatedAt = time.Now()
 
 	if len(pd.UserData) > 0 {
@@ -27,19 +31,25 @@ func (r *providersDataRepo) Create(pd *domain.ProvidersData) error {
 		}
 		pd.UserData = json
 	}
-	_, err := r.db.NamedExec(`INSERT INTO users_providers_data (user_data, user_id, provider_id, username, created_at) 
-								VALUES (:user_data, :user_id, :provider_id, :username, :created_at)`, pd)
+
+	if tx != nil {
+		_, err = tx.NamedExec(create, pd)
+
+		if err != nil {
+			return err
+		}
+
+		return tx.Get(pd, get)
+	}
+
+	_, err = r.db.NamedExec(create, pd)
 
 	if err != nil {
 		return err
 	}
 
-	// update model
-	if err = r.db.Get(pd, "SELECT * FROM users_providers_data ORDER BY id DESC LIMIT 1"); err != nil {
-		return err
-	}
+	return r.db.Get(pd, get)
 
-	return nil
 }
 
 func (r *providersDataRepo) FindByUsernameAndProvider(pd *domain.ProvidersData, username string, providerID uint) error {

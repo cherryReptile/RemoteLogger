@@ -3,6 +3,7 @@ package domain
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -17,14 +18,14 @@ type Profile struct {
 }
 
 type ProfileRepo interface {
-	Create(profile *Profile) error
+	Create(profile *Profile, tx *sqlx.Tx) error
 	FindByUserUUID(profile *Profile, userUUID string) error
 	Update(profile *Profile) error
 	Delete(profile *Profile) error
 }
 
 type ProfileUsecase interface {
-	Create(profile *Profile) error
+	Create(profile *Profile, tx *sqlx.Tx) error
 	FindByUserUUID(profile *Profile, userUUID string) error
 	Update(profile *Profile) error
 	Delete(profile *Profile) error

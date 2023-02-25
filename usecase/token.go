@@ -1,6 +1,8 @@
 package usecase
 
-import "github.com/cherryReptile/WS-AUTH/domain"
+import (
+	"github.com/cherryReptile/WS-AUTH/domain"
+)
 
 type tokenUsecase struct {
 	tokeRepo domain.AuthTokenRepo

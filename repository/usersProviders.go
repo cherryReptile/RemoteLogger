@@ -16,21 +16,30 @@ func NewUsersProvidersRepository(db *sqlx.DB) domain.UsersProvidersRepo {
 	}
 }
 
-func (r *usersProvidersRepository) Create(up *domain.UsersProviders, userUUID string, providerID uint) error {
+func (r *usersProvidersRepository) Create(up *domain.UsersProviders, userUUID string, providerID uint, tx *sqlx.Tx) error {
+	create := `INSERT INTO users_providers (user_id, provider_id, created_at) 
+								VALUES (:user_id, :provider_id, :created_at)`
+	get := "SELECT * FROM users_providers ORDER BY id DESC LIMIT 1"
 	up.UserID = userUUID
 	up.ProviderID = providerID
 	up.CreatedAt = time.Now()
-	_, err := r.db.NamedExec(`INSERT INTO users_providers (user_id, provider_id, created_at) 
-								VALUES (:user_id, :provider_id, :created_at)`, up)
+	var err error
+
+	if tx != nil {
+		_, err = tx.NamedExec(create, up)
+
+		if err != nil {
+			return err
+		}
+
+		return tx.Get(up, get)
+	}
+
+	_, err = r.db.NamedExec(create, up)
 
 	if err != nil {
 		return err
 	}
 
-	// update model
-	if err = r.db.Get(up, "SELECT * FROM users_providers ORDER BY id DESC LIMIT 1"); err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.Get(up, get)
 }

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -15,13 +16,13 @@ type ProvidersData struct {
 }
 
 type ProvidersDataRepo interface {
-	Create(pd *ProvidersData) error
+	Create(pd *ProvidersData, tx *sqlx.Tx) error
 	FindByUsernameAndProvider(pd *ProvidersData, username string, providerID uint) error
 	GetAllByProvider(userUUID string, providerID uint) ([]ProvidersData, error)
 }
 
 type ProvidersDataUsecase interface {
-	Create(pd *ProvidersData) error
+	Create(pd *ProvidersData, tx *sqlx.Tx) error
 	FindByUsernameAndProvider(pd *ProvidersData, username string, providerID uint) error
 	GetAllByProvider(userUUID string, providerID uint) ([]ProvidersData, error)
 }

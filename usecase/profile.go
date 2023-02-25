@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/cherryReptile/WS-AUTH/domain"
+import (
+	"github.com/cherryReptile/WS-AUTH/domain"
+	"github.com/jmoiron/sqlx"
+)
 
 type profileUsecase struct {
 	profileRepo domain.ProfileRepo
@@ -12,8 +15,8 @@ func NewProfileUsecase(pr domain.ProfileRepo) domain.ProfileUsecase {
 	}
 }
 
-func (u *profileUsecase) Create(profile *domain.Profile) error {
-	return u.profileRepo.Create(profile)
+func (u *profileUsecase) Create(profile *domain.Profile, tx *sqlx.Tx) error {
+	return u.profileRepo.Create(profile, tx)
 }
 
 func (u *profileUsecase) FindByUserUUID(profile *domain.Profile, userUUID string) error {

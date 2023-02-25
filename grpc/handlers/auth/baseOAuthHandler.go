@@ -58,16 +58,33 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 	if pd.ID == 0 {
 		profile := new(domain.Profile)
 		user.Login = login
-		if err = h.userUsecase.Create(user); err != nil {
+
+		tx, err := h.DB.Beginx()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if err = h.userUsecase.Create(user, tx); err != nil {
 			return nil, nil, err
 		}
 		if err = h.SetProfile(profile, user.ID); err != nil {
 			return nil, nil, err
 		}
-		if err = h.profileUsecase.Create(profile); err != nil {
+		if err = h.profileUsecase.Create(profile, tx); err != nil {
 			return nil, nil, err
 		}
-		if err = h.usersProvidersUsecase.Create(up, user.ID, p.ID); err != nil {
+
+		pd.UserData = body
+		pd.UserID = user.ID
+		pd.ProviderID = p.ID
+		pd.Username = user.Login
+		if err = h.providersDataUsecase.Create(pd, tx); err != nil {
+			return nil, nil, err
+		}
+		if err = h.usersProvidersUsecase.Create(up, user.ID, p.ID, tx); err != nil {
+			return nil, nil, err
+		}
+		if err = tx.Commit(); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -76,16 +93,6 @@ func (h *BaseOAuthHandler) LoginDefault(req *api.OAuthRequest) (*domain.User, *d
 		h.userUsecase.Find(user, pd.UserID)
 		if user.ID == "" {
 			return nil, nil, errors.New("user not found")
-		}
-	}
-
-	if pd.ID == 0 {
-		pd.UserData = body
-		pd.UserID = user.ID
-		pd.ProviderID = p.ID
-		pd.Username = user.Login
-		if err = h.providersDataUsecase.Create(pd); err != nil {
-			return nil, nil, err
 		}
 	}
 
@@ -138,7 +145,12 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 		return nil, errors.New("user already exists")
 	}
 
-	if err = h.usersProvidersUsecase.Create(up, req.UserID, p.ID); err != nil {
+	tx, err := h.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = h.usersProvidersUsecase.Create(up, req.UserID, p.ID, tx); err != nil {
 		return nil, err
 	}
 
@@ -146,7 +158,11 @@ func (h *BaseOAuthHandler) AddAccountDefault(req *api.AddOauthRequest) (*domain.
 	pd.UserID = req.UserID
 	pd.ProviderID = p.ID
 	pd.Username = login
-	if err = h.providersDataUsecase.Create(pd); err != nil {
+	if err = h.providersDataUsecase.Create(pd, tx); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 

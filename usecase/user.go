@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/cherryReptile/WS-AUTH/domain"
+	"github.com/jmoiron/sqlx"
 )
 
 type userUsecase struct {
@@ -14,8 +15,8 @@ func NewUserUsecase(ur domain.UserRepo) domain.UserUsecase {
 	}
 }
 
-func (u *userUsecase) Create(user *domain.User) error {
-	return u.userRepo.Create(user)
+func (u *userUsecase) Create(user *domain.User, tx *sqlx.Tx) error {
+	return u.userRepo.Create(user, tx)
 }
 
 func (u *userUsecase) Find(user *domain.User, uuid string) error {

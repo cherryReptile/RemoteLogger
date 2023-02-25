@@ -17,7 +17,11 @@ func NewProfileRepository(db *sqlx.DB) domain.ProfileRepo {
 	}
 }
 
-func (r *profileRepository) Create(profile *domain.Profile) error {
+func (r *profileRepository) Create(profile *domain.Profile, tx *sqlx.Tx) error {
+	var err error
+	create := `INSERT INTO user_profiles (first_name, last_name, other_data, address, user_id, created_at) 
+								VALUES (:first_name, :last_name, :other_data, :address, :user_id, :created_at)`
+	get := "SELECT * FROM user_profiles ORDER BY id DESC LIMIT 1"
 	profile.CreatedAt = time.Now()
 
 	if len(profile.OtherData) > 0 {
@@ -28,19 +32,23 @@ func (r *profileRepository) Create(profile *domain.Profile) error {
 		profile.OtherData = json
 	}
 
-	_, err := r.db.NamedExec(`INSERT INTO user_profiles (first_name, last_name, other_data, address, user_id, created_at) 
-								VALUES (:first_name, :last_name, :other_data, :address, :user_id, :created_at)`, profile)
+	if tx != nil {
+		_, err = tx.NamedExec(create, profile)
+
+		if err != nil {
+			return err
+		}
+
+		return tx.Get(profile, get)
+	}
+
+	_, err = r.db.NamedExec(create, profile)
 
 	if err != nil {
 		return err
 	}
 
-	// update model
-	if err = r.db.Get(profile, "SELECT * FROM user_profiles ORDER BY id DESC LIMIT 1"); err != nil {
-		return err
-	}
-
-	return nil
+	return r.db.Get(profile, get)
 }
 
 func (r *profileRepository) FindByUserUUID(profile *domain.Profile, userUUID string) error {

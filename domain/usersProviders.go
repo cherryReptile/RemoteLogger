@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"github.com/jmoiron/sqlx"
+	"time"
+)
 
 type UsersProviders struct {
 	ID         uint      `json:"id" db:"id"`
@@ -10,9 +13,9 @@ type UsersProviders struct {
 }
 
 type UsersProvidersRepo interface {
-	Create(up *UsersProviders, userUUID string, providerID uint) error
+	Create(up *UsersProviders, userUUID string, providerID uint, tx *sqlx.Tx) error
 }
 
 type UsersProvidersUsecase interface {
-	Create(up *UsersProviders, userUUID string, providerID uint) error
+	Create(up *UsersProviders, userUUID string, providerID uint, tx *sqlx.Tx) error
 }
