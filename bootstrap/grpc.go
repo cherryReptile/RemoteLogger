@@ -19,7 +19,6 @@ func (a *RPCApp) Init() {
 		App:      auth.NewAppAuthService(a.DB.Conn),
 		GitHub:   auth.NewGitHubAuthService(a.DB.Conn),
 		Google:   auth.NewGoogleAuthService(a.DB.Conn),
-		Telegram: auth.NewTelegramAuthService(a.DB.Conn),
 		GetUser:  auth.NewGetUserService(a.DB.Conn),
 		JWTToken: auth.NewJWTTokenService(a.DB.Conn),
 		Profile:  profile.NewUserProfileService(a.DB.Conn),

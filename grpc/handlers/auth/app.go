@@ -126,7 +126,10 @@ func (s *appAuthService) Register(ctx context.Context, req *api.AppRequest) (*ap
 }
 
 func (s *appAuthService) Login(ctx context.Context, req *api.AppRequest) (*api.AppResponse, error) {
-	userData := new(AppUserData)
+	var userData struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
 	user := new(domain.User)
 	p := new(domain.Provider)
 	pd := new(domain.ProvidersData)

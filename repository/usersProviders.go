@@ -29,7 +29,7 @@ func (r *usersProvidersRepository) Create(up *domain.UsersProviders, userUUID st
 		_, err = tx.NamedExec(create, up)
 
 		if err != nil {
-			return err
+			return Rollback(err, tx)
 		}
 
 		return tx.Get(up, get)

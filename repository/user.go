@@ -29,7 +29,7 @@ func (r *userRepository) Create(user *domain.User, tx *sqlx.Tx) error {
 		_, err = tx.NamedExec(create, user)
 
 		if err != nil {
-			return err
+			return Rollback(err, tx)
 		}
 
 		return tx.Get(user, get, user.ID)

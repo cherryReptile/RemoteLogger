@@ -36,7 +36,7 @@ func (r *profileRepository) Create(profile *domain.Profile, tx *sqlx.Tx) error {
 		_, err = tx.NamedExec(create, profile)
 
 		if err != nil {
-			return err
+			return Rollback(err, tx)
 		}
 
 		return tx.Get(profile, get)
