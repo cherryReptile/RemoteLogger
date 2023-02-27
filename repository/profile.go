@@ -39,7 +39,11 @@ func (r *profileRepository) Create(profile *domain.Profile, tx *sqlx.Tx) error {
 			return Rollback(err, tx)
 		}
 
-		return tx.Get(profile, get)
+		if err = tx.Get(profile, get); err != nil {
+			return Rollback(err, tx)
+		}
+
+		return nil
 	}
 
 	_, err = r.db.NamedExec(create, profile)

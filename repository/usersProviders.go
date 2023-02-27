@@ -32,7 +32,11 @@ func (r *usersProvidersRepository) Create(up *domain.UsersProviders, userUUID st
 			return Rollback(err, tx)
 		}
 
-		return tx.Get(up, get)
+		if err = tx.Get(up, get); err != nil {
+			return Rollback(err, tx)
+		}
+
+		return nil
 	}
 
 	_, err = r.db.NamedExec(create, up)

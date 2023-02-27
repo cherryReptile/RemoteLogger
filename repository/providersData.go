@@ -39,7 +39,11 @@ func (r *providersDataRepo) Create(pd *domain.ProvidersData, tx *sqlx.Tx) error 
 			return Rollback(err, tx)
 		}
 
-		return tx.Get(pd, get)
+		if err = tx.Get(pd, get); err != nil {
+			return Rollback(err, tx)
+		}
+
+		return nil
 	}
 
 	_, err = r.db.NamedExec(create, pd)
