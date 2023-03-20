@@ -7,14 +7,14 @@ import (
 )
 
 type ServiceClients struct {
-	Conn      *grpc.ClientConn
-	App       api.AuthAppServiceClient
-	GitHub    api.AuthGithubServiceClient
-	Google    api.AuthGoogleServiceClient
-	Telegram  api.AuthTelegramServiceClient
-	CheckAuth api.CheckAuthServiceClient
-	Logout    api.LogoutServiceClient
-	Profile   api.ProfileServiceClient
+	Conn     *grpc.ClientConn
+	App      api.AuthAppServiceClient
+	GitHub   api.AuthGithubServiceClient
+	Google   api.AuthGoogleServiceClient
+	Profile  api.ProfileServiceClient
+	GetUser  api.GetUserServiceClient
+	JwtToken api.JWTTokenServiceClient
+	UserInfo api.UserInfoServiceClient
 }
 
 func (s *ServiceClients) Init(conn *grpc.ClientConn) {
@@ -22,10 +22,10 @@ func (s *ServiceClients) Init(conn *grpc.ClientConn) {
 	s.App = api.NewAuthAppServiceClient(s.Conn)
 	s.GitHub = api.NewAuthGithubServiceClient(s.Conn)
 	s.Google = api.NewAuthGoogleServiceClient(s.Conn)
-	s.Telegram = api.NewAuthTelegramServiceClient(s.Conn)
-	s.CheckAuth = api.NewCheckAuthServiceClient(s.Conn)
-	s.Logout = api.NewLogoutServiceClient(s.Conn)
 	s.Profile = api.NewProfileServiceClient(s.Conn)
+	s.GetUser = api.NewGetUserServiceClient(s.Conn)
+	s.JwtToken = api.NewJWTTokenServiceClient(s.Conn)
+	s.UserInfo = api.NewUserInfoServiceClient(s.Conn)
 }
 
 func NewConn(target string) (*grpc.ClientConn, error) {

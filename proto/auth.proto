@@ -25,10 +25,6 @@ service AuthGoogleService {
   rpc AddAccount(AddOauthRequest) returns (AddedResponse) {}
 }
 
-service AuthTelegramService {
-  rpc Login(TelegramRequest) returns (AppResponse) {}
-}
-
 service GetUserService {
   rpc GetUser(JWTTokenRequest) returns (UserClientResponse) {}
 }
@@ -71,10 +67,6 @@ message OAuthRequest {
 message AddOauthRequest {
   OAuthRequest Request = 1;
   string UserID = 2;
-}
-
-message TelegramRequest {
-  string Username = 1;
 }
 
 message OAuthTokenResponse {
