@@ -5,17 +5,15 @@ import (
 	"github.com/cherryReptile/WS-AUTH/api"
 	"github.com/cherryReptile/WS-AUTH/grpc/client"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"testing"
 	"time"
 )
 
 func TestRegister(t *testing.T) {
-	conn, err := client.NewConn("localhost:9000")
-	assert.NoError(t, err)
+	conn, app := newConnAndService(t)
 	defer conn.Close()
-
-	app := api.NewAuthAppServiceClient(conn)
-	_, err = app.Register(context.Background(), &api.AppRequest{
+	_, err := app.Register(context.Background(), &api.AppRequest{
 		Email:    "test@gmail.com",
 		Password: "test",
 	})
@@ -23,12 +21,9 @@ func TestRegister(t *testing.T) {
 }
 
 func TestBadRegister(t *testing.T) {
-	conn, err := client.NewConn("localhost:9000")
-	assert.NoError(t, err)
+	conn, app := newConnAndService(t)
 	defer conn.Close()
-
-	app := api.NewAuthAppServiceClient(conn)
-	_, err = app.Register(context.Background(), &api.AppRequest{
+	_, err := app.Register(context.Background(), &api.AppRequest{
 		Email:    "test@gmail.com",
 		Password: "test",
 	})
@@ -37,12 +32,9 @@ func TestBadRegister(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	time.Sleep(time.Second)
-	conn, err := client.NewConn("localhost:9000")
-	assert.NoError(t, err)
+	conn, app := newConnAndService(t)
 	defer conn.Close()
-
-	app := api.NewAuthAppServiceClient(conn)
-	_, err = app.Login(context.Background(), &api.AppRequest{
+	_, err := app.Login(context.Background(), &api.AppRequest{
 		Email:    "test@gmail.com",
 		Password: "test",
 	})
@@ -50,14 +42,18 @@ func TestLogin(t *testing.T) {
 }
 
 func TestBadLogin(t *testing.T) {
-	conn, err := client.NewConn("localhost:9000")
-	assert.NoError(t, err)
+	conn, app := newConnAndService(t)
 	defer conn.Close()
-
-	app := api.NewAuthAppServiceClient(conn)
-	_, err = app.Login(context.Background(), &api.AppRequest{
+	_, err := app.Login(context.Background(), &api.AppRequest{
 		Email:    "testTest@gmail.com",
 		Password: "testTest",
 	})
 	assert.Error(t, err)
+}
+
+func newConnAndService(t *testing.T) (*grpc.ClientConn, api.AuthAppServiceClient) {
+	conn, err := client.NewConn("localhost:9000")
+	assert.NoError(t, err)
+	app := api.NewAuthAppServiceClient(conn)
+	return conn, app
 }

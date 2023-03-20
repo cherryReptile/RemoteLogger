@@ -14,7 +14,6 @@ type Services struct {
 	App      api.AuthAppServiceServer
 	GitHub   api.AuthGithubServiceServer
 	Google   api.AuthGoogleServiceServer
-	Telegram api.AuthTelegramServiceServer
 	GetUser  api.GetUserServiceServer
 	JWTToken api.JWTTokenServiceServer
 	Profile  api.ProfileServiceServer
@@ -73,7 +72,6 @@ func (s *Server) ListenAndServe(port string, errCh chan error) {
 	api.RegisterAuthAppServiceServer(s.srv, s.Services.App)
 	api.RegisterAuthGithubServiceServer(s.srv, s.Services.GitHub)
 	api.RegisterAuthGoogleServiceServer(s.srv, s.Services.Google)
-	api.RegisterAuthTelegramServiceServer(s.srv, s.Services.Telegram)
 	api.RegisterGetUserServiceServer(s.srv, s.Services.GetUser)
 	api.RegisterJWTTokenServiceServer(s.srv, s.Services.JWTToken)
 	api.RegisterProfileServiceServer(s.srv, s.Services.Profile)
