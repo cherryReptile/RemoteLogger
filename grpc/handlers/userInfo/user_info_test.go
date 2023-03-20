@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"testing"
+	"time"
 )
 
 func TestGetAllUsers(t *testing.T) {
@@ -16,6 +17,7 @@ func TestGetAllUsers(t *testing.T) {
 		Field:   "created_at",
 		Filter:  map[string]string{"login": "tEsT"},
 	})
+	time.Sleep(time.Second)
 	assert.NoError(t, err)
 }
 
