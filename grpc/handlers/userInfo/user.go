@@ -58,6 +58,7 @@ func (s *userInfoService) GetAllUsersWithSortAndFilter(req *api.GetUsersRequest,
 		clientUser := new(domain.ClientUser)
 		clientUser.User = domain.User{}
 		clientUser.Profile = domain.Profile{}
+		clientUser.Profile.OtherData = nil
 		clientUser.AuthToken = domain.AuthToken{}
 		if err = rows.StructScan(clientUser); err != nil {
 			return err
